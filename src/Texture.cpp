@@ -24,7 +24,7 @@ bool Texture::loadFromFile(const std::string& filePath) {
 
     SDL_Texture* newTexture = nullptr;
 
-    SDL_Surface* loadedSurface = IMG_Load(("../" + filePath).c_str() );
+    SDL_Surface* loadedSurface = IMG_Load(("resources/textures/" + filePath).c_str() );
     if(loadedSurface == nullptr) {
         SDL_Log( "Unable to load image %s! SDL_image Error: %s\n", filePath.c_str(), IMG_GetError() );
     } else {

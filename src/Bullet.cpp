@@ -1,13 +1,9 @@
-//
-// Created by roger on 10/1/2024.
-//
-
 #include "../includes/Bullet.h"
 
 Bullet::Bullet(Entity* tempEntity) : entity(tempEntity) {
     entity->setDimensions(width,height);
     entity->getTexture()->setup(width,height,entity->getRenderer());
-    if(!entity->getTexture()->loadFromFile("resources/bullet.png")) {
+    if(!entity->getTexture()->loadFromFile("bullet.png")) {
         SDL_Log("Could not load bullet texture!");
     }
 }

@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <list>
-#include <vector>
 
 #include "../includes/GlobalConstants.h"
 #include "../includes/Platform.h"
@@ -34,22 +33,22 @@ Player::Player(Entity* entity) : playerEntity(entity) {
     revolverTextureLeft.setup(42*SCALE_FACTOR,21*SCALE_FACTOR,playerEntity->getRenderer());
     revolverTextureRight.setup(42*SCALE_FACTOR,21*SCALE_FACTOR,playerEntity->getRenderer());
 
-    if(!playerTextureRight.loadFromFile("resources/Timpy.png")) {
+    if(!playerTextureRight.loadFromFile("Timpy.png")) {
         SDL_Log("Could not load TimpyRight texture!");
     }
-    if(!playerTextureLeft.loadFromFile("resources/TimpyLeft.png")) {
+    if(!playerTextureLeft.loadFromFile("TimpyLeft.png")) {
         SDL_Log("Could not load TimpyLeft texture!");
     }
-    if(!knifeTextureLeft.loadFromFile("resources/knife.png")) {
+    if(!knifeTextureLeft.loadFromFile("knife.png")) {
         SDL_Log("Could not load knife texture!");
     }
-    if(!knifeTextureRight.loadFromFile("resources/knife-right.png")) {
+    if(!knifeTextureRight.loadFromFile("knife-right.png")) {
         SDL_Log("Could not load knife texture!");
     }
-    if(!revolverTextureLeft.loadFromFile("resources/RevolverLeft.png")) {
+    if(!revolverTextureLeft.loadFromFile("RevolverLeft.png")) {
         SDL_Log("Could not load RevolverLeft texture!");
     }
-    if(!revolverTextureRight.loadFromFile("resources/Revolver.png")) {
+    if(!revolverTextureRight.loadFromFile("Revolver.png")) {
         SDL_Log("Could not load Revolver texture!");
     }
 

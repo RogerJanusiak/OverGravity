@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <list>
-#include <vector>
 
 #include "../includes/GlobalConstants.h"
 #include "../includes/Platform.h"
@@ -11,7 +10,7 @@ Robor::Robor(Entity *entity) {
     roborEntity = entity;
     roborEntity->setDimensions(enemyWidth,enemyHeight);
     roborEntity->getTexture()->setup(enemyWidth,enemyHeight,entity->getRenderer());
-    if(!roborEntity->getTexture()->loadFromFile("resources/robor.png")) {
+    if(!roborEntity->getTexture()->loadFromFile("robor.png")) {
         SDL_Log("Could not load enemy texture!");
     }
 }

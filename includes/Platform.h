@@ -2,7 +2,6 @@
 #define PLATFORM_H
 
 #include <SDL.h>
-#include <SDL_image.h>
 
 #include "GlobalConstants.h"
 #include "Texture.h"

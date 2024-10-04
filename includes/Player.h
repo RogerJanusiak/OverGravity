@@ -18,6 +18,7 @@ public:
     const SDL_Rect &getWeaponRect() const { return weaponRect; }
 
     void setDirection (bool direction);
+    bool getDirection () const { return playerDirection; }
     Entity* getEntity() const { return playerEntity; }
     int getWeapon() const { return currentWeapon; }
 

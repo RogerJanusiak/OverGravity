@@ -1,7 +1,3 @@
-//
-// Created by Roger Janusiak on 9/27/24.
-//
-
 #include "../includes/Platform.h"
 
 Platform::Platform(int x, int y, SDL_Renderer* renderer) {
@@ -12,7 +8,7 @@ Platform::Platform(int x, int y, SDL_Renderer* renderer) {
 
     texture.setup(width,height,renderer);
 
-    if(!texture.loadFromFile("resources/platform.png")) {
+    if(!texture.loadFromFile("platform.png")) {
         SDL_Log("Could not load platform.png texture!");
     }
 

@@ -1,13 +1,9 @@
 #ifndef ENEMY_H
 #define ENEMY_H
 #include <list>
-#include <SDL_events.h>
-#include <utility>
-#include <vector>
 
 #include "Entity.h"
 #include "Platform.h"
-#include "Texture.h"
 
 
 class Robor {

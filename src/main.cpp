@@ -1,23 +1,28 @@
 #include <fstream>
 #include <iostream>
 #include <list>
+#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_image.h>
-#include <SDL_ttf.h>
 #include <sstream>
 #include <vector>
 
 #include "../includes/Bullet.h"
 #include "../includes/Robor.h"
-#include "../includes/Texture.h"
 #include "../includes/GlobalConstants.h"
 #include "../includes/Platform.h"
 #include "../includes/Player.h"
 #include "../includes/Spawn.h"
 
+#include <windows.h>
+#include <shlobj.h>
+#include <SDL_ttf.h>
+
 class Spawn;
 SDL_Window *gameWindow = nullptr;
 SDL_Renderer *gameRenderer = nullptr;
+
+std::string gameFilesPath;
 
 //Game Controller 1 handler
 SDL_GameController* controller;
@@ -52,11 +57,31 @@ bool init() {
             SDL_Log( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
         }
 
+        SDL_GameControllerAddMappingsFromFile("resources/mapping.txt");
 
-        int joysticks = SDL_NumJoysticks();
-        SDL_Log("There are %d joysticks connected.\n", joysticks);
+        char appDataPath[MAX_PATH];
+        if (SHGetFolderPathA(nullptr, CSIDL_APPDATA , nullptr, 0, appDataPath) != S_OK) {
+            SDL_Log("Failed to get AppData path");
+            success = false;
+        }
 
-        SDL_GameControllerAddMappingsFromFile("../resources/mapping.txt");
+        // Append the new folder name to the AppData path
+        std::string folderName = "OverGravity";
+        gameFilesPath =  std::string(appDataPath) + "\\" + folderName;
+
+        // Create the folder
+        if (CreateDirectoryA(gameFilesPath.c_str(), nullptr) || GetLastError() == ERROR_ALREADY_EXISTS) {
+            std::string destinationFile = std::string(gameFilesPath) + "\\level1.csv";
+            if (CopyFileA("resources/levels/level1.csv", destinationFile.c_str(), FALSE)) {
+                SDL_Log("Copied level1.csv");
+            } else {
+                SDL_Log("Failed to copy level files: ", GetLastError());
+            }
+        } else {
+            SDL_Log("Failed to create folder. Error: ", SDL_GetError());
+            success = false;
+        }
+
 
     }
 
@@ -82,7 +107,7 @@ std::vector<Entity> getEntities(const int waveNumber,const int divisor, std::vec
 }
 
 void loadLevel(std::string filePath,std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns) {
-    std::ifstream file(("../resources/levels/" + filePath).c_str());
+    std::ifstream file((filePath).c_str());
     if (!file.is_open()) {
         SDL_Log("Could not load level file!");
     }
@@ -129,8 +154,8 @@ int main( int argc, char* args[] ) {
         std::list<Platform> ePlatforms;
         std::vector<Spawn> enemySpawns;
         std::vector<Spawn> playerSpawns;
-
-        loadLevel("level1.csv", ePlatforms, enemySpawns, playerSpawns);
+        SDL_Log((gameFilesPath + "\\level1.csv").c_str());
+        loadLevel(gameFilesPath + "\\level1.csv", ePlatforms, enemySpawns, playerSpawns);
 
         std::vector<Spawn*> allSpawns;
         for(auto it = enemySpawns.begin(); it != enemySpawns.end(); it++) {
@@ -159,7 +184,7 @@ int main( int argc, char* args[] ) {
 
         bool developerMode = true;
 
-        int timpyXVelocity = 400*SCALE_FACTOR;
+        int timpyXVelocity = 350*SCALE_FACTOR;
         bool canShoot = true;
 
         float lastShotTimeDifference = 0;
@@ -230,6 +255,20 @@ int main( int argc, char* args[] ) {
                             leftFacing = false;
                         }
                     } else if( e.type == SDL_JOYAXISMOTION ) {
+                        if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
+                            if(timpy.getDirection() && canShoot && timpy.getWeapon() == 1) {
+                                eBullets.emplace_back(timpy.getEntity()->getRect().x+60*SCALE_FACTOR,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,1000*SCALE_FACTOR,0,gameRenderer);
+                                bullets.emplace_back(&eBullets.back());
+                                bullets.back().setIterator(--eBullets.end());
+                                canShoot = false;
+                            } else if(canShoot && timpy.getWeapon() == 1) {
+                                eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,-1000*SCALE_FACTOR,0,gameRenderer);
+                                eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,-1000*SCALE_FACTOR,0,gameRenderer);
+                                bullets.emplace_back(&eBullets.back());
+                                bullets.back().setIterator(--eBullets.end());
+                                canShoot = false;
+                            }
+                        }
 
                         if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX) > JOYSTICK_DEAD_ZONE) {
                             timpy.setDirection(true);
@@ -253,18 +292,6 @@ int main( int argc, char* args[] ) {
                         }
 
                     }
-                }
-
-                if(rightFacing && canShoot && timpy.getWeapon() == 1) {
-                    eBullets.emplace_back(timpy.getEntity()->getRect().x+60*SCALE_FACTOR,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,1000*SCALE_FACTOR,0,gameRenderer);
-                    bullets.emplace_back(&eBullets.back());
-                    bullets.back().setIterator(--eBullets.end());
-                    canShoot = false;
-                } else if(leftFacing && canShoot && timpy.getWeapon() == 1) {
-                    eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,-1000*SCALE_FACTOR,0,gameRenderer);
-                    bullets.emplace_back(&eBullets.back());
-                    bullets.back().setIterator(--eBullets.end());
-                    canShoot = false;
                 }
 
                 Uint32 current = SDL_GetTicks();
@@ -291,6 +318,7 @@ int main( int argc, char* args[] ) {
                 bool robotAlive = false;
                 bool playerAlive = true;
 
+                //Render/Move Bullets
                 for (auto it = bullets.begin(); it != bullets.end(); it++) {
                     it->render();
                     if(it->move(dt)) {
@@ -298,6 +326,8 @@ int main( int argc, char* args[] ) {
                         bullets.erase(it);
                     }
                 }
+
+                //Render/Move/Collision Enemys
                 SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
                 for (auto it = robors.begin(); it != robors.end(); it++) {
                     if(!it->getEntity()->isSpawned()) {

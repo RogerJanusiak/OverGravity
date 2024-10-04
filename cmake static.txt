@@ -30,16 +30,7 @@ find_package(SDL2_ttf REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR}
         ${SDL2_IMAGE_INCLUDE_DIR}
         ${SDL2_TTF_INCLUDE_DIR})
-
 set(SDL_LIBRARIES ${SDL_LIBRARIES} SDL2main SDL2_image-static SDL2-static SDL2_ttf-static)
-
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}
         ${SDL2_IMAGE_LIBRARIES}
         ${SDL2_TTF_LIBRARIES} -static)
-
-# Specify the resource folder
-set(RESOURCE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/resources")
-
-# Copy resources from source to build directory
-file(COPY ${RESOURCE_SOURCE_DIR} DESTINATION ${CMAKE_BINARY_DIR}/)
-

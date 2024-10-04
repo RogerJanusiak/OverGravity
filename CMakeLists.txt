@@ -15,7 +15,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/Bullet.cpp
         includes/Bullet.h
         includes/Spawn.h
-        includes/Bullet.h)
+        includes/Bullet.h
+        src/Spawn.cpp)
 
 # --- SDL2 SETUP ---
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)

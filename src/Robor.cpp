@@ -37,10 +37,6 @@ void Robor::move(float dt,const std::list<Platform*> &platforms) {
         roborEntity->setPosition(WINDOW_WIDTH-10*SCALE_FACTOR, roborEntity->getRect().y);
     }
 
-    if(rand() % 500 == 1 && roborEntity->getRect().x <= 670*SCALE_FACTOR && roborEntity->getRect().x >= 140*SCALE_FACTOR) {
-        roborEntity->setXVelocity(roborEntity->getXVelocity()*-1);
-    }
-
     roborEntity->getRect().x += roborEntity->getXVelocity()*dt;
 }
 

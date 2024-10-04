@@ -1,7 +1,6 @@
 #include <fstream>
 #include <iostream>
 #include <list>
-#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_image.h>
 #include <sstream>
@@ -27,120 +26,15 @@ std::string gameFilesPath;
 //Game Controller 1 handler
 SDL_GameController* controller;
 
-bool isColliding(SDL_Rect a, SDL_Rect b);
-
-bool init() {
-    bool success = true;
-
-    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK ) < 0 ) {
-        SDL_Log( "SDL could not initialize! SDL Error: %s\n", SDL_GetError() );
-        success = false;
-    } else if (TTF_Init() < 0) {
-        SDL_Log( "TTF could not initialize! SDL Error: %s\n", SDL_GetError() );
-        success = false;
-    } else {
-        gameWindow = SDL_CreateWindow("OverGravity", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
-        if (gameWindow == nullptr) {
-            SDL_Log( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
-            success = false;
-        } else {
-            gameRenderer = SDL_CreateRenderer(gameWindow,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-            if(gameRenderer == nullptr) {
-                SDL_Log("Game renderer could not be created! SDL ERROR: %s\n", SDL_GetError());
-                success = false;
-            }
-        }
-
-        //Load Controller
-        controller = SDL_GameControllerOpen(0);
-        if(controller == nullptr) {
-            SDL_Log( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
-        }
-
-        SDL_GameControllerAddMappingsFromFile("resources/mapping.txt");
-
-        char appDataPath[MAX_PATH];
-        if (SHGetFolderPathA(nullptr, CSIDL_APPDATA , nullptr, 0, appDataPath) != S_OK) {
-            SDL_Log("Failed to get AppData path");
-            success = false;
-        }
-
-        // Append the new folder name to the AppData path
-        std::string folderName = "OverGravity";
-        gameFilesPath =  std::string(appDataPath) + "\\" + folderName;
-
-        // Create the folder
-        if (CreateDirectoryA(gameFilesPath.c_str(), nullptr) || GetLastError() == ERROR_ALREADY_EXISTS) {
-            std::string destinationFile = std::string(gameFilesPath) + "\\level1.csv";
-            if (CopyFileA("resources/levels/level1.csv", destinationFile.c_str(), FALSE)) {
-                SDL_Log("Copied level1.csv");
-            } else {
-                SDL_Log("Failed to copy level files: ", GetLastError());
-            }
-        } else {
-            SDL_Log("Failed to create folder. Error: ", SDL_GetError());
-            success = false;
-        }
+bool init();
+void close();
+void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::vector<Entity*>& allCharacterEntities);
+void renderPlatforms(std::list<Platform*>& platforms);
+std::vector<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, std::vector<Spawn>* spawns);
+void loadLevelFromCSV(std::string filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
 
 
-    }
-
-    return success;
-}
-
-void close() {
-    SDL_DestroyWindow(gameWindow);
-    gameWindow = nullptr;
-
-    IMG_Quit();
-    SDL_Quit();
-}
-
-std::vector<Entity> getEntities(const int waveNumber,const int divisor, std::vector<Spawn>* spawns) {
-    std::vector<Entity> entities;
-    for(int i = 1; i <= waveNumber; i++) {
-        if(i % divisor == 0) {
-            entities.emplace_back(spawns,gameRenderer);
-        }
-    }
-    return entities;
-}
-
-void loadLevel(std::string filePath,std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns) {
-    std::ifstream file((filePath).c_str());
-    if (!file.is_open()) {
-        SDL_Log("Could not load level file!");
-    }
-    const int MAX_ROWS = 100;
-    const int MAX_COLS = 3;
-    std::string data[MAX_ROWS][MAX_COLS];
-    std::string line;
-    int row = 0;
-    // Store the CSV data from the CSV file to the 2D array
-    while (getline(file, line) && row < MAX_ROWS) {
-        std::stringstream ss(line);
-        std::string cell;
-        int col = 0;
-        while (getline(ss, cell, ',') && col < MAX_COLS) {
-            data[row][col] = cell;
-            col++;
-        }
-        row++;
-    }
-    file.close();
-
-    for (int i = 0; i < row; i++) {
-        if(stoi(data[i][0]) == 0) {
-            platforms.emplace_back(stoi(data[i][1]),stoi(data[i][2])+25,gameRenderer);
-        }
-        if(stoi(data[i][0]) == 1) {
-            playerSpawns.emplace_back(stoi(data[i][1]),stoi(data[i][2])+25,54,54);
-        }
-        if(stoi(data[i][0]) == 2) {
-            enemySpawns.emplace_back(stoi(data[i][1]),stoi(data[i][2])+25,54,54);
-        }
-    }
-}
+bool developerMode = false;
 
 int main( int argc, char* args[] ) {
     if(!init()) {
@@ -154,8 +48,8 @@ int main( int argc, char* args[] ) {
         std::list<Platform> ePlatforms;
         std::vector<Spawn> enemySpawns;
         std::vector<Spawn> playerSpawns;
-        SDL_Log((gameFilesPath + "\\level1.csv").c_str());
-        loadLevel(gameFilesPath + "\\level1.csv", ePlatforms, enemySpawns, playerSpawns);
+
+        loadLevelFromCSV((gameFilesPath + "\\level1.csv"), ePlatforms, enemySpawns, playerSpawns);
 
         std::vector<Spawn*> allSpawns;
         for(auto it = enemySpawns.begin(); it != enemySpawns.end(); it++) {
@@ -182,7 +76,8 @@ int main( int argc, char* args[] ) {
         bool leftFacing = false;
         bool rightFacing = false;
 
-        bool developerMode = true;
+
+        bool waveOverride = false;
 
         int timpyXVelocity = 350*SCALE_FACTOR;
         bool canShoot = true;
@@ -191,12 +86,13 @@ int main( int argc, char* args[] ) {
 
         bool inWave = true;
         int waveNumber = 1;
+        int playerCombo = 0;
 
         //Game Loop
         while(!quit) {
             inWave = true;
             waveNumber++;
-            std::vector<Entity> eRobots = getEntities(waveNumber,1, &enemySpawns);
+            std::vector<Entity> eRobots = getWaveEnemyEntities(waveNumber,1, &enemySpawns);
             std::vector<Robor> robors;
             std::vector<Entity*> allCharacterEntities;
             allCharacterEntities.push_back(timpy.getEntity());
@@ -213,6 +109,13 @@ int main( int argc, char* args[] ) {
                     if( e.type == SDL_QUIT ) {
                         quit = true;
                     } else if( e.type == SDL_KEYDOWN ) {
+                        if(e.key.keysym.sym == SDLK_1) {
+                            developerMode = !developerMode;
+                        }
+                        if(e.key.keysym.sym == SDLK_2) {
+                            waveNumber = 30;
+                            waveOverride = true;
+                        }
                         if(e.key.keysym.sym == SDLK_d) {
                             timpy.getEntity()->setXVelocity(timpyXVelocity);
                             rightMovement = true;
@@ -307,13 +210,7 @@ int main( int argc, char* args[] ) {
 
                 SDL_RenderClear(gameRenderer);
 
-                SDL_SetRenderDrawColor(gameRenderer, 0, 0, 255, 255);
-                for (auto it = platforms.begin(); it != platforms.end(); it++) {
-                    (*it)->render();
-                    if(developerMode) {
-                        SDL_RenderDrawRect(gameRenderer,&(*it)->getPlatformRect());
-                    }
-                }
+
 
                 bool robotAlive = false;
                 bool playerAlive = true;
@@ -361,25 +258,15 @@ int main( int argc, char* args[] ) {
                                 bullets.erase(bit);
                             }
                         }
-
                         if(developerMode) {
                             SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                         }
-
                     }
                 }
 
-                for (auto sit = allSpawns.begin(); sit != allSpawns.end(); sit++) {
-                    (*sit)->setOccupied(false);
-                    for (auto it = allCharacterEntities.begin(); it != allCharacterEntities.end(); it++) {
-                        if(Entity::isColliding((*sit)->getRect(),(*it)->getRect())) {
-                            (*sit)->setOccupied(true);
-                        }
-                    }
-                }
-
-                if(!playerAlive) {
+                if(!playerAlive || waveOverride) {
                     inWave = false;
+                    waveOverride = false;
                 } else {
                     inWave = robotAlive;
                 }
@@ -404,6 +291,9 @@ int main( int argc, char* args[] ) {
                     SDL_RenderFillRect(gameRenderer,&timpy.playerHealth2);
                 }
 
+                renderPlatforms(platforms);
+
+                checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);
@@ -414,8 +304,139 @@ int main( int argc, char* args[] ) {
 
     SDL_Quit();
     TTF_Quit();
-
     close();
-
     return 0;
+}
+
+void renderPlatforms(std::list<Platform*>& platforms) {
+    SDL_SetRenderDrawColor(gameRenderer, 0, 0, 255, 255);
+    for (auto it = platforms.begin(); it != platforms.end(); it++) {
+        (*it)->render();
+        if(developerMode) {
+            SDL_RenderDrawRect(gameRenderer,&(*it)->getPlatformRect());
+        }
+    }
+}
+
+void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::vector<Entity*>& allCharacterEntities) {
+    for (auto sit = allSpawns.begin(); sit != allSpawns.end(); sit++) {
+        (*sit)->setOccupied(false);
+        for (auto it = allCharacterEntities.begin(); it != allCharacterEntities.end(); it++) {
+            if(Entity::isColliding((*sit)->getRect(),(*it)->getRect())) {
+                (*sit)->setOccupied(true);
+            }
+        }
+    }
+}
+
+std::vector<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, std::vector<Spawn>* spawns) {
+    std::vector<Entity> entities;
+    for(int i = 1; i <= waveNumber; i++) {
+        if(i % divisor == 0) {
+            entities.emplace_back(spawns,gameRenderer);
+        }
+    }
+    return entities;
+}
+
+void loadLevelFromCSV(std::string filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns) {
+    std::ifstream file((filePath).c_str());
+    if (!file.is_open()) {
+        SDL_Log("Could not load level file!");
+    }
+    const int MAX_ROWS = 100;
+    const int MAX_COLS = 3;
+    std::string data[MAX_ROWS][MAX_COLS];
+    std::string line;
+    int row = 0;
+    // Store the CSV data from the CSV file to the 2D array
+    while (getline(file, line) && row < MAX_ROWS) {
+        std::stringstream ss(line);
+        std::string cell;
+        int col = 0;
+        while (getline(ss, cell, ',') && col < MAX_COLS) {
+            data[row][col] = cell;
+            col++;
+        }
+        row++;
+    }
+    file.close();
+    for (int i = 0; i < row; i++) {
+        if(std::stoi(data[i][0]) == 0) {
+            platforms.emplace_back(std::stoi(data[i][1]),std::stoi(data[i][2])+25,gameRenderer);
+        }
+        if(std::stoi(data[i][0]) == 1) {
+            playerSpawns.emplace_back(std::stoi(data[i][1]),std::stoi(data[i][2])+25,54,54);
+        }
+        if(std::stoi(data[i][0]) == 2) {
+            enemySpawns.emplace_back(std::stoi(data[i][1]),std::stoi(data[i][2])+25,54,54);
+        }
+    }
+}
+
+bool init() {
+    bool success = true;
+
+    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK ) < 0 ) {
+        SDL_Log( "SDL could not initialize! SDL Error: %s\n", SDL_GetError() );
+        success = false;
+    } else if (TTF_Init() < 0) {
+        SDL_Log( "TTF could not initialize! SDL Error: %s\n", SDL_GetError() );
+        success = false;
+    } else {
+        gameWindow = SDL_CreateWindow("OverGravity", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+        if (gameWindow == nullptr) {
+            SDL_Log( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
+            success = false;
+        } else {
+            gameRenderer = SDL_CreateRenderer(gameWindow,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+            if(gameRenderer == nullptr) {
+                SDL_Log("Game renderer could not be created! SDL ERROR: %s\n", SDL_GetError());
+                success = false;
+            }
+        }
+
+        //Load Controller
+        controller = SDL_GameControllerOpen(0);
+        if(controller == nullptr) {
+            SDL_Log( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
+        }
+
+        SDL_GameControllerAddMappingsFromFile("resources/mapping.txt");
+
+        char appDataPath[MAX_PATH];
+        if (SHGetFolderPathA(nullptr, CSIDL_APPDATA , nullptr, 0, appDataPath) != S_OK) {
+            SDL_Log("Failed to get AppData path");
+            success = false;
+        }
+
+        // Append the new folder name to the AppData path
+        std::string folderName = "OverGravity";
+        gameFilesPath =  std::string(appDataPath) + "\\" + folderName;
+
+        // Create the folder
+        if (CreateDirectoryA(gameFilesPath.c_str(), nullptr) || GetLastError() == ERROR_ALREADY_EXISTS) {
+            std::string destinationFile = std::string(gameFilesPath) + "\\level1.csv";
+            if (CopyFileA("resources/levels/level1.csv", destinationFile.c_str(), FALSE)) {
+                SDL_Log("Copied level1.csv");
+            } else {
+                SDL_Log("Failed to copy level files: ", GetLastError());
+            }
+        } else {
+            SDL_Log("Failed to create folder. Error: ", SDL_GetError());
+            success = false;
+        }
+
+
+    }
+
+    return success;
+}
+
+void close() {
+    SDL_DestroyWindow(gameWindow);
+    gameWindow = nullptr;
+
+    IMG_Quit();
+    SDL_Quit();
 }

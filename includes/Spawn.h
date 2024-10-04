@@ -29,6 +29,4 @@ private:
 
 };
 
-
-
 #endif //SPAWN_H

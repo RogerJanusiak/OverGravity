@@ -5,8 +5,8 @@
 #include "../includes/Platform.h"
 
 Platform::Platform(int x, int y, SDL_Renderer* renderer) {
-    box.x = x*1.5;
-    box.y = (y-25)*1.5;
+    box.x = x*SCALE_FACTOR;
+    box.y = (y-25)*SCALE_FACTOR;
     box.h = height;
     box.w = width;
 

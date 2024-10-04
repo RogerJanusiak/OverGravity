@@ -20,6 +20,7 @@ Entity::Entity(const int x,const int y,const int Vx,const int Vy,SDL_Renderer *t
     entityRect.h = 0;
     xVelocity = Vx;
     yVelocity = Vy;
+    spawns = nullptr;
     gameRender = tempGameRenderer;
 }
 
@@ -30,7 +31,7 @@ void Entity::render() const {
 Platform* Entity::onPlatform(const std::list<Platform*> &platforms,const int y) const {
     const int enemyLeft = entityRect.x+18;
     const int enemyRight = entityRect.x + entityRect.w-18;
-    const int enemyTop = y+60;
+    const int enemyTop = y;
     const int enemyBottom = y + entityRect.h;
 
     for (auto platform : platforms) {
@@ -65,8 +66,18 @@ void Entity::move(float dt,const std::list<Platform*> &platforms) {
         entityRect.y = currentPlatform->getPlatformRect().y-entityRect.h;
         yVelocity = 0;
     }
-
 }
+
+void Entity::spawn() {
+    auto currentSpawnIt = spawns->begin() + (rand() % spawns->size());
+    if(!currentSpawnIt->getOccupied()) {
+        spawned = true;
+        setPosition(currentSpawnIt->getX(),currentSpawnIt->getY());
+        setYVelocity(0);
+        currentSpawnIt->setOccupied(true);
+    }
+}
+
 
 bool Entity::isColliding(SDL_Rect& rectA, const SDL_Rect& rectB) {
     if (rectA.y + rectA.h >= rectB.y && rectA.y <= rectB.y + rectB.h && rectA.x + rectA.w >= rectB.x && rectA.x <= rectB.x + rectB.w) {

@@ -14,7 +14,6 @@ add_executable(${PROJECT_NAME} src/main.cpp
         includes/Entity.h
         src/Bullet.cpp
         includes/Bullet.h
-        src/Spawn.cpp
         includes/Spawn.h
         includes/Bullet.h)
 

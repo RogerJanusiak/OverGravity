@@ -1,16 +1,14 @@
-//
-// Created by Roger Janusiak on 9/27/24.
-//
-
 #ifndef GLOBALCONSTANTS_H
 #define GLOBALCONSTANTS_H
 
-const int WINDOW_WIDTH = 800*1.5;
-const int WINDOW_HEIGHT = 455*1.5;
-const int ACCELERATION = 10000;
+const double SCALE_FACTOR = 1.5;
+
+const int WINDOW_WIDTH = 800*SCALE_FACTOR;
+const int WINDOW_HEIGHT = 450*SCALE_FACTOR;
+const int ACCELERATION = 7000*SCALE_FACTOR;
 
 const int FIRE_RATE = 0.25;
 
-const double SCALE_FACTOR = 1.5;
+const int JOYSTICK_DEAD_ZONE = 8000;
 
 #endif //GLOBALCONSTANTS_H

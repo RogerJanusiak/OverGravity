@@ -21,8 +21,8 @@ public:
 
 private:
 
-    const int width = 4;
-    const int height = 4;
+    const int width = 3*SCALE_FACTOR;
+    const int height = 3*SCALE_FACTOR;
 
     std::list<Entity>::iterator iterator;
 

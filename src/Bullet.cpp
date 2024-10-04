@@ -14,7 +14,7 @@ Bullet::Bullet(Entity* tempEntity) : entity(tempEntity) {
 
 bool Bullet::move(float dt) const {
     entity->setPosition(entity->getRect().x + entity->getXVelocity()*dt,entity->getRect().y);
-    if(entity->getRect().x > 1200 || entity->getRect().x < 0) {
+    if(entity->getRect().x > WINDOW_WIDTH || entity->getRect().x < 0) {
         return true;
     }
     return false;

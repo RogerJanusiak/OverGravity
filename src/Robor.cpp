@@ -17,20 +17,28 @@ Robor::Robor(Entity *entity) {
 }
 
 void Robor::move(float dt,const std::list<Platform*> &platforms) {
+    if(roborEntity->justSpawned) {
+        roborEntity->justSpawned = false;
+        if(roborEntity->getRect().x <=400*SCALE_FACTOR) {
+            roborEntity->setXVelocity(200*SCALE_FACTOR);
+        } else {
+            roborEntity->setXVelocity(-200*SCALE_FACTOR);
+        }
+    }
     roborEntity->move(dt,platforms);
-    if(roborEntity->getRect().x >= 1200) {
+    if(roborEntity->getRect().x >= WINDOW_WIDTH) {
         roborEntity->setPosition(10,roborEntity->getRect().y);
     }
 
-    if(roborEntity->getRect().y >= 683) {
-        roborEntity->setPosition(0,46);
+    if(roborEntity->getRect().y >= WINDOW_HEIGHT) {
+        roborEntity->despawn();
     }
 
     if(roborEntity->getRect().x <= 0) {
-        roborEntity->setPosition(1190, roborEntity->getRect().y);
+        roborEntity->setPosition(WINDOW_WIDTH-10*SCALE_FACTOR, roborEntity->getRect().y);
     }
 
-    if(rand() % 500 == 1 && roborEntity->getRect().x <= 1000 && roborEntity->getRect().x >= 200) {
+    if(rand() % 500 == 1 && roborEntity->getRect().x <= 670*SCALE_FACTOR && roborEntity->getRect().x >= 140*SCALE_FACTOR) {
         roborEntity->setXVelocity(roborEntity->getXVelocity()*-1);
     }
 

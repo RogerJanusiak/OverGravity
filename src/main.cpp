@@ -3,6 +3,7 @@
 #include <list>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <sstream>
 #include <vector>
 
@@ -18,13 +19,19 @@ class Spawn;
 SDL_Window *gameWindow = nullptr;
 SDL_Renderer *gameRenderer = nullptr;
 
+//Game Controller 1 handler
+SDL_GameController* controller;
+
 bool isColliding(SDL_Rect a, SDL_Rect b);
 
 bool init() {
     bool success = true;
 
-    if( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
+    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK ) < 0 ) {
         SDL_Log( "SDL could not initialize! SDL Error: %s\n", SDL_GetError() );
+        success = false;
+    } else if (TTF_Init() < 0) {
+        SDL_Log( "TTF could not initialize! SDL Error: %s\n", SDL_GetError() );
         success = false;
     } else {
         gameWindow = SDL_CreateWindow("OverGravity", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
@@ -38,6 +45,19 @@ bool init() {
                 success = false;
             }
         }
+
+        //Load Controller
+        controller = SDL_GameControllerOpen(0);
+        if(controller == nullptr) {
+            SDL_Log( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
+        }
+
+
+        int joysticks = SDL_NumJoysticks();
+        SDL_Log("There are %d joysticks connected.\n", joysticks);
+
+        SDL_GameControllerAddMappingsFromFile("../resources/mapping.txt");
+
     }
 
     return success;
@@ -51,17 +71,17 @@ void close() {
     SDL_Quit();
 }
 
-std::vector<Entity> getEntities(const int waveNumber,const int divisor) {
-    std::vector<Entity> etities;
+std::vector<Entity> getEntities(const int waveNumber,const int divisor, std::vector<Spawn>* spawns) {
+    std::vector<Entity> entities;
     for(int i = 1; i <= waveNumber; i++) {
         if(i % divisor == 0) {
-            etities.emplace_back(10,40,350,0,gameRenderer);
+            entities.emplace_back(spawns,gameRenderer);
         }
     }
-    return etities;
+    return entities;
 }
 
-void loadLevel(std::string filePath,std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, Spawn& playerSpawn) {
+void loadLevel(std::string filePath,std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns) {
     std::ifstream file(("../resources/levels/" + filePath).c_str());
     if (!file.is_open()) {
         SDL_Log("Could not load level file!");
@@ -84,13 +104,12 @@ void loadLevel(std::string filePath,std::list<Platform>& platforms, std::vector<
     }
     file.close();
 
-    // Print the data stored in the 2D array
     for (int i = 0; i < row; i++) {
         if(stoi(data[i][0]) == 0) {
             platforms.emplace_back(stoi(data[i][1]),stoi(data[i][2])+25,gameRenderer);
         }
         if(stoi(data[i][0]) == 1) {
-            playerSpawn.init(stoi(data[i][1]),stoi(data[i][2])+25,54,54);
+            playerSpawns.emplace_back(stoi(data[i][1]),stoi(data[i][2])+25,54,54);
         }
         if(stoi(data[i][0]) == 2) {
             enemySpawns.emplace_back(stoi(data[i][1]),stoi(data[i][2])+25,54,54);
@@ -109,9 +128,17 @@ int main( int argc, char* args[] ) {
 
         std::list<Platform> ePlatforms;
         std::vector<Spawn> enemySpawns;
-        Spawn playerSpawn;
+        std::vector<Spawn> playerSpawns;
 
-        loadLevel("level1.csv", ePlatforms, enemySpawns, playerSpawn);
+        loadLevel("level1.csv", ePlatforms, enemySpawns, playerSpawns);
+
+        std::vector<Spawn*> allSpawns;
+        for(auto it = enemySpawns.begin(); it != enemySpawns.end(); it++) {
+            allSpawns.push_back(&*it);
+        }
+        for(auto it = playerSpawns.begin(); it != playerSpawns.end(); it++) {
+            allSpawns.push_back(&*it);
+        }
 
         std::list<Platform*> platforms;
         for(auto it = ePlatforms.begin(); it != ePlatforms.end(); it++) {
@@ -121,33 +148,39 @@ int main( int argc, char* args[] ) {
         std::list<Entity> eBullets;
         std::list<Bullet> bullets;
 
-        Entity eTimpy = Entity(playerSpawn.getX(),playerSpawn.getY(),0,0,gameRenderer);
-        Player timpy = Player(&eTimpy, playerSpawn);
-
+        Entity eTimpy = Entity(&playerSpawns,gameRenderer);
+        Player timpy = Player(&eTimpy);
+        timpy.getEntity()->spawn();
         bool leftMovement = false;
         bool rightMovement = false;
 
         bool leftFacing = false;
         bool rightFacing = false;
 
-        int timpyXVelocity = 400;
+        bool developerMode = true;
+
+        int timpyXVelocity = 400*SCALE_FACTOR;
         bool canShoot = true;
 
         float lastShotTimeDifference = 0;
 
         bool inWave = true;
-        int waveNumber = 30;
+        int waveNumber = 1;
 
         //Game Loop
         while(!quit) {
             inWave = true;
             waveNumber++;
-            std::vector<Entity> eRobots = getEntities(waveNumber,1);
+            std::vector<Entity> eRobots = getEntities(waveNumber,1, &enemySpawns);
             std::vector<Robor> robors;
+            std::vector<Entity*> allCharacterEntities;
+            allCharacterEntities.push_back(timpy.getEntity());
+
             for (auto it = eRobots.begin(); it != eRobots.end(); it++) {
                 robors.emplace_back(&(*it));
+                allCharacterEntities.push_back(&(*it));
             }
-            int currentEnemySpawn = 0;
+            timpy.getEntity()->spawn();
 
             while(inWave && !quit) {
                 //Controls Loop
@@ -196,18 +229,39 @@ int main( int argc, char* args[] ) {
                         if(e.key.keysym.sym == SDLK_j) {
                             leftFacing = false;
                         }
+                    } else if( e.type == SDL_JOYAXISMOTION ) {
 
+                        if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX) > JOYSTICK_DEAD_ZONE) {
+                            timpy.setDirection(true);
+                            rightFacing = true;
+                            leftFacing = false;
+                        } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX) < -JOYSTICK_DEAD_ZONE) {
+                            timpy.setDirection(false);
+                            leftFacing = true;
+                            rightFacing = false;
+                        } else {
+                            rightFacing = false;
+                            leftFacing = false;
+                        }
+
+                        if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
+                            timpy.getEntity()->setXVelocity(timpyXVelocity);
+                        } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) < -JOYSTICK_DEAD_ZONE) {
+                            timpy.getEntity()->setXVelocity(-timpyXVelocity);
+                        } else {
+                            timpy.getEntity()->setXVelocity(0);
+                        }
 
                     }
                 }
 
                 if(rightFacing && canShoot && timpy.getWeapon() == 1) {
-                    eBullets.emplace_back(timpy.getEntity()->getRect().x+90,timpy.getEntity()->getRect().y+28,1000,0,gameRenderer);
+                    eBullets.emplace_back(timpy.getEntity()->getRect().x+60*SCALE_FACTOR,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,1000*SCALE_FACTOR,0,gameRenderer);
                     bullets.emplace_back(&eBullets.back());
                     bullets.back().setIterator(--eBullets.end());
                     canShoot = false;
                 } else if(leftFacing && canShoot && timpy.getWeapon() == 1) {
-                    eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+28,-1000,0,gameRenderer);
+                    eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,-1000*SCALE_FACTOR,0,gameRenderer);
                     bullets.emplace_back(&eBullets.back());
                     bullets.back().setIterator(--eBullets.end());
                     canShoot = false;
@@ -226,11 +280,13 @@ int main( int argc, char* args[] ) {
 
                 SDL_RenderClear(gameRenderer);
 
-                SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
-                for (auto platform : platforms)
-                    platform->render();
-
-                const SDL_Rect* playerRect = &timpy.getEntity()->getRect();
+                SDL_SetRenderDrawColor(gameRenderer, 0, 0, 255, 255);
+                for (auto it = platforms.begin(); it != platforms.end(); it++) {
+                    (*it)->render();
+                    if(developerMode) {
+                        SDL_RenderDrawRect(gameRenderer,&(*it)->getPlatformRect());
+                    }
+                }
 
                 bool robotAlive = false;
                 bool playerAlive = true;
@@ -242,24 +298,13 @@ int main( int argc, char* args[] ) {
                         bullets.erase(it);
                     }
                 }
-
+                SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
                 for (auto it = robors.begin(); it != robors.end(); it++) {
                     if(!it->getEntity()->isSpawned()) {
-                        if(!enemySpawns[currentEnemySpawn].getOccupied()) {
-                            it->getEntity()->setSpawned(true);
-                            it->getEntity()->setPosition(enemySpawns[currentEnemySpawn].getX(),enemySpawns[currentEnemySpawn].getX());
-                            robotAlive = true;
-                            enemySpawns[currentEnemySpawn].setOccupied(true);
-                            if (currentEnemySpawn < enemySpawns.size()-1) {
-                                currentEnemySpawn++;
-                            } else {
-                                currentEnemySpawn = 0;
-                            }
-                        }
+                        it->getEntity()->spawn();
                     }
                     if(it->alive && it->getEntity()->isSpawned()) {
                         robotAlive = true;
-                        const SDL_Rect* robotRect = &it->getEntity()->getRect();
 
                         it->move(dt, platforms);
                         it->render();
@@ -267,12 +312,18 @@ int main( int argc, char* args[] ) {
                             it->alive = false;
                         } else {
                             if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
-                                playerAlive = false;
-                                waveNumber = 1;
-                                timpy.getEntity()->setPosition(timpy.getSpawn().getX(),timpy.getSpawn().getY());
+                                if(timpy.getHP() == 2) {
+                                    timpy.damage();
+                                    timpy.getEntity()->despawn();
+                                    timpy.getEntity()->spawn();
+                                } else if (timpy.getHP() == 1) {
+                                    playerAlive = false;
+                                    waveNumber = 1;
+                                    timpy.setHP(2);
+                                    timpy.getEntity()->despawn();
+                                }
                             }
                         }
-
                         for(auto bit = bullets.begin(); bit != bullets.end(); bit++) {
                             if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
                                 it->alive = false;
@@ -280,27 +331,59 @@ int main( int argc, char* args[] ) {
                                 bullets.erase(bit);
                             }
                         }
-                        for(auto enemySpawn : enemySpawns) {
-                            if(Entity::isColliding(enemySpawn.getRect(),it->getEntity()->getRect())) {
-                                enemySpawn.setOccupied(true);
-                            }
+
+                        if(developerMode) {
+                            SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
+                        }
+
+                    }
+                }
+
+                for (auto sit = allSpawns.begin(); sit != allSpawns.end(); sit++) {
+                    (*sit)->setOccupied(false);
+                    for (auto it = allCharacterEntities.begin(); it != allCharacterEntities.end(); it++) {
+                        if(Entity::isColliding((*sit)->getRect(),(*it)->getRect())) {
+                            (*sit)->setOccupied(true);
                         }
                     }
                 }
+
                 if(!playerAlive) {
                     inWave = false;
                 } else {
                     inWave = robotAlive;
                 }
+                if(timpy.getEntity()->isSpawned()) {
+                    timpy.move(dt, platforms);
+                    timpy.render();
+                }
 
-                timpy.move(dt, platforms);
-                timpy.render();
+                SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
+                if(developerMode) {
+                    SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
+                }
 
+                if(timpy.getHP() == 2) {
+                    SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
+                    SDL_RenderFillRect(gameRenderer,&timpy.playerHealth1);
+                    SDL_RenderFillRect(gameRenderer,&timpy.playerHealth2);
+                } else if (timpy.getHP() == 1) {
+                    SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
+                    SDL_RenderFillRect(gameRenderer,&timpy.playerHealth1);
+                    SDL_SetRenderDrawColor(gameRenderer, 170, 104, 95, 255);
+                    SDL_RenderFillRect(gameRenderer,&timpy.playerHealth2);
+                }
+
+
+                SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);
             }
 
         }
     }
+
+    SDL_Quit();
+    TTF_Quit();
 
     close();
 

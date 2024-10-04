@@ -9,7 +9,7 @@
 
 class Player {
 public:
-    Player(Entity* entity, Spawn _spawn);
+    Player(Entity* entity);
 
     void move(float dt,const std::list<Platform*> &platforms);
     void render() const;
@@ -21,13 +21,16 @@ public:
     Entity* getEntity() const { return playerEntity; }
     int getWeapon() const { return currentWeapon; }
 
-    Spawn& getSpawn() { return spawn; }
+    void damage() { playerHealth--; }
+    int getHP() const { return playerHealth; }
+    void setHP(int newHP) { playerHealth = newHP; }
+
+    SDL_Rect playerHealth1;
+    SDL_Rect playerHealth2;
 
 private:
-    const int playerWidth = 80;
-    const int playerHeight = 80;
-
-    Spawn spawn;
+    const int playerWidth = 50*SCALE_FACTOR;
+    const int playerHeight = 60*SCALE_FACTOR;
 
     bool playerDirection = false;
 
@@ -37,6 +40,7 @@ private:
     Texture playerTextureLeft;
 
     int currentWeapon;
+    int playerHealth = 2;
 
     SDL_Rect weaponRect;
     Texture knifeTextureRight;

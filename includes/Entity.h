@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Platform.h"
+#include "Spawn.h"
 #include "Texture.h"
 
 
@@ -13,6 +14,7 @@ class Entity {
 public:
 
     Entity() = default;
+    Entity(std::vector<Spawn>* spawn, SDL_Renderer* renderer) : spawns(spawn), gameRender(renderer) {}
     Entity(int x, int y, int Vx, int Vy,SDL_Renderer *tempGameRenderer);
 
     void render() const;
@@ -23,7 +25,7 @@ public:
     void setDimensions (const int w, const int h) { entityRect.w = w; entityRect.h = h; }
     void setTexture (const Texture& texture) { entityTexture = texture; }
 
-    void initialize(int x, int y, int Vx, int Vy,SDL_Renderer *tempGameRenderer) {  entityRect.x = x; entityRect.y = y; yVelocity = Vy; xVelocity = Vx; gameRender = tempGameRenderer; }
+    void setPhysics(int x, int y, int Vx, int Vy) {  entityRect.x = x; entityRect.y = y; yVelocity = Vy; xVelocity = Vx; }
 
     SDL_Rect &getRect() { return entityRect; }
     Texture *getTexture() { return &entityTexture; }
@@ -32,7 +34,8 @@ public:
     SDL_Renderer* getRenderer() const { return gameRender; }
 
     bool isSpawned() const { return spawned; }
-    void setSpawned(bool _spawned) { spawned = _spawned; }
+    void spawn();
+    void despawn() { spawned = false;justSpawned = true;entityRect.x = -1000,entityRect.y = -1000; }
 
     void move(float dt,const std::list<Platform*> &platforms);
 
@@ -40,13 +43,18 @@ public:
 
     Platform* onPlatform(const std::list<Platform*> &platforms, int y) const;
 
+    bool justSpawned = true;
+
 private:
-    float xVelocity;
-    float yVelocity;
+    float xVelocity = 0;
+    float yVelocity = 0;
     //TO-DO: Render the texture once in main.cpp and then pass it to the entity.
     Texture entityTexture;
 
+    std::vector<Spawn>* spawns;
     bool spawned = false;
+
+    bool isOnPlatform = true;
 
     SDL_Rect entityRect;
     SDL_Renderer* gameRender;

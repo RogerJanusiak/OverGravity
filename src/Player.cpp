@@ -7,22 +7,32 @@
 #include "../includes/GlobalConstants.h"
 #include "../includes/Platform.h"
 
-Player::Player(Entity* entity, Spawn _spawn) : playerEntity(entity), spawn(_spawn) {
+Player::Player(Entity* entity) : playerEntity(entity) {
 
     currentWeapon = 1;
 
     weaponRect.x = 0;
     weaponRect.y = 0;
-    weaponRect.w = 64;
-    weaponRect.h = 16;
+    weaponRect.w = 42*SCALE_FACTOR;
+    weaponRect.h = 10*SCALE_FACTOR;
+
+    playerHealth1.x = 15*SCALE_FACTOR;
+    playerHealth1.y = WINDOW_HEIGHT-45*SCALE_FACTOR;
+    playerHealth1.w = 30*SCALE_FACTOR;
+    playerHealth1.h = 30*SCALE_FACTOR;
+
+    playerHealth2.x = 15*SCALE_FACTOR;
+    playerHealth2.y = WINDOW_HEIGHT-85*SCALE_FACTOR;
+    playerHealth2.w = 30*SCALE_FACTOR;
+    playerHealth2.h = 30*SCALE_FACTOR;
 
     playerEntity->setDimensions(playerWidth,playerHeight);
     playerTextureLeft.setup(playerWidth,playerHeight,playerEntity->getRenderer());
     playerTextureRight.setup(playerWidth,playerHeight,playerEntity->getRenderer());
-    knifeTextureLeft.setup(64,32,playerEntity->getRenderer());
-    knifeTextureRight.setup(64,32,playerEntity->getRenderer());
-    revolverTextureLeft.setup(64,32,playerEntity->getRenderer());
-    revolverTextureRight.setup(64,32,playerEntity->getRenderer());
+    knifeTextureLeft.setup(42*SCALE_FACTOR,21*SCALE_FACTOR,playerEntity->getRenderer());
+    knifeTextureRight.setup(42*SCALE_FACTOR,21*SCALE_FACTOR,playerEntity->getRenderer());
+    revolverTextureLeft.setup(42*SCALE_FACTOR,21*SCALE_FACTOR,playerEntity->getRenderer());
+    revolverTextureRight.setup(42*SCALE_FACTOR,21*SCALE_FACTOR,playerEntity->getRenderer());
 
     if(!playerTextureRight.loadFromFile("resources/Timpy.png")) {
         SDL_Log("Could not load TimpyRight texture!");
@@ -52,45 +62,42 @@ void Player::render() const {
 
     if(currentWeapon == 1) {
         if(playerDirection) {
-            revolverTextureRight.render(playerEntity->getRect().x+60,playerEntity->getRect().y+22);
+            revolverTextureRight.render(playerEntity->getRect().x+40*SCALE_FACTOR,playerEntity->getRect().y+15*SCALE_FACTOR);
         } else {
-            revolverTextureLeft.render(playerEntity->getRect().x-40,playerEntity->getRect().y+22);
+            revolverTextureLeft.render(playerEntity->getRect().x-27*SCALE_FACTOR,playerEntity->getRect().y+15*SCALE_FACTOR);
         }
     } else {
         if(playerDirection) {
-            knifeTextureRight.render(playerEntity->getRect().x+60,playerEntity->getRect().y+22);
+            knifeTextureRight.render(playerEntity->getRect().x+40*SCALE_FACTOR,playerEntity->getRect().y+15*SCALE_FACTOR);
         } else {
-            knifeTextureLeft.render(playerEntity->getRect().x-40,playerEntity->getRect().y+22);
+            knifeTextureLeft.render(playerEntity->getRect().x-27*SCALE_FACTOR,playerEntity->getRect().y+15*SCALE_FACTOR);
         }
     }
-
-
-
 }
 
 void Player::move(float dt,const std::list<Platform*> &platforms) {
     playerEntity->move(dt,platforms);
 
     if(playerDirection) {
-        weaponRect.x = playerEntity->getRect().x+60;
+        weaponRect.x = playerEntity->getRect().x+40*SCALE_FACTOR;
     } else {
-        weaponRect.x = playerEntity->getRect().x-40;
+        weaponRect.x = playerEntity->getRect().x-27*SCALE_FACTOR;
     }
 
-    weaponRect.y = playerEntity->getRect().y+30;
+    weaponRect.y = playerEntity->getRect().y+20*SCALE_FACTOR;
 
-    if(playerEntity->getRect().x >= 1200) {
-        playerEntity->setPosition(-64,playerEntity->getRect().y);
+    if(playerEntity->getRect().x >= WINDOW_WIDTH) {
+        playerEntity->setPosition(-40*SCALE_FACTOR,playerEntity->getRect().y);
     }
 
-    if(playerEntity->getRect().y >= 683) {
+    if(playerEntity->getRect().y >= WINDOW_HEIGHT) {
         playerEntity->setYVelocity(0);
         playerEntity->setXVelocity(0);
-        playerEntity->setPosition(spawn.getX(),spawn.getY());
+        playerEntity->spawn();
     }
 
-    if(playerEntity->getRect().x < -64) {
-        playerEntity->setPosition(1200, playerEntity->getRect().y);
+    if(playerEntity->getRect().x < -40*SCALE_FACTOR) {
+        playerEntity->setPosition(WINDOW_WIDTH, playerEntity->getRect().y);
     }
 
     playerEntity->getRect().x += playerEntity->getXVelocity()*dt;

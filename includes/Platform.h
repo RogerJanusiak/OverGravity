@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+#include "GlobalConstants.h"
 #include "Texture.h"
 
 
@@ -20,8 +21,8 @@ private:
     SDL_Rect box;
     Texture texture;
 
-    const int width = 110*1.5;
-    const int height = 17*1.5;
+    const int width = 110*SCALE_FACTOR;
+    const int height = 17*SCALE_FACTOR;
 
 };
 

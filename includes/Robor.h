@@ -22,8 +22,8 @@ public:
     bool alive = true;
 
 private:
-    const int enemyWidth = 35;
-    const int enemyHeight = 75;
+    const int enemyWidth = 24*SCALE_FACTOR;
+    const int enemyHeight = 50*SCALE_FACTOR;
 
     Entity* roborEntity;
 };

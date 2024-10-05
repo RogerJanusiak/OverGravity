@@ -15,7 +15,7 @@ Robor::Robor(Entity *entity) {
     }
 }
 
-void Robor::move(float dt,const std::list<Platform*> &platforms) {
+void Robor::move(const float dt,const std::list<Platform*> &platforms) const {
     if(roborEntity->justSpawned) {
         roborEntity->justSpawned = false;
         if(roborEntity->getRect().x <=400*SCALE_FACTOR) {

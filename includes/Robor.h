@@ -11,7 +11,7 @@ class Robor {
 public:
     explicit Robor(Entity* entity);
 
-    void move(float dt,const std::list<Platform*> &platforms);
+    void move(float dt,const std::list<Platform*> &platforms) const;
     void render() const { roborEntity->render(); }
     Entity* getEntity() const { return roborEntity; }
 

@@ -10,8 +10,8 @@ class Spawn {
 public:
 
     Spawn() = default;
-    Spawn(int x, int y, int w, int h) { init(x, y-25, w, h); }
-    void init(int x, int y, int w, int h) { rect.x = x*SCALE_FACTOR; rect.y = y*SCALE_FACTOR; rect.w = w*SCALE_FACTOR; rect.h = h*SCALE_FACTOR; }
+    Spawn(const int x, const int y, const int w, const int h) { init(x, y-25, w, h); }
+    void init(const int x, const int y, const int w, const int h) { rect.x = x*SCALE_FACTOR; rect.y = y*SCALE_FACTOR; rect.w = w*SCALE_FACTOR; rect.h = h*SCALE_FACTOR; }
 
     int getX() const { return rect.x; }
     int getY() const { return rect.y; }
@@ -20,7 +20,7 @@ public:
     bool getOccupied() const { return occupied; }
 
     SDL_Rect& getRect() { return rect; }
-    const SDL_Rect *getRectP() { return &rect; }
+    const SDL_Rect *getRectP() const { return &rect; }
 
 private:
 

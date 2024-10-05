@@ -1,14 +1,14 @@
 #ifndef GLOBALCONSTANTS_H
 #define GLOBALCONSTANTS_H
 
-const double SCALE_FACTOR = 1.5;
+constexpr double SCALE_FACTOR = 1.5;
 
-const int WINDOW_WIDTH = 800*SCALE_FACTOR;
-const int WINDOW_HEIGHT = 450*SCALE_FACTOR;
-const int ACCELERATION = 7000*SCALE_FACTOR;
+constexpr int WINDOW_WIDTH = 800*SCALE_FACTOR;
+constexpr int WINDOW_HEIGHT = 450*SCALE_FACTOR;
+constexpr int ACCELERATION = 7000*SCALE_FACTOR;
 
-const int FIRE_RATE = 0.25;
+constexpr int FIRE_RATE = 0.25;
 
-const int JOYSTICK_DEAD_ZONE = 8000;
+constexpr int JOYSTICK_DEAD_ZONE = 18000;
 
-#endif //GLOBALCONSTANTS_H
+#endif

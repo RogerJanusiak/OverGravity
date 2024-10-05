@@ -34,6 +34,8 @@ std::vector<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor,
 void loadLevelFromCSV(std::string filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
 
 
+TTF_Font * font;
+
 bool developerMode = false;
 
 int main( int argc, char* args[] ) {
@@ -76,7 +78,6 @@ int main( int argc, char* args[] ) {
         bool leftFacing = false;
         bool rightFacing = false;
 
-
         bool waveOverride = false;
 
         int timpyXVelocity = 350*SCALE_FACTOR;
@@ -85,7 +86,7 @@ int main( int argc, char* args[] ) {
         float lastShotTimeDifference = 0;
 
         bool inWave = true;
-        int waveNumber = 1;
+        int waveNumber = 0;
         int playerCombo = 0;
 
         //Game Loop
@@ -210,8 +211,6 @@ int main( int argc, char* args[] ) {
 
                 SDL_RenderClear(gameRenderer);
 
-
-
                 bool robotAlive = false;
                 bool playerAlive = true;
 
@@ -243,11 +242,13 @@ int main( int argc, char* args[] ) {
                                     timpy.damage();
                                     timpy.getEntity()->despawn();
                                     timpy.getEntity()->spawn();
+                                    playerCombo = 0;
                                 } else if (timpy.getHP() == 1) {
                                     playerAlive = false;
-                                    waveNumber = 1;
+                                    waveNumber = 0;
                                     timpy.setHP(2);
                                     timpy.getEntity()->despawn();
+                                    playerCombo = 0;
                                 }
                             }
                         }
@@ -256,6 +257,7 @@ int main( int argc, char* args[] ) {
                                 it->alive = false;
                                 eBullets.erase(bit->getIterator());
                                 bullets.erase(bit);
+                                playerCombo++;
                             }
                         }
                         if(developerMode) {
@@ -280,6 +282,27 @@ int main( int argc, char* args[] ) {
                     SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
                 }
 
+                renderPlatforms(platforms);
+
+                checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
+
+                SDL_Color color = { 255, 255, 255 };
+                SDL_Surface * surfaceWave = TTF_RenderText_Solid(font,("Wave: " + std::to_string(waveNumber)).c_str(), color);
+                SDL_Surface * surfaceCombo = TTF_RenderText_Solid(font,("Combo: " + std::to_string(playerCombo)).c_str(), color);
+                SDL_Texture * textureWave = SDL_CreateTextureFromSurface(gameRenderer, surfaceWave);
+                SDL_Texture * textureCombo = SDL_CreateTextureFromSurface(gameRenderer, surfaceCombo);
+
+                SDL_Rect rectWave = { 10,10,surfaceWave->w,surfaceCombo->h };
+                SDL_Rect rectCombo = { 10,50,surfaceCombo->w,surfaceCombo->h };
+
+                if(developerMode) {
+                    SDL_RenderDrawRect(gameRenderer,&rectWave);
+                    SDL_RenderDrawRect(gameRenderer,&rectCombo);
+                }
+
+                SDL_RenderCopy(gameRenderer, textureWave, NULL, &rectWave);
+                SDL_RenderCopy(gameRenderer, textureCombo, NULL, &rectCombo);
+
                 if(timpy.getHP() == 2) {
                     SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
                     SDL_RenderFillRect(gameRenderer,&timpy.playerHealth1);
@@ -291,12 +314,14 @@ int main( int argc, char* args[] ) {
                     SDL_RenderFillRect(gameRenderer,&timpy.playerHealth2);
                 }
 
-                renderPlatforms(platforms);
-
-                checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
-
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);
+
+                SDL_DestroyTexture(textureWave);
+                SDL_FreeSurface(surfaceWave);
+                SDL_DestroyTexture(textureCombo);
+                SDL_FreeSurface(surfaceCombo);
+
             }
 
         }
@@ -427,6 +452,10 @@ bool init() {
             success = false;
         }
 
+        font = TTF_OpenFont("resources/sans.ttf", 30);
+        if (font == nullptr) {
+            SDL_Log("Failed to load font: airstrike.");
+        }
 
     }
 
@@ -436,6 +465,8 @@ bool init() {
 void close() {
     SDL_DestroyWindow(gameWindow);
     gameWindow = nullptr;
+
+    TTF_CloseFont(font);
 
     IMG_Quit();
     SDL_Quit();

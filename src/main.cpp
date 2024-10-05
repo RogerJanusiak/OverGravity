@@ -87,6 +87,7 @@ int main( int argc, char* args[] ) {
         bool inWave;
         int waveNumber = 0;
         int playerCombo = 0;
+        bool topLevelShieldHit = false;
 
         //Game Loop
         while(!quit) {
@@ -244,17 +245,30 @@ int main( int argc, char* args[] ) {
                             it->alive = false;
                         } else {
                             if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
-                                if(timpy.getHP() == 2) {
-                                    timpy.damage();
+                                if(timpy.getShield() == 2) {
+                                    topLevelShieldHit = true;
+                                    timpy.decreaseShield();
                                     timpy.getEntity()->despawn();
                                     timpy.getEntity()->spawn();
                                     playerCombo = 0;
-                                } else if (timpy.getHP() == 1) {
-                                    playerAlive = false;
-                                    waveNumber = 0;
-                                    timpy.setHP(2);
+                                } else if(timpy.getShield() == 1) {
+                                    timpy.decreaseShield();
                                     timpy.getEntity()->despawn();
+                                    timpy.getEntity()->spawn();
                                     playerCombo = 0;
+                                } else {
+                                    if(timpy.getHP() == 2) {
+                                        timpy.damage();
+                                        timpy.getEntity()->despawn();
+                                        timpy.getEntity()->spawn();
+                                        playerCombo = 0;
+                                    } else if (timpy.getHP() == 1) {
+                                        playerAlive = false;
+                                        waveNumber = 0;
+                                        timpy.setHP(2);
+                                        timpy.getEntity()->despawn();
+                                        playerCombo = 0;
+                                    }
                                 }
                             }
                         }
@@ -311,15 +325,46 @@ int main( int argc, char* args[] ) {
                 SDL_RenderCopy(gameRenderer, textureWave, nullptr, &rectWave);
                 SDL_RenderCopy(gameRenderer, textureCombo, nullptr, &rectCombo);
 
-                if(timpy.getHP() == 2) {
-                    SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
-                    SDL_RenderFillRect(gameRenderer,&timpy.playerHealth1);
-                    SDL_RenderFillRect(gameRenderer,&timpy.playerHealth2);
-                } else if (timpy.getHP() == 1) {
-                    SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
-                    SDL_RenderFillRect(gameRenderer,&timpy.playerHealth1);
-                    SDL_SetRenderDrawColor(gameRenderer, 170, 104, 95, 255);
-                    SDL_RenderFillRect(gameRenderer,&timpy.playerHealth2);
+                switch(timpy.getShield()) {
+                    case 2: {
+                        SDL_SetRenderDrawColor(gameRenderer, 0, 0, 255, 255);
+                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield1);
+                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield2);
+                    } break;
+                    case 1: {
+                        SDL_SetRenderDrawColor(gameRenderer, 183, 201, 226, 255);
+                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield2);
+                        SDL_SetRenderDrawColor(gameRenderer, 0, 0, 255, 255);
+                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield1);
+                    } break;
+                    default: {
+                        SDL_SetRenderDrawColor(gameRenderer, 183, 201, 226, 255);
+                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield1);
+                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield2);
+                    } break;
+                }
+
+                switch(timpy.getHP()) {
+                    case 2: {
+                        SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
+                        SDL_RenderFillRect(gameRenderer,&timpy.playerHealth1);
+                        SDL_RenderFillRect(gameRenderer,&timpy.playerHealth2);
+                    } break;
+                    case 1: {
+                        SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
+                        SDL_RenderFillRect(gameRenderer,&timpy.playerHealth1);
+                        SDL_SetRenderDrawColor(gameRenderer, 170, 104, 95, 255);
+                        SDL_RenderFillRect(gameRenderer,&timpy.playerHealth2);
+                    } break;
+                    default:
+                        break;
+                }
+
+                if(playerCombo == 5 && (timpy.getShield() == 0 || topLevelShieldHit)) {
+                    timpy.increaseShield();
+                    topLevelShieldHit = false;
+                } else if(playerCombo == 10 && timpy.getShield() == 1) {
+                    timpy.increaseShield();
                 }
 
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);

@@ -25,6 +25,16 @@ Player::Player(Entity* entity) : playerEntity(entity) {
     playerHealth2.w = 30*SCALE_FACTOR;
     playerHealth2.h = 30*SCALE_FACTOR;
 
+    playerShield1.x = 15*SCALE_FACTOR;
+    playerShield1.y = WINDOW_HEIGHT-125*SCALE_FACTOR;
+    playerShield1.w = 30*SCALE_FACTOR;
+    playerShield1.h = 30*SCALE_FACTOR;
+
+    playerShield2.x = 15*SCALE_FACTOR;
+    playerShield2.y = WINDOW_HEIGHT-165*SCALE_FACTOR;
+    playerShield2.w = 30*SCALE_FACTOR;
+    playerShield2.h = 30*SCALE_FACTOR;
+
     playerEntity->setDimensions(playerWidth,playerHeight);
     playerTextureLeft.setup(playerWidth,playerHeight,playerEntity->getRenderer());
     playerTextureRight.setup(playerWidth,playerHeight,playerEntity->getRenderer());

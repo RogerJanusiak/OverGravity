@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(PROJECT_NAME)
+project(Over_Gravity)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -16,8 +16,6 @@ add_executable(${PROJECT_NAME} src/main.cpp
         includes/Bullet.h
         includes/Spawn.h
         includes/Bullet.h
-        src/Timer.cpp
-        src/Timer.h
 )
 
 # --- SDL2 SETUP ---

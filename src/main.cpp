@@ -16,8 +16,6 @@
 #include <shlobj.h>
 #include <SDL_ttf.h>
 
-#include "Timer.h"
-
 SDL_Window *gameWindow = nullptr;
 SDL_Renderer *gameRenderer = nullptr;
 

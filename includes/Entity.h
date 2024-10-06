@@ -52,6 +52,9 @@ private:
 
     Platform* onPlatform(const std::list<Platform*> &platforms, SDL_Rect& movementBox) const;
 
+    Platform* lastPlatform = nullptr;
+    bool offPlatform = false;
+
     std::vector<Spawn>* spawns;
     bool spawned = false;
 

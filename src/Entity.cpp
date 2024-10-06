@@ -39,11 +39,14 @@ Platform* Entity::onPlatform(const std::list<Platform*> &platforms, SDL_Rect& mo
     return nullptr;
 }
 
+//TODO: Test to see if I need to check that the entity is colliding with the platform or that I can just do the potential check
 bool Entity::move(float dt,const std::list<Platform*> &platforms) {
     Platform* currentPlatform = onPlatform(platforms,entityRect);
     getRect().x += getXVelocity()*dt;
+    float nextYPosition = entityRect.y + yVelocity*dt;
     if(currentPlatform == nullptr) {
-        float nextYPosition = entityRect.y + yVelocity*dt;
+        offPlatform = true;
+
         SDL_Rect movementBox;
         movementBox.x = entityRect.x;
         movementBox.y = entityRect.y;
@@ -54,14 +57,24 @@ bool Entity::move(float dt,const std::list<Platform*> &platforms) {
         if(potentialPlatform == nullptr) {
             entityRect.y = nextYPosition;
             yVelocity += ACCELERATION*dt;
+        } else if(lastPlatform == potentialPlatform) {
+            entityRect.y = nextYPosition;
+            yVelocity += ACCELERATION*dt;
         } else {
+            offPlatform = false;
             entityRect.y = potentialPlatform->getPlatformRect().y-entityRect.h;
             yVelocity = 0;
         }
         return true;
     } else {
-        entityRect.y = currentPlatform->getPlatformRect().y-entityRect.h;
-        yVelocity = 0;
+        if(lastPlatform == currentPlatform && offPlatform) {
+            entityRect.y = nextYPosition;
+            yVelocity += ACCELERATION*dt;
+        } else {
+            lastPlatform = currentPlatform;
+            entityRect.y = currentPlatform->getPlatformRect().y-entityRect.h;
+            yVelocity = 0;
+        }
         return false;
     }
 }
@@ -69,6 +82,7 @@ bool Entity::move(float dt,const std::list<Platform*> &platforms) {
 void Entity::spawn() {
     auto currentSpawnIt = spawns->begin() + (rand() % spawns->size());
     if(!currentSpawnIt->getOccupied()) {
+        offPlatform = false;
         spawned = true;
         setPosition(currentSpawnIt->getX(),currentSpawnIt->getY());
         setYVelocity(0);

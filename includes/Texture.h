@@ -1,6 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 #include <SDL_render.h>
+#include <SDL_ttf.h>
 #include <string>
 
 
@@ -16,7 +17,7 @@ public:
     void setup(int w, int h,SDL_Renderer *renderer);
 
     bool loadFromFile(const std::string& filePath);
-    bool loadFromRenderedText(const std::string &textureText, SDL_Color textColor);
+    bool loadFromRenderedText(const std::string &textureText, const SDL_Color &textColor,TTF_Font * font);
 
     int getWidth() const { return mWidth; }
     int getHeight() const { return mHeight; }

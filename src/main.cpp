@@ -16,6 +16,8 @@
 #include <shlobj.h>
 #include <SDL_ttf.h>
 
+#include "Timer.h"
+
 SDL_Window *gameWindow = nullptr;
 SDL_Renderer *gameRenderer = nullptr;
 
@@ -91,14 +93,21 @@ int main( int argc, char* args[] ) {
         logoTexture.setup(454*SCALE_FACTOR,92*SCALE_FACTOR,gameRenderer);
         logoTexture.loadFromFile("logo.png");
 
+        TTF_Font* Sans = TTF_OpenFont("resources/sans.ttf",25);
+
         Texture startGameText(gameRenderer);
         if(controller == nullptr) {
-            startGameText.loadFromRenderedText("Press Enter to Start.", white);
+            startGameText.loadFromRenderedText("Press Enter to Start.", white, Sans);
         } else {
-            startGameText.loadFromRenderedText("Press A to Start.", white);
+            startGameText.loadFromRenderedText("Press A to Start.", white, Sans);
         }
         startGameText.render((WINDOW_WIDTH-startGameText.getWidth())/2,300*SCALE_FACTOR);
 
+        Texture waveNumberText(gameRenderer);
+        Texture comboNumberText(gameRenderer);
+        Texture fpsText(gameRenderer);
+
+        float lastFPS = 0;
 
         //Game Loop
         while(!quit) {
@@ -135,8 +144,13 @@ int main( int argc, char* args[] ) {
                 allCharacterEntities.push_back(&(*it));
             }
             timpy.getEntity()->spawn();
+            waveNumberText.loadFromRenderedText("Wave: " + std::to_string(waveNumber), white, Sans);
+            comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
 
             while(inWave && !quit) {
+
+                Uint64 start = SDL_GetPerformanceCounter();
+
                 //Controls Loop
                 while(SDL_PollEvent(&e) != 0) {
                     if( e.type == SDL_QUIT ) {
@@ -167,13 +181,13 @@ int main( int argc, char* args[] ) {
                             timpy.changeWeapon();
                         }
                         if(e.key.keysym.sym == SDLK_SPACE) {
-                            if(timpy.getDirection() && canShoot && timpy.getWeapon() == 1 && shootingReset) {
+                            if(timpy.getDirection() && canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
                                 eBullets.emplace_back(timpy.getEntity()->getRect().x+60*SCALE_FACTOR,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,1000*SCALE_FACTOR,0,gameRenderer);
                                 bullets.emplace_back(&eBullets.back());
                                 bullets.back().setIterator(--eBullets.end());
                                 canShoot = false;
                                 shootingReset = false;
-                            } else if(canShoot && timpy.getWeapon() == 1 && shootingReset) {
+                            } else if(canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
                                 eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,-1000*SCALE_FACTOR,0,gameRenderer);
                                 eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,-1000*SCALE_FACTOR,0,gameRenderer);
                                 bullets.emplace_back(&eBullets.back());
@@ -201,14 +215,13 @@ int main( int argc, char* args[] ) {
                         }
                     } else if( e.type == SDL_JOYAXISMOTION ) {
                         if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
-                            if(timpy.getDirection() && canShoot && timpy.getWeapon() == 1 && shootingReset) {
+                            if(timpy.getDirection() && canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
                                 eBullets.emplace_back(timpy.getEntity()->getRect().x+60*SCALE_FACTOR,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,1000*SCALE_FACTOR,0,gameRenderer);
                                 bullets.emplace_back(&eBullets.back());
                                 bullets.back().setIterator(--eBullets.end());
                                 canShoot = false;
                                 shootingReset = false;
-                            } else if(canShoot && timpy.getWeapon() == 1 && shootingReset) {
-                                eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,-1000*SCALE_FACTOR,0,gameRenderer);
+                            } else if(canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
                                 eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,-1000*SCALE_FACTOR,0,gameRenderer);
                                 bullets.emplace_back(&eBullets.back());
                                 bullets.back().setIterator(--eBullets.end());
@@ -240,6 +253,7 @@ int main( int argc, char* args[] ) {
                 Uint32 current = SDL_GetTicks();
                 float dt = (current - lastUpdate) / 1000.0f;
                 lastUpdate = current;
+
 
                 if (lastShotTimeDifference > 1) {
                     lastShotTimeDifference = 0;
@@ -277,7 +291,7 @@ int main( int argc, char* args[] ) {
                             it->move(dt, platforms);
                         }
                         it->render();
-                        if(timpy.getWeapon() == 2 && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
+                        if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
                             it->alive = false;
                         } else {
                             if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
@@ -287,23 +301,27 @@ int main( int argc, char* args[] ) {
                                     timpy.getEntity()->despawn();
                                     timpy.getEntity()->spawn();
                                     playerCombo = 0;
+                                    comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
                                 } else if(timpy.getShield() == 1) {
                                     timpy.decreaseShield();
                                     timpy.getEntity()->despawn();
                                     timpy.getEntity()->spawn();
                                     playerCombo = 0;
+                                    comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
                                 } else {
                                     if(timpy.getHP() == 2) {
                                         timpy.damage();
                                         timpy.getEntity()->despawn();
                                         timpy.getEntity()->spawn();
                                         playerCombo = 0;
+                                        comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
                                     } else if (timpy.getHP() == 1) {
                                         playerAlive = false;
                                         waveNumber = 0;
                                         timpy.setHP(2);
                                         timpy.getEntity()->despawn();
                                         playerCombo = 0;
+                                        comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
                                     }
                                 }
                             }
@@ -314,8 +332,10 @@ int main( int argc, char* args[] ) {
                                 eBullets.erase(bit->getIterator());
                                 bullets.erase(bit);
                                 playerCombo++;
+
                             }
                         }
+                        comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
                         if(developerMode) {
                             SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                         }
@@ -344,13 +364,14 @@ int main( int argc, char* args[] ) {
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
-                Texture waveNumberText(gameRenderer);
-                waveNumberText.loadFromRenderedText("Wave: " + std::to_string(waveNumber), white);
                 waveNumberText.render(10,10);
-
-                Texture comboNumberText(gameRenderer);
-                comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white);
                 comboNumberText.render(10,50);
+
+                if(developerMode) {
+                    fpsText.loadFromRenderedText("FPS: " + std::to_string(lastFPS), white, Sans);
+                    fpsText.render(10,90);
+                }
+
 
                 switch(timpy.getShield()) {
                     case 2: {
@@ -397,9 +418,17 @@ int main( int argc, char* args[] ) {
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);
 
+                Uint64 end = SDL_GetPerformanceCounter();
+
+                float elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
+                lastFPS = (1.0f / elapsed);
             }
         }
+
+        TTF_CloseFont(Sans);
+
     }
+
 
     close();
     return 0;

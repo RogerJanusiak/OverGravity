@@ -16,6 +16,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
         includes/Bullet.h
         includes/Spawn.h
         includes/Bullet.h
+        src/Timer.cpp
+        src/Timer.h
 )
 
 # --- SDL2 SETUP ---

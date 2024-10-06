@@ -8,7 +8,7 @@
 
 Player::Player(Entity* entity) : playerEntity(entity) {
 
-    currentWeapon = 1;
+    currentWeapon = Weapon::revolver;
 
     weaponRect.x = 0;
     weaponRect.y = 0;
@@ -69,7 +69,7 @@ Player::Player(Entity* entity) : playerEntity(entity) {
 void Player::render() const {
     playerEntity->render();
 
-    if(currentWeapon == 1) {
+    if(currentWeapon == Weapon::revolver) {
         if(playerDirection) {
             revolverTextureRight.render(playerEntity->getRect().x+40*SCALE_FACTOR,playerEntity->getRect().y+15*SCALE_FACTOR);
         } else {
@@ -121,10 +121,10 @@ void Player::setDirection(bool direction) {
 }
 
 void Player::changeWeapon() {
-    if(currentWeapon == 2) {
-        currentWeapon = 1;
+    if(currentWeapon == Weapon::knife) {
+        currentWeapon = Weapon::revolver;
     } else {
-        currentWeapon = 2;
+        currentWeapon = Weapon::knife;
     }
 
 

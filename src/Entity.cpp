@@ -49,7 +49,6 @@ bool Entity::move(float dt,const std::list<Platform*> &platforms) {
         movementBox.y = entityRect.y;
         movementBox.w = entityRect.w;
         movementBox.h = entityRect.h + (nextYPosition-entityRect.y);
-        SDL_RenderDrawRect(gameRender,&movementBox);
         Platform* potentialPlatform = onPlatform(platforms,movementBox);
 
         if(potentialPlatform == nullptr) {

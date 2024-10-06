@@ -7,6 +7,13 @@
 #include "Entity.h"
 #include "Spawn.h"
 
+enum class Weapon {
+    revolver,
+    knife,
+    machineGun,
+    c4
+};
+
 class Player {
 public:
     Player(Entity* entity);
@@ -20,7 +27,7 @@ public:
     void setDirection (bool direction);
     bool getDirection () const { return playerDirection; }
     Entity* getEntity() const { return playerEntity; }
-    int getWeapon() const { return currentWeapon; }
+    Weapon getWeapon() const { return currentWeapon; }
 
     void damage() { playerHealth--; }
     int getHP() const { return playerHealth; }
@@ -29,6 +36,8 @@ public:
     void increaseShield() { playerShield++; }
     void decreaseShield() { playerShield--; }
     int getShield() const { return playerShield; }
+
+    void shoot() const;
 
     SDL_Rect playerHealth1;
     SDL_Rect playerHealth2;
@@ -46,7 +55,8 @@ private:
     Texture playerTextureRight;
     Texture playerTextureLeft;
 
-    int currentWeapon;
+    Weapon currentWeapon;
+
     int playerHealth = 2;
     int playerShield = 0;
 

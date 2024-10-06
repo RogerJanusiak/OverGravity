@@ -109,8 +109,6 @@ void Player::move(float dt,const std::list<Platform*> &platforms) {
         playerEntity->setPosition(WINDOW_WIDTH, playerEntity->getRect().y);
     }
 
-    playerEntity->getRect().x += playerEntity->getXVelocity()*dt;
-
 }
 
 void Player::setDirection(bool direction) {

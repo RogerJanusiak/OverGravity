@@ -12,7 +12,7 @@ public:
     explicit Bullet(Entity* tempEntity);
 
     void render();
-    bool move(float dt) const;
+    bool move(float dt, const std::list<Platform*> &platforms, bool developerMode) const;
 
     Entity* getEntity() const { return entity; }
 

@@ -36,11 +36,13 @@ set(SDL_LIBRARIES ${SDL_LIBRARIES} SDL2main SDL2_image-static SDL2-static SDL2_t
 
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}
         ${SDL2_IMAGE_LIBRARIES}
-        ${SDL2_TTF_LIBRARIES} -static)
-
+        ${SDL2_TTF_LIBRARIES} -static  )
+# -fsanitize=address
 # Specify the resource folder
 set(RESOURCE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/resources")
 
 # Copy resources from source to build directory
 file(COPY ${RESOURCE_SOURCE_DIR} DESTINATION ${CMAKE_BINARY_DIR}/)
 
+#message(STATUS "Enabling AddressSanitizer")
+#target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address)

@@ -1,5 +1,4 @@
 #include <fstream>
-#include <iostream>
 #include <list>
 #include <SDL.h>
 #include <SDL_image.h>
@@ -17,7 +16,6 @@
 #include <shlobj.h>
 #include <SDL_ttf.h>
 
-class Spawn;
 SDL_Window *gameWindow = nullptr;
 SDL_Renderer *gameRenderer = nullptr;
 
@@ -30,14 +28,12 @@ bool init();
 void close();
 void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::vector<Entity*>& allCharacterEntities);
 void renderPlatforms(std::list<Platform*>& platforms);
-std::vector<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, std::vector<Spawn>* spawns);
+std::vector<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<Spawn>* spawns);
 void loadLevelFromCSV(std::string filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
-
-
-TTF_Font * font;
 
 bool developerMode = false;
 bool useController = false;
+bool started = false;
 
 int main( int argc, char* args[] ) {
     if(!init()) {
@@ -89,8 +85,44 @@ int main( int argc, char* args[] ) {
         int playerCombo = 0;
         bool topLevelShieldHit = false;
 
+        SDL_Color white = { 255, 255, 255 };
+
+        Texture logoTexture;
+        logoTexture.setup(454*SCALE_FACTOR,92*SCALE_FACTOR,gameRenderer);
+        logoTexture.loadFromFile("logo.png");
+
+        Texture startGameText(gameRenderer);
+        if(controller == nullptr) {
+            startGameText.loadFromRenderedText("Press Enter to Start.", white);
+        } else {
+            startGameText.loadFromRenderedText("Press A to Start.", white);
+        }
+        startGameText.render((WINDOW_WIDTH-startGameText.getWidth())/2,300*SCALE_FACTOR);
+
+
         //Game Loop
         while(!quit) {
+
+            while(!started && !quit) {
+                while(SDL_PollEvent(&e) != 0) {
+                    if( e.type == SDL_QUIT ) {
+                        quit = true;
+                    } else if( e.type == SDL_KEYDOWN ) {
+                        if(e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_RETURN2) {
+                            started = true;
+                        }
+                    } else if( e.type == SDL_JOYBUTTONDOWN ) {
+                        if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
+                            started = true;
+                        }
+                    }
+                }
+
+                logoTexture.render(173*SCALE_FACTOR,100*SCALE_FACTOR);
+                SDL_SetRenderDrawColor(gameRenderer, 105, 105, 105, 255);
+                SDL_RenderPresent(gameRenderer);
+            }
+
             inWave = true;
             waveNumber++;
             std::vector<Entity> eRobots = getWaveEnemyEntities(waveNumber,1, &enemySpawns);
@@ -224,7 +256,7 @@ int main( int argc, char* args[] ) {
                 //Render/Move Bullets
                 for (auto it = bullets.begin(); it != bullets.end(); ++it) {
                     it->render();
-                    if(it->move(dt)) {
+                    if(it->move(dt, platforms, developerMode)) {
                         eBullets.erase(it->getIterator());
                         bullets.erase(it);
                     }
@@ -233,13 +265,17 @@ int main( int argc, char* args[] ) {
                 //Render/Move/Collision Enemies
                 SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
                 for (auto it = robors.begin(); it != robors.end(); ++it) {
+                    bool firstLoop = false;
                     if(!it->getEntity()->isSpawned()) {
                         it->getEntity()->spawn();
+                        firstLoop = true;
                     }
                     if(it->alive && it->getEntity()->isSpawned()) {
                         robotAlive = true;
 
-                        it->move(dt, platforms);
+                        if(!firstLoop) {
+                            it->move(dt, platforms);
+                        }
                         it->render();
                         if(timpy.getWeapon() == 2 && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
                             it->alive = false;
@@ -308,22 +344,13 @@ int main( int argc, char* args[] ) {
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
-                SDL_Color color = { 255, 255, 255 };
-                SDL_Surface * surfaceWave = TTF_RenderText_Solid(font,("Wave: " + std::to_string(waveNumber)).c_str(), color);
-                SDL_Surface * surfaceCombo = TTF_RenderText_Solid(font,("Combo: " + std::to_string(playerCombo)).c_str(), color);
-                SDL_Texture * textureWave = SDL_CreateTextureFromSurface(gameRenderer, surfaceWave);
-                SDL_Texture * textureCombo = SDL_CreateTextureFromSurface(gameRenderer, surfaceCombo);
+                Texture waveNumberText(gameRenderer);
+                waveNumberText.loadFromRenderedText("Wave: " + std::to_string(waveNumber), white);
+                waveNumberText.render(10,10);
 
-                SDL_Rect rectWave = { 10,10,surfaceWave->w,surfaceCombo->h };
-                SDL_Rect rectCombo = { 10,50,surfaceCombo->w,surfaceCombo->h };
-
-                if(developerMode) {
-                    SDL_RenderDrawRect(gameRenderer,&rectWave);
-                    SDL_RenderDrawRect(gameRenderer,&rectCombo);
-                }
-
-                SDL_RenderCopy(gameRenderer, textureWave, nullptr, &rectWave);
-                SDL_RenderCopy(gameRenderer, textureCombo, nullptr, &rectCombo);
+                Texture comboNumberText(gameRenderer);
+                comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white);
+                comboNumberText.render(10,50);
 
                 switch(timpy.getShield()) {
                     case 2: {
@@ -370,18 +397,10 @@ int main( int argc, char* args[] ) {
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);
 
-                SDL_DestroyTexture(textureWave);
-                SDL_FreeSurface(surfaceWave);
-                SDL_DestroyTexture(textureCombo);
-                SDL_FreeSurface(surfaceCombo);
-
             }
-
         }
     }
 
-    SDL_Quit();
-    TTF_Quit();
     close();
     return 0;
 }
@@ -479,7 +498,6 @@ bool init() {
         if(controller == nullptr) {
             SDL_Log( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
         } else {
-            useController = true;
             SDL_GameControllerAddMappingsFromFile("resources/mapping.txt");
         }
 
@@ -506,22 +524,24 @@ bool init() {
             success = false;
         }
 
-        font = TTF_OpenFont("resources/sans.ttf", 30);
-        if (font == nullptr) {
-            SDL_Log("Failed to load font: airstrike.");
-        }
-
     }
 
     return success;
 }
 
 void close() {
+
+
+    SDL_DestroyRenderer(gameRenderer);
+    gameRenderer = nullptr;
+
+    SDL_GameControllerClose(controller);
+    controller = nullptr;
+
     SDL_DestroyWindow(gameWindow);
     gameWindow = nullptr;
 
-    TTF_CloseFont(font);
-
     IMG_Quit();
     SDL_Quit();
+    TTF_Quit();
 }

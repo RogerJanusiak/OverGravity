@@ -49,24 +49,20 @@ bool Texture::loadFromRenderedText(const std::string &textureText, const SDL_Col
     //Get rid of preexisting texture
     free();
 
-    TTF_Font* Sans = TTF_OpenFont("Sans.ttf", 24);
+    TTF_Font* Sans = TTF_OpenFont("resources/sans.ttf", 30);
 
     //Render text surface
     SDL_Surface* textSurface = TTF_RenderText_Solid( Sans, textureText.c_str(), textColor );
-    if( textSurface == NULL )
-    {
-        printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
+    if( textSurface == NULL ) {
+        SDL_Log( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
     }
-    else
-    {
+    else {
         //Create texture from surface pixels
         mTexture = SDL_CreateTextureFromSurface(gameRenderer, textSurface );
         if( mTexture == NULL )
         {
-            printf( "Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError() );
-        }
-        else
-        {
+            SDL_Log( "Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError() );
+        } else {
             //Get image dimensions
             mWidth = textSurface->w;
             mHeight = textSurface->h;
@@ -75,6 +71,7 @@ bool Texture::loadFromRenderedText(const std::string &textureText, const SDL_Col
         //Get rid of old surface
         SDL_FreeSurface( textSurface );
     }
+    TTF_CloseFont(Sans);
 
     //Return success
     return mTexture != NULL;

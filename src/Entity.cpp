@@ -28,20 +28,10 @@ void Entity::render() const {
     entityTexture.render(entityRect.x,entityRect.y);
 }
 
-Platform* Entity::onPlatform(const std::list<Platform*> &platforms,const int y) const {
-    const int enemyLeft = entityRect.x+18;
-    const int enemyRight = entityRect.x + entityRect.w-18;
-    const int enemyTop = y;
-    const int enemyBottom = y + entityRect.h;
-
+Platform* Entity::onPlatform(const std::list<Platform*> &platforms, SDL_Rect& movementBox) const {
     for (auto platform : platforms) {
         SDL_Rect p = platform->getPlatformRect();
-        const int platformLeft = p.x;
-        const int platformRight = p.x + p.w;
-        const int platformTop = p.y;
-        const int platformBottom = p.y + p.h;
-
-        if (enemyBottom >= platformTop && enemyTop <= platformBottom && enemyRight >= platformLeft && enemyLeft <= platformRight) {
+        if(isColliding(p,movementBox)) {
             return platform;
         }
     }
@@ -49,11 +39,18 @@ Platform* Entity::onPlatform(const std::list<Platform*> &platforms,const int y) 
     return nullptr;
 }
 
-void Entity::move(float dt,const std::list<Platform*> &platforms) {
-    Platform* currentPlatform = onPlatform(platforms,entityRect.y);
+bool Entity::move(float dt,const std::list<Platform*> &platforms) {
+    Platform* currentPlatform = onPlatform(platforms,entityRect);
+    getRect().x += getXVelocity()*dt;
     if(currentPlatform == nullptr) {
         float nextYPosition = entityRect.y + yVelocity*dt;
-        Platform* potentialPlatform = onPlatform(platforms,nextYPosition);
+        SDL_Rect movementBox;
+        movementBox.x = entityRect.x;
+        movementBox.y = entityRect.y;
+        movementBox.w = entityRect.w;
+        movementBox.h = entityRect.h + (nextYPosition-entityRect.y);
+        SDL_RenderDrawRect(gameRender,&movementBox);
+        Platform* potentialPlatform = onPlatform(platforms,movementBox);
 
         if(potentialPlatform == nullptr) {
             entityRect.y = nextYPosition;
@@ -62,9 +59,11 @@ void Entity::move(float dt,const std::list<Platform*> &platforms) {
             entityRect.y = potentialPlatform->getPlatformRect().y-entityRect.h;
             yVelocity = 0;
         }
+        return true;
     } else {
         entityRect.y = currentPlatform->getPlatformRect().y-entityRect.h;
         yVelocity = 0;
+        return false;
     }
 }
 

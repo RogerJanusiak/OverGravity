@@ -37,19 +37,20 @@ public:
     void spawn();
     void despawn() { spawned = false;justSpawned = true;entityRect.x = -1000,entityRect.y = -1000; }
 
-    void move(float dt,const std::list<Platform*> &platforms);
+    bool move(float dt,const std::list<Platform*> &platforms);
 
     static bool isColliding(SDL_Rect& rectA, const SDL_Rect& rectB);
-
-    Platform* onPlatform(const std::list<Platform*> &platforms, int y) const;
 
     bool justSpawned = true;
 
 private:
     float xVelocity = 0;
     float yVelocity = 0;
+
     //TO-DO: Render the texture once in main.cpp and then pass it to the entity.
     Texture entityTexture;
+
+    Platform* onPlatform(const std::list<Platform*> &platforms, SDL_Rect& movementBox) const;
 
     std::vector<Spawn>* spawns;
     bool spawned = false;

@@ -8,6 +8,7 @@ class Texture {
 
 public:
     Texture();
+    explicit Texture(SDL_Renderer* renderer) : gameRenderer(renderer), mWidth(0), mHeight(0) {};
     ~Texture();
 
     void free();
@@ -29,7 +30,7 @@ public:
 
 
 private:
-    SDL_Texture* mTexture;
+    SDL_Texture* mTexture = nullptr;
     SDL_Renderer *gameRenderer = nullptr;
 
     int mWidth;

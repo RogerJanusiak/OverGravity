@@ -29,11 +29,11 @@ void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::vector<Entity*>&
 void renderPlatforms(std::list<Platform*>& platforms);
 std::vector<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<Spawn>* spawns);
 void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
+void loadController();
 
 bool loadValuesFromCSV(std::string &filePath);
 
 bool developerMode = false;
-bool useController = false;
 bool started = false;
 
 int bulletSpeed;
@@ -130,6 +130,7 @@ int main( int argc, char* args[] ) {
         while(!quit) {
 
             while(!started && !quit) {
+                SDL_RenderClear(gameRenderer);
                 while(SDL_PollEvent(&e) != 0) {
                     if( e.type == SDL_QUIT ) {
                         quit = true;
@@ -141,11 +142,18 @@ int main( int argc, char* args[] ) {
                         if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
                             started = true;
                         }
+                    } else if(e.type == SDL_JOYDEVICEADDED ) {
+                        startGameText.loadFromRenderedText("Press A to Start.", white, Sans);
+                        loadController();
+                    } else if (e.type == SDL_JOYDEVICEREMOVED) {
+                        startGameText.loadFromRenderedText("Press Enter to Start.", white, Sans);
+                        controller == nullptr;
                     }
                 }
 
                 logoTexture.render(scale(173),scale(100));
-                SDL_SetRenderDrawColor(gameRenderer, 105, 105, 105, 255);
+                startGameText.render((WINDOW_WIDTH-startGameText.getWidth())/2,scale(300));
+                SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
                 SDL_RenderPresent(gameRenderer);
             }
 
@@ -263,6 +271,10 @@ int main( int argc, char* args[] ) {
                             timpy.getEntity()->setXVelocity(0);
                         }
 
+                    } else if(e.type == SDL_JOYDEVICEADDED ) {
+                         loadController();
+                    } else if (e.type == SDL_JOYDEVICEREMOVED) {
+                        controller == nullptr;
                     }
                 }
 
@@ -567,6 +579,15 @@ bool loadValuesFromCSV(std::string &filePath) {
     return true;
 }
 
+void loadController() {
+    controller = SDL_GameControllerOpen(0);
+    if(controller == nullptr) {
+        SDL_Log( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
+    } else {
+        SDL_GameControllerAddMappingsFromFile("resources/mapping.txt");
+    }
+}
+
 bool init() {
     bool success = true;
 
@@ -589,13 +610,7 @@ bool init() {
             }
         }
 
-        //TODO: Test to see if a controller has been connected and allow the user to use that after the game has been launched.
-        controller = SDL_GameControllerOpen(0);
-        if(controller == nullptr) {
-            SDL_Log( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
-        } else {
-            SDL_GameControllerAddMappingsFromFile("resources/mapping.txt");
-        }
+        loadController();
 
         std::string valuesPath = "resources/values.csv";
         if(!loadValuesFromCSV(valuesPath)) {

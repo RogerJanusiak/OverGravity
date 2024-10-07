@@ -42,7 +42,6 @@ Platform* Entity::onPlatform(const std::list<Platform*> &platforms, SDL_Rect& mo
     return nullptr;
 }
 
-//TODO: Test to see if I need to check that the entity is colliding with the platform or that I can just do the potential check
 bool Entity::move(float dt,const std::list<Platform*> &platforms) {
     getRect().x += getXVelocity()*dt;
     float nextYPosition = entityRect.y + yVelocity*dt;

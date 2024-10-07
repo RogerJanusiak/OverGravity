@@ -49,6 +49,11 @@ int main( int argc, char* args[] ) {
         timeToShootBack.w = 75*SCALE_FACTOR;
         timeToShootBack.h = 15*SCALE_FACTOR;
 
+        timeToShoot.x = WINDOW_WIDTH-90*SCALE_FACTOR;
+        timeToShoot.y = WINDOW_HEIGHT-25*SCALE_FACTOR;
+        timeToShoot.w = 50*SCALE_FACTOR;
+        timeToShoot.h = 15*SCALE_FACTOR;
+
         SDL_Event e;
         Uint32 lastUpdate = SDL_GetTicks();
 
@@ -266,11 +271,12 @@ int main( int argc, char* args[] ) {
                         canShoot = true;
                     }
                 } else {
-                    if (lastShotTimeDifference > 1) {
+                    if (lastShotTimeDifference > 0.75) {
                         lastShotTimeDifference = 0;
                         canShoot = true;
                     } else if(!canShoot) {
                         lastShotTimeDifference += dt;
+                        timeToShoot.w = 75*lastShotTimeDifference*SCALE_FACTOR*1.333;
                     }
                 }
 
@@ -430,8 +436,12 @@ int main( int argc, char* args[] ) {
                     timpy.increaseShield();
                 }
 
-                SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
+
+                SDL_SetRenderDrawColor(gameRenderer, 150, 150, 150, 255);
                 SDL_RenderFillRect(gameRenderer,&timeToShootBack);
+
+                SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
+                SDL_RenderFillRect(gameRenderer,&timeToShoot);
 
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);

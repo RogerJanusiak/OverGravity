@@ -6,7 +6,8 @@
 #include "../includes/GlobalConstants.h"
 #include "../includes/Platform.h"
 
-Robor::Robor(Entity *entity) {
+Robor::Robor(Entity *entity, const int Vx) {
+    xVelocity = Vx;
     roborEntity = entity;
     roborEntity->setDimensions(enemyWidth,enemyHeight);
     roborEntity->getTexture()->setup(enemyWidth,enemyHeight,entity->getRenderer());
@@ -18,15 +19,15 @@ Robor::Robor(Entity *entity) {
 void Robor::move(const float dt,const std::list<Platform*> &platforms) const {
     if(roborEntity->justSpawned) {
         roborEntity->justSpawned = false;
-        if(roborEntity->getRect().x <=400*SCALE_FACTOR) {
-            roborEntity->setXVelocity(200*SCALE_FACTOR);
+        if(roborEntity->getRect().x <=scale(400)) {
+            roborEntity->setXVelocity(xVelocity);
         } else {
-            roborEntity->setXVelocity(-200*SCALE_FACTOR);
+            roborEntity->setXVelocity(-xVelocity);
         }
     }
     roborEntity->move(dt,platforms);
     if(roborEntity->getRect().x >= WINDOW_WIDTH) {
-        roborEntity->setPosition(10,roborEntity->getRect().y);
+        roborEntity->setPosition(scale(10),roborEntity->getRect().y);
     }
 
     if(roborEntity->getRect().y >= WINDOW_HEIGHT) {
@@ -34,7 +35,7 @@ void Robor::move(const float dt,const std::list<Platform*> &platforms) const {
     }
 
     if(roborEntity->getRect().x <= 0) {
-        roborEntity->setPosition(WINDOW_WIDTH-10*SCALE_FACTOR, roborEntity->getRect().y);
+        roborEntity->setPosition(WINDOW_WIDTH-scale(10), roborEntity->getRect().y);
     }
 
 }

@@ -10,8 +10,8 @@ class Spawn {
 public:
 
     Spawn() = default;
-    Spawn(const int x, const int y, const int w, const int h) { init(x, y-25, w, h); }
-    void init(const int x, const int y, const int w, const int h) { rect.x = x*SCALE_FACTOR; rect.y = y*SCALE_FACTOR; rect.w = w*SCALE_FACTOR; rect.h = h*SCALE_FACTOR; }
+    Spawn(const int x, const int y, const int w, const int h) { init(x, y, w, h); }
+    void init(const int x, const int y, const int w, const int h) { rect.x = x; rect.y = y; rect.w = w; rect.h = h; }
 
     int getX() const { return rect.x; }
     int getY() const { return rect.y; }

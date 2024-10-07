@@ -9,8 +9,6 @@ Bullet::Bullet(Entity* tempEntity) : entity(tempEntity) {
 }
 
 bool Bullet::move(float dt, const std::list<Platform*> &platforms, bool developerMode) {
-    //TODO: Fix going into platforms from side
-    //TODO: Make it so it can only go on one platform
 
     if(!entity->move(dt, platforms)) {
         if(platformStatus == 0) {

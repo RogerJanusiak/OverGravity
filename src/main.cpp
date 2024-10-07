@@ -1,3 +1,4 @@
+#include <cmath>
 #include <fstream>
 #include <list>
 #include <SDL.h>
@@ -12,8 +13,6 @@
 #include "../includes/Player.h"
 #include "../includes/Spawn.h"
 
-#include <windows.h>
-#include <shlobj.h>
 #include <SDL_ttf.h>
 
 SDL_Window *gameWindow = nullptr;
@@ -29,11 +28,19 @@ void close();
 void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::vector<Entity*>& allCharacterEntities);
 void renderPlatforms(std::list<Platform*>& platforms);
 std::vector<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<Spawn>* spawns);
-void loadLevelFromCSV(std::string filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
+void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
+
+bool loadValuesFromCSV(std::string &filePath);
 
 bool developerMode = false;
 bool useController = false;
 bool started = false;
+
+int bulletSpeed;
+int timpyXVelocity;
+int roborXVelocity;
+double revolverReloadSpeed;
+int comboToGetShield;
 
 int main( int argc, char* args[] ) {
     if(!init()) {
@@ -44,15 +51,15 @@ int main( int argc, char* args[] ) {
         SDL_Rect timeToShootBack;
         SDL_Rect timeToShoot;
 
-        timeToShootBack.x = WINDOW_WIDTH-90*SCALE_FACTOR;
-        timeToShootBack.y = WINDOW_HEIGHT-25*SCALE_FACTOR;
-        timeToShootBack.w = 75*SCALE_FACTOR;
-        timeToShootBack.h = 15*SCALE_FACTOR;
+        timeToShootBack.x = WINDOW_WIDTH-scale(90);
+        timeToShootBack.y = WINDOW_HEIGHT-scale(25);
+        timeToShootBack.w = scale(75);
+        timeToShootBack.h = scale(15);
 
-        timeToShoot.x = WINDOW_WIDTH-90*SCALE_FACTOR;
-        timeToShoot.y = WINDOW_HEIGHT-25*SCALE_FACTOR;
-        timeToShoot.w = 50*SCALE_FACTOR;
-        timeToShoot.h = 15*SCALE_FACTOR;
+        timeToShoot.x = WINDOW_WIDTH-scale(90);
+        timeToShoot.y = WINDOW_HEIGHT-scale(25);
+        timeToShoot.w = scale(75);
+        timeToShoot.h = scale(15);
 
         SDL_Event e;
         Uint32 lastUpdate = SDL_GetTicks();
@@ -61,7 +68,8 @@ int main( int argc, char* args[] ) {
         std::vector<Spawn> enemySpawns;
         std::vector<Spawn> playerSpawns;
 
-        loadLevelFromCSV((gameFilesPath + "\\level1.csv"), ePlatforms, enemySpawns, playerSpawns);
+        std::string levelPath = "resources/levels/level1.csv";
+        loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns);
 
         std::vector<Spawn*> allSpawns;
         for(auto it = enemySpawns.begin(); it != enemySpawns.end(); ++it) {
@@ -87,8 +95,6 @@ int main( int argc, char* args[] ) {
 
         bool waveOverride = false;
 
-        int timpyXVelocity = 350*SCALE_FACTOR;
-
         bool canShoot = true;
         bool shootingReset = true;
         float lastShotTimeDifference = 0;
@@ -101,10 +107,10 @@ int main( int argc, char* args[] ) {
         SDL_Color white = { 255, 255, 255 };
 
         Texture logoTexture;
-        logoTexture.setup(454*SCALE_FACTOR,92*SCALE_FACTOR,gameRenderer);
+        logoTexture.setup(scale(454),scale(92),gameRenderer);
         logoTexture.loadFromFile("logo.png");
 
-        TTF_Font* Sans = TTF_OpenFont("resources/sans.ttf",25);
+        TTF_Font* Sans = TTF_OpenFont("resources/sans.ttf",scale(18));
 
         Texture startGameText(gameRenderer);
         if(controller == nullptr) {
@@ -112,7 +118,7 @@ int main( int argc, char* args[] ) {
         } else {
             startGameText.loadFromRenderedText("Press A to Start.", white, Sans);
         }
-        startGameText.render((WINDOW_WIDTH-startGameText.getWidth())/2,300*SCALE_FACTOR);
+        startGameText.render((WINDOW_WIDTH-startGameText.getWidth())/2,scale(300));
 
         Texture waveNumberText(gameRenderer);
         Texture comboNumberText(gameRenderer);
@@ -138,7 +144,7 @@ int main( int argc, char* args[] ) {
                     }
                 }
 
-                logoTexture.render(173*SCALE_FACTOR,100*SCALE_FACTOR);
+                logoTexture.render(scale(173),scale(100));
                 SDL_SetRenderDrawColor(gameRenderer, 105, 105, 105, 255);
                 SDL_RenderPresent(gameRenderer);
             }
@@ -151,7 +157,7 @@ int main( int argc, char* args[] ) {
             allCharacterEntities.push_back(timpy.getEntity());
 
             for (auto it = eRobots.begin(); it != eRobots.end(); ++it) {
-                robors.emplace_back(&(*it));
+                robors.emplace_back(&(*it),roborXVelocity);
                 allCharacterEntities.push_back(&(*it));
             }
             timpy.getEntity()->spawn();
@@ -193,14 +199,13 @@ int main( int argc, char* args[] ) {
                         }
                         if(e.key.keysym.sym == SDLK_SPACE) {
                             if(timpy.getDirection() && canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
-                                eBullets.emplace_back(timpy.getEntity()->getRect().x+60*SCALE_FACTOR,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,1000*SCALE_FACTOR,0,gameRenderer);
+                                eBullets.emplace_back(timpy.getEntity()->getRect().x+scale(60),timpy.getEntity()->getRect().y+scale(19),bulletSpeed,0,gameRenderer);
                                 bullets.emplace_back(&eBullets.back());
                                 bullets.back().setIterator(--eBullets.end());
                                 canShoot = false;
                                 shootingReset = false;
                             } else if(canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
-                                eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,-1000*SCALE_FACTOR,0,gameRenderer);
-                                eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,-1000*SCALE_FACTOR,0,gameRenderer);
+                                eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+scale(19),-bulletSpeed,0,gameRenderer);
                                 bullets.emplace_back(&eBullets.back());
                                 bullets.back().setIterator(--eBullets.end());
                                 canShoot = false;
@@ -227,13 +232,13 @@ int main( int argc, char* args[] ) {
                     } else if( e.type == SDL_JOYAXISMOTION ) {
                         if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
                             if(timpy.getDirection() && canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
-                                eBullets.emplace_back(timpy.getEntity()->getRect().x+60*SCALE_FACTOR,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,1000*SCALE_FACTOR,0,gameRenderer);
+                                eBullets.emplace_back(timpy.getEntity()->getRect().x+scale(60),timpy.getEntity()->getRect().y+scale(19),bulletSpeed,0,gameRenderer);
                                 bullets.emplace_back(&eBullets.back());
                                 bullets.back().setIterator(--eBullets.end());
                                 canShoot = false;
                                 shootingReset = false;
                             } else if(canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
-                                eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+19*SCALE_FACTOR,-1000*SCALE_FACTOR,0,gameRenderer);
+                                eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+scale(19),-bulletSpeed,0,gameRenderer);
                                 bullets.emplace_back(&eBullets.back());
                                 bullets.back().setIterator(--eBullets.end());
                                 canShoot = false;
@@ -265,23 +270,14 @@ int main( int argc, char* args[] ) {
                 float dt = (current - lastUpdate) / 1000.0f;
                 lastUpdate = current;
 
-
-                if(developerMode) {
-                    if(bullets.empty()) {
-                        canShoot = true;
-                    }
-                } else {
-                    if (lastShotTimeDifference > 0.75) {
-                        lastShotTimeDifference = 0;
-                        canShoot = true;
-                    } else if(!canShoot) {
-                        lastShotTimeDifference += dt;
-                        timeToShoot.w = 75*lastShotTimeDifference*SCALE_FACTOR*1.333;
-                    }
+                if (lastShotTimeDifference > revolverReloadSpeed) {
+                    timeToShoot.w = scale(75);
+                    lastShotTimeDifference = 0;
+                    canShoot = true;
+                } else if(!canShoot) {
+                    lastShotTimeDifference += dt;
+                    timeToShoot.w = scale(75)*lastShotTimeDifference*(1/revolverReloadSpeed)-2;
                 }
-
-
-
 
                 SDL_RenderClear(gameRenderer);
 
@@ -385,12 +381,12 @@ int main( int argc, char* args[] ) {
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
-                waveNumberText.render(10,10);
-                comboNumberText.render(10,50);
+                waveNumberText.render(scale(10),scale(5));
+                comboNumberText.render(scale(10),scale(30));
 
                 if(developerMode) {
                     fpsText.loadFromRenderedText("FPS: " + std::to_string(lastFPS), white, Sans);
-                    fpsText.render(10,90);
+                    fpsText.render(scale(10),scale(90));
                 }
 
 
@@ -429,10 +425,10 @@ int main( int argc, char* args[] ) {
                         break;
                 }
 
-                if(playerCombo == 5 && (timpy.getShield() == 0 || topLevelShieldHit)) {
+                if(playerCombo == comboToGetShield && (timpy.getShield() == 0 || topLevelShieldHit)) {
                     timpy.increaseShield();
                     topLevelShieldHit = false;
-                } else if(playerCombo == 10 && timpy.getShield() == 1) {
+                } else if(playerCombo == comboToGetShield*2 && timpy.getShield() == 1) {
                     timpy.increaseShield();
                 }
 
@@ -493,7 +489,7 @@ std::vector<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor,
     return entities;
 }
 
-void loadLevelFromCSV(std::string filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns) {
+void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns) {
     std::ifstream file((filePath).c_str());
     if (!file.is_open()) {
         SDL_Log("Could not load level file!");
@@ -517,15 +513,58 @@ void loadLevelFromCSV(std::string filePath, std::list<Platform>& platforms, std:
     file.close();
     for (int i = 0; i < row; i++) {
         if(std::stoi(data[i][0]) == 0) {
-            platforms.emplace_back(std::stoi(data[i][1]),std::stoi(data[i][2])+25,gameRenderer);
+            platforms.emplace_back(std::stoi(data[i][1]),std::stoi(data[i][2]),gameRenderer);
         }
         if(std::stoi(data[i][0]) == 1) {
-            playerSpawns.emplace_back(std::stoi(data[i][1]),std::stoi(data[i][2])+25,54,54);
+            playerSpawns.emplace_back(scale(std::stoi(data[i][1])),scale(std::stoi(data[i][2])),scale(50),scale(60));
         }
         if(std::stoi(data[i][0]) == 2) {
-            enemySpawns.emplace_back(std::stoi(data[i][1]),std::stoi(data[i][2])+25,54,54);
+            enemySpawns.emplace_back(scale(std::stoi(data[i][1])),scale(std::stoi(data[i][2])),scale(50),scale(50));
         }
     }
+}
+
+bool loadValuesFromCSV(std::string &filePath) {
+    std::ifstream file((filePath).c_str());
+    if (!file.is_open()) {
+        SDL_Log("Could not load values file!");
+        return false;
+    }
+    constexpr int MAX_ROWS = 5;
+    constexpr int MAX_COLS = 2;
+    std::string data[MAX_ROWS][MAX_COLS];
+    std::string line;
+    int row = 0;
+    // Store the CSV data from the CSV file to the 2D array
+    while (getline(file, line) && row < MAX_ROWS) {
+        std::stringstream ss(line);
+        std::string cell;
+        int col = 0;
+        while (getline(ss, cell, ',') && col < MAX_COLS) {
+            data[row][col] = cell;
+            col++;
+        }
+        row++;
+    }
+    file.close();
+    for (int i = 0; i < row; i++) {
+        if(std::stoi(data[i][0]) == 0) {
+            bulletSpeed = scale(std::stoi(data[i][1]));
+        }
+        if(std::stoi(data[i][0]) == 1) {
+            timpyXVelocity = scale(std::stoi(data[i][1]));
+        }
+        if(std::stoi(data[i][0]) == 2) {
+            roborXVelocity = scale(std::stoi(data[i][1]));
+        }
+        if(std::stoi(data[i][0]) == 3) {
+            revolverReloadSpeed = std::stod(data[i][1]);
+        }
+        if(std::stoi(data[i][0]) == 4) {
+            comboToGetShield = std::stoi(data[i][1]);
+        }
+    }
+    return true;
 }
 
 bool init() {
@@ -558,27 +597,9 @@ bool init() {
             SDL_GameControllerAddMappingsFromFile("resources/mapping.txt");
         }
 
-        char appDataPath[MAX_PATH];
-        if (SHGetFolderPathA(nullptr, CSIDL_APPDATA , nullptr, 0, appDataPath) != S_OK) {
-            SDL_Log("Failed to get AppData path");
-            success = false;
-        }
-
-        // Append the new folder name to the AppData path
-        std::string folderName = "OverGravity";
-        gameFilesPath =  std::string(appDataPath) + "\\" + folderName;
-
-        //TODO: Don't overwrite level file that is already there
-        //TODO: Add ability to load constants from file
-        if (CreateDirectoryA(gameFilesPath.c_str(), nullptr) || GetLastError() == ERROR_ALREADY_EXISTS) {
-            std::string destinationFile = std::string(gameFilesPath) + "\\level1.csv";
-            if (CopyFileA("resources/levels/level1.csv", destinationFile.c_str(), FALSE)) {
-                SDL_Log("Copied level1.csv");
-            } else {
-                SDL_Log("Failed to copy level files: ", GetLastError());
-            }
-        } else {
-            SDL_Log("Failed to create folder. Error: ", SDL_GetError());
+        std::string valuesPath = "resources/values.csv";
+        if(!loadValuesFromCSV(valuesPath)) {
+            SDL_Log("Could not load values from value file!");
             success = false;
         }
 

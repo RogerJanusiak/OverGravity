@@ -45,8 +45,8 @@ public:
     SDL_Rect playerShield2;
 
 private:
-    const int playerWidth = 50*SCALE_FACTOR;
-    const int playerHeight = 60*SCALE_FACTOR;
+    const int playerWidth = scale(50);
+    const int playerHeight = scale(60);
 
     bool playerDirection = false;
 

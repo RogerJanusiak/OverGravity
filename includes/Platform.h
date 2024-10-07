@@ -20,8 +20,8 @@ private:
     SDL_Rect box;
     Texture texture;
 
-    const int width = 110*SCALE_FACTOR;
-    const int height = 17*SCALE_FACTOR;
+    const int width = scale(110);
+    const int height = scale(17);
 
 };
 

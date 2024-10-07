@@ -12,36 +12,36 @@ Player::Player(Entity* entity) : playerEntity(entity) {
 
     weaponRect.x = 0;
     weaponRect.y = 0;
-    weaponRect.w = 42*SCALE_FACTOR;
-    weaponRect.h = 10*SCALE_FACTOR;
+    weaponRect.w = scale(42);
+    weaponRect.h = scale(10);
 
-    playerHealth1.x = 15*SCALE_FACTOR;
-    playerHealth1.y = WINDOW_HEIGHT-45*SCALE_FACTOR;
-    playerHealth1.w = 30*SCALE_FACTOR;
-    playerHealth1.h = 30*SCALE_FACTOR;
+    playerHealth1.x = scale(15);
+    playerHealth1.y = WINDOW_HEIGHT-scale(45);
+    playerHealth1.w = scale(30);
+    playerHealth1.h = scale(30);
 
-    playerHealth2.x = 15*SCALE_FACTOR;
-    playerHealth2.y = WINDOW_HEIGHT-85*SCALE_FACTOR;
-    playerHealth2.w = 30*SCALE_FACTOR;
-    playerHealth2.h = 30*SCALE_FACTOR;
+    playerHealth2.x = scale(15);
+    playerHealth2.y = WINDOW_HEIGHT-scale(85);
+    playerHealth2.w = scale(30);
+    playerHealth2.h = scale(30);
 
-    playerShield1.x = 15*SCALE_FACTOR;
-    playerShield1.y = WINDOW_HEIGHT-125*SCALE_FACTOR;
-    playerShield1.w = 30*SCALE_FACTOR;
-    playerShield1.h = 30*SCALE_FACTOR;
+    playerShield1.x = scale(15);
+    playerShield1.y = WINDOW_HEIGHT-scale(125);
+    playerShield1.w = scale(30);
+    playerShield1.h = scale(30);
 
-    playerShield2.x = 15*SCALE_FACTOR;
-    playerShield2.y = WINDOW_HEIGHT-165*SCALE_FACTOR;
-    playerShield2.w = 30*SCALE_FACTOR;
-    playerShield2.h = 30*SCALE_FACTOR;
+    playerShield2.x = scale(15);
+    playerShield2.y = WINDOW_HEIGHT-scale(165);
+    playerShield2.w = scale(30);
+    playerShield2.h = scale(30);
 
     playerEntity->setDimensions(playerWidth,playerHeight);
     playerTextureLeft.setup(playerWidth,playerHeight,playerEntity->getRenderer());
     playerTextureRight.setup(playerWidth,playerHeight,playerEntity->getRenderer());
-    knifeTextureLeft.setup(42*SCALE_FACTOR,21*SCALE_FACTOR,playerEntity->getRenderer());
-    knifeTextureRight.setup(42*SCALE_FACTOR,21*SCALE_FACTOR,playerEntity->getRenderer());
-    revolverTextureLeft.setup(42*SCALE_FACTOR,21*SCALE_FACTOR,playerEntity->getRenderer());
-    revolverTextureRight.setup(42*SCALE_FACTOR,21*SCALE_FACTOR,playerEntity->getRenderer());
+    knifeTextureLeft.setup(scale(42),scale(21),playerEntity->getRenderer());
+    knifeTextureRight.setup(scale(42),scale(21),playerEntity->getRenderer());
+    revolverTextureLeft.setup(scale(42),scale(21),playerEntity->getRenderer());
+    revolverTextureRight.setup(scale(42),scale(21),playerEntity->getRenderer());
 
     if(!playerTextureRight.loadFromFile("Timpy.png")) {
         SDL_Log("Could not load TimpyRight texture!");
@@ -71,15 +71,15 @@ void Player::render() const {
 
     if(currentWeapon == Weapon::revolver) {
         if(playerDirection) {
-            revolverTextureRight.render(playerEntity->getRect().x+40*SCALE_FACTOR,playerEntity->getRect().y+15*SCALE_FACTOR);
+            revolverTextureRight.render(playerEntity->getRect().x+scale(40),playerEntity->getRect().y+scale(15));
         } else {
-            revolverTextureLeft.render(playerEntity->getRect().x-27*SCALE_FACTOR,playerEntity->getRect().y+15*SCALE_FACTOR);
+            revolverTextureLeft.render(playerEntity->getRect().x-scale(27),playerEntity->getRect().y+scale(15));
         }
     } else {
         if(playerDirection) {
-            knifeTextureRight.render(playerEntity->getRect().x+40*SCALE_FACTOR,playerEntity->getRect().y+15*SCALE_FACTOR);
+            knifeTextureRight.render(playerEntity->getRect().x+scale(40),playerEntity->getRect().y+scale(15));
         } else {
-            knifeTextureLeft.render(playerEntity->getRect().x-27*SCALE_FACTOR,playerEntity->getRect().y+15*SCALE_FACTOR);
+            knifeTextureLeft.render(playerEntity->getRect().x-scale(27),playerEntity->getRect().y+scale(15));
         }
     }
 }
@@ -88,15 +88,15 @@ void Player::move(float dt,const std::list<Platform*> &platforms) {
    playerEntity->move(dt,platforms);
 
     if(playerDirection) {
-        weaponRect.x = playerEntity->getRect().x+40*SCALE_FACTOR;
+        weaponRect.x = playerEntity->getRect().x+scale(40);
     } else {
-        weaponRect.x = playerEntity->getRect().x-27*SCALE_FACTOR;
+        weaponRect.x = playerEntity->getRect().x-scale(27);
     }
 
-    weaponRect.y = playerEntity->getRect().y+20*SCALE_FACTOR;
+    weaponRect.y = playerEntity->getRect().y+scale(20);
 
     if(playerEntity->getRect().x >= WINDOW_WIDTH) {
-        playerEntity->setPosition(-40*SCALE_FACTOR,playerEntity->getRect().y);
+        playerEntity->setPosition(-scale(40),playerEntity->getRect().y);
     }
 
     if(playerEntity->getRect().y >= WINDOW_HEIGHT) {
@@ -105,7 +105,7 @@ void Player::move(float dt,const std::list<Platform*> &platforms) {
         playerEntity->spawn();
     }
 
-    if(playerEntity->getRect().x < -40*SCALE_FACTOR) {
+    if(playerEntity->getRect().x < -scale(40)) {
         playerEntity->setPosition(WINDOW_WIDTH, playerEntity->getRect().y);
     }
 

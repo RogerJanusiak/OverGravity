@@ -1,7 +1,7 @@
 #ifndef GLOBALCONSTANTS_H
 #define GLOBALCONSTANTS_H
 
-constexpr double SCALE_FACTOR = 1.5;
+constexpr double SCALE_FACTOR = 2  ;
 
 constexpr int WINDOW_WIDTH = 800*SCALE_FACTOR;
 constexpr int WINDOW_HEIGHT = 450*SCALE_FACTOR;

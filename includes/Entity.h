@@ -50,7 +50,7 @@ private:
     //TO-DO: Render the texture once in main.cpp and then pass it to the entity.
     Texture entityTexture;
 
-    Platform* onPlatform(const std::list<Platform*> &platforms, SDL_Rect& movementBox) const;
+    Platform* onPlatform(const std::list<Platform*> &platforms, SDL_Rect& movementBox, SDL_Rect& hitBox) const;
 
     Platform* lastPlatform = nullptr;
     bool offPlatform = false;

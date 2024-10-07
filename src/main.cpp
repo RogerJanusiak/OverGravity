@@ -41,6 +41,14 @@ int main( int argc, char* args[] ) {
     } else {
         bool quit = false;
 
+        SDL_Rect timeToShootBack;
+        SDL_Rect timeToShoot;
+
+        timeToShootBack.x = WINDOW_WIDTH-90*SCALE_FACTOR;
+        timeToShootBack.y = WINDOW_HEIGHT-25*SCALE_FACTOR;
+        timeToShootBack.w = 75*SCALE_FACTOR;
+        timeToShootBack.h = 15*SCALE_FACTOR;
+
         SDL_Event e;
         Uint32 lastUpdate = SDL_GetTicks();
 
@@ -253,12 +261,21 @@ int main( int argc, char* args[] ) {
                 lastUpdate = current;
 
 
-                if (lastShotTimeDifference > 1) {
-                    lastShotTimeDifference = 0;
-                    canShoot = true;
-                } else if(!canShoot) {
-                    lastShotTimeDifference += dt;
+                if(developerMode) {
+                    if(bullets.empty()) {
+                        canShoot = true;
+                    }
+                } else {
+                    if (lastShotTimeDifference > 1) {
+                        lastShotTimeDifference = 0;
+                        canShoot = true;
+                    } else if(!canShoot) {
+                        lastShotTimeDifference += dt;
+                    }
                 }
+
+
+
 
                 SDL_RenderClear(gameRenderer);
 
@@ -413,6 +430,9 @@ int main( int argc, char* args[] ) {
                     timpy.increaseShield();
                 }
 
+                SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
+                SDL_RenderFillRect(gameRenderer,&timeToShootBack);
+
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);
 
@@ -520,7 +540,7 @@ bool init() {
             }
         }
 
-        //Load Controller
+        //TODO: Test to see if a controller has been connected and allow the user to use that after the game has been launched.
         controller = SDL_GameControllerOpen(0);
         if(controller == nullptr) {
             SDL_Log( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
@@ -538,7 +558,8 @@ bool init() {
         std::string folderName = "OverGravity";
         gameFilesPath =  std::string(appDataPath) + "\\" + folderName;
 
-        // Create the folder
+        //TODO: Don't overwrite level file that is already there
+        //TODO: Add ability to load constants from file
         if (CreateDirectoryA(gameFilesPath.c_str(), nullptr) || GetLastError() == ERROR_ALREADY_EXISTS) {
             std::string destinationFile = std::string(gameFilesPath) + "\\level1.csv";
             if (CopyFileA("resources/levels/level1.csv", destinationFile.c_str(), FALSE)) {

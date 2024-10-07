@@ -12,7 +12,7 @@ public:
     explicit Bullet(Entity* tempEntity);
 
     void render();
-    bool move(float dt, const std::list<Platform*> &platforms, bool developerMode) const;
+    bool move(float dt, const std::list<Platform*> &platforms, bool developerMode);
 
     Entity* getEntity() const { return entity; }
 
@@ -23,6 +23,8 @@ private:
 
     const int width = 3*SCALE_FACTOR;
     const int height = 3*SCALE_FACTOR;
+
+    int platformStatus = 0;
 
     std::list<Entity>::iterator iterator;
 

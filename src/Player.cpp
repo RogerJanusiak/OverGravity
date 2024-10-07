@@ -85,7 +85,7 @@ void Player::render() const {
 }
 
 void Player::move(float dt,const std::list<Platform*> &platforms) {
-    playerEntity->move(dt,platforms);
+   playerEntity->move(dt,platforms);
 
     if(playerDirection) {
         weaponRect.x = playerEntity->getRect().x+40*SCALE_FACTOR;

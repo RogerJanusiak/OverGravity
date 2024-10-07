@@ -8,12 +8,21 @@ Bullet::Bullet(Entity* tempEntity) : entity(tempEntity) {
     }
 }
 
-bool Bullet::move(float dt, const std::list<Platform*> &platforms, bool developerMode) const {
-    if(developerMode) {
-        entity->move(dt, platforms);
-    } else {
-        entity->setPosition(entity->getRect().x + entity->getXVelocity()*dt,entity->getRect().y);
+bool Bullet::move(float dt, const std::list<Platform*> &platforms, bool developerMode) {
+    //TODO: Fix going into platforms from side
+    //TODO: Make it so it can only go on one platform
+
+    if(!entity->move(dt, platforms)) {
+        if(platformStatus == 0) {
+            platformStatus = 1;
+        } else if(platformStatus == 2) {
+            return true;
+        }
+    } else if(platformStatus == 1) {
+        platformStatus = 2;
     }
+    //Not gravity bullet: entity->setPosition(entity->getRect().x + entity->getXVelocity()*dt,entity->getRect().y);
+
     if(entity->getRect().x > WINDOW_WIDTH || entity->getRect().x < 0) {
         return true;
     }

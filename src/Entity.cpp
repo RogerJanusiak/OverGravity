@@ -28,12 +28,15 @@ void Entity::render() const {
     entityTexture.render(entityRect.x,entityRect.y);
 }
 
-Platform* Entity::onPlatform(const std::list<Platform*> &platforms, SDL_Rect& movementBox) const {
+Platform* Entity::onPlatform(const std::list<Platform*> &platforms, SDL_Rect& movementBox, SDL_Rect& hitBox) const {
     for (auto platform : platforms) {
         SDL_Rect p = platform->getPlatformRect();
-        if(isColliding(p,movementBox)) {
-            return platform;
+        if(hitBox.y+hitBox.h <= platform->getPlatformRect().y) {
+            if(isColliding(p,movementBox)) {
+                return platform;
+            }
         }
+
     }
 
     return nullptr;
@@ -41,42 +44,26 @@ Platform* Entity::onPlatform(const std::list<Platform*> &platforms, SDL_Rect& mo
 
 //TODO: Test to see if I need to check that the entity is colliding with the platform or that I can just do the potential check
 bool Entity::move(float dt,const std::list<Platform*> &platforms) {
-    Platform* currentPlatform = onPlatform(platforms,entityRect);
     getRect().x += getXVelocity()*dt;
     float nextYPosition = entityRect.y + yVelocity*dt;
-    if(currentPlatform == nullptr) {
-        offPlatform = true;
+    offPlatform = true;
 
-        SDL_Rect movementBox;
-        movementBox.x = entityRect.x;
-        movementBox.y = entityRect.y;
-        movementBox.w = entityRect.w;
-        movementBox.h = entityRect.h + (nextYPosition-entityRect.y);
-        Platform* potentialPlatform = onPlatform(platforms,movementBox);
+    SDL_Rect movementBox;
+    movementBox.x = entityRect.x;
+    movementBox.y = entityRect.y;
+    movementBox.w = entityRect.w;
+    movementBox.h = entityRect.h + (nextYPosition-entityRect.y);
+    Platform* potentialPlatform = onPlatform(platforms,movementBox, entityRect);
 
-        if(potentialPlatform == nullptr) {
-            entityRect.y = nextYPosition;
-            yVelocity += ACCELERATION*dt;
-        } else if(lastPlatform == potentialPlatform) {
-            entityRect.y = nextYPosition;
-            yVelocity += ACCELERATION*dt;
-        } else {
-            offPlatform = false;
-            entityRect.y = potentialPlatform->getPlatformRect().y-entityRect.h;
-            yVelocity = 0;
-        }
-        return true;
+    if(potentialPlatform == nullptr) {
+        entityRect.y = nextYPosition;
+        yVelocity += ACCELERATION*dt;
     } else {
-        if(lastPlatform == currentPlatform && offPlatform) {
-            entityRect.y = nextYPosition;
-            yVelocity += ACCELERATION*dt;
-        } else {
-            lastPlatform = currentPlatform;
-            entityRect.y = currentPlatform->getPlatformRect().y-entityRect.h;
-            yVelocity = 0;
-        }
-        return false;
+        offPlatform = false;
+        entityRect.y = potentialPlatform->getPlatformRect().y-entityRect.h;
+        yVelocity = 0;
     }
+    return offPlatform;
 }
 
 void Entity::spawn() {

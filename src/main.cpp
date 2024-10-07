@@ -5,6 +5,7 @@
 #include <SDL_image.h>
 #include <sstream>
 #include <vector>
+#include <filesystem>
 
 #include "../includes/Bullet.h"
 #include "../includes/Robor.h"
@@ -36,11 +37,11 @@ bool loadValuesFromCSV(std::string &filePath);
 bool developerMode = false;
 bool started = false;
 
-int bulletSpeed;
-int timpyXVelocity;
-int roborXVelocity;
-double revolverReloadSpeed;
-int comboToGetShield;
+int bulletSpeed = 1;
+int timpyXVelocity = 1;
+int roborXVelocity = 1;
+double revolverReloadSpeed = 1;
+int comboToGetShield = 1;
 
 int main( int argc, char* args[] ) {
     if(!init()) {
@@ -68,7 +69,8 @@ int main( int argc, char* args[] ) {
         std::vector<Spawn> enemySpawns;
         std::vector<Spawn> playerSpawns;
 
-        std::string levelPath = "resources/levels/level1.csv";
+        std::string currentPath(SDL_GetBasePath());
+        std::string levelPath = currentPath + "resources/levels/level1.csv";
         loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns);
 
         std::vector<Spawn*> allSpawns;
@@ -614,8 +616,8 @@ bool init() {
         }
 
         loadController();
-
-        std::string valuesPath = "resources/values.csv";
+        std::string currentPath(SDL_GetBasePath());
+        std::string valuesPath = currentPath + "resources/values.csv";
         if(!loadValuesFromCSV(valuesPath)) {
             SDL_Log("Could not load values from value file!");
             success = false;

@@ -1,7 +1,7 @@
 #ifndef GLOBALCONSTANTS_H
 #define GLOBALCONSTANTS_H
 
-constexpr double SCALE_FACTOR = 2  ;
+constexpr double SCALE_FACTOR = 1.5;
 
 inline double scale(const double toScale) {
     return toScale*SCALE_FACTOR;

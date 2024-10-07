@@ -147,7 +147,7 @@ int main( int argc, char* args[] ) {
                         loadController();
                     } else if (e.type == SDL_JOYDEVICEREMOVED) {
                         startGameText.loadFromRenderedText("Press Enter to Start.", white, Sans);
-                        controller == nullptr;
+                        controller = nullptr;
                     }
                 }
 
@@ -274,7 +274,7 @@ int main( int argc, char* args[] ) {
                     } else if(e.type == SDL_JOYDEVICEADDED ) {
                          loadController();
                     } else if (e.type == SDL_JOYDEVICEREMOVED) {
-                        controller == nullptr;
+                        controller = nullptr;
                     }
                 }
 
@@ -297,11 +297,13 @@ int main( int argc, char* args[] ) {
                 bool playerAlive = true;
 
                 //Render/Move Bullets
-                for (auto it = bullets.begin(); it != bullets.end(); ++it) {
-                    it->render();
+                for (auto it = bullets.begin(); it != bullets.end();) {
                     if(it->move(dt, platforms, developerMode)) {
                         eBullets.erase(it->getIterator());
-                        bullets.erase(it);
+                        it = bullets.erase(it);
+                    } else {
+                        it->render();
+                        ++it;
                     }
                 }
 
@@ -355,13 +357,14 @@ int main( int argc, char* args[] ) {
                                 }
                             }
                         }
-                        for(auto bit = bullets.begin(); bit != bullets.end(); ++bit) {
+                        for(auto bit = bullets.begin(); bit != bullets.end();) {
                             if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
                                 it->alive = false;
                                 eBullets.erase(bit->getIterator());
-                                bullets.erase(bit);
+                                bit = bullets.erase(bit);
                                 playerCombo++;
-
+                            } else {
+                                ++bit;
                             }
                         }
                         comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);

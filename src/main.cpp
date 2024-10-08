@@ -69,7 +69,9 @@ int main( int argc, char* args[] ) {
         std::vector<Spawn> enemySpawns;
         std::vector<Spawn> playerSpawns;
 
-        std::string currentPath(SDL_GetBasePath());
+        char* appDir = SDL_GetBasePath();
+        std::string currentPath(appDir);
+        SDL_free(appDir);
         std::string levelPath = currentPath + "resources/levels/level1.csv";
         loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns);
 
@@ -616,7 +618,9 @@ bool init() {
         }
 
         loadController();
-        std::string currentPath(SDL_GetBasePath());
+        char* basePath = SDL_GetBasePath();
+        std::string currentPath(basePath);
+        SDL_free(basePath);
         std::string valuesPath = currentPath + "resources/values.csv";
         if(!loadValuesFromCSV(valuesPath)) {
             SDL_Log("Could not load values from value file!");

@@ -148,6 +148,7 @@ int main( int argc, char* args[] ) {
                         if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
                             started = true;
                         }
+                        SDL_Log("Button %d pressed\n", e.cbutton.button);
                     } else if(e.type == SDL_JOYDEVICEADDED ) {
                         startGameText.loadFromRenderedText("Press A to Start.", white, Sans);
                         loadController();
@@ -607,7 +608,7 @@ bool loadValuesFromCSV(std::string &filePath) {
 }
 
 void loadController() {
-    controller = SDL_GameControllerOpen(0);
+    controller = SDL_GameControllerOpen(SDL_NumJoysticks()-1);
     if(controller == nullptr) {
         SDL_Log( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
     } else {

@@ -36,6 +36,7 @@ bool loadValuesFromCSV(std::string &filePath);
 
 bool developerMode = false;
 bool started = false;
+bool multiplayer = false;
 
 int bulletSpeed = 1;
 int timpyXVelocity = 1;
@@ -94,6 +95,13 @@ int main( int argc, char* args[] ) {
         Entity eTimpy = Entity(&playerSpawns,gameRenderer);
         Player timpy = Player(&eTimpy);
         timpy.getEntity()->spawn();
+
+        Entity eDimpy= Entity(&playerSpawns,gameRenderer);
+        Player dimpy = Player(&eDimpy);
+        if(multiplayer) {
+            dimpy.getEntity()->spawn();
+        }
+
         bool leftMovement = false;
         bool rightMovement = false;
 
@@ -148,7 +156,6 @@ int main( int argc, char* args[] ) {
                         if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
                             started = true;
                         }
-                        SDL_Log("Button %d pressed\n", e.cbutton.button);
                     } else if(e.type == SDL_JOYDEVICEADDED ) {
                         startGameText.loadFromRenderedText("Press A to Start.", white, Sans);
                         loadController();
@@ -170,12 +177,16 @@ int main( int argc, char* args[] ) {
             std::vector<Robor> robors;
             std::vector<Entity*> allCharacterEntities;
             allCharacterEntities.push_back(timpy.getEntity());
+            if(multiplayer) {
+                allCharacterEntities.push_back(dimpy.getEntity());
+            }
 
             for (auto it = eRobots.begin(); it != eRobots.end(); ++it) {
                 robors.emplace_back(&(*it),roborXVelocity);
                 allCharacterEntities.push_back(&(*it));
             }
             timpy.getEntity()->spawn();
+
             waveNumberText.loadFromRenderedText("Wave: " + std::to_string(waveNumber), white, Sans);
             waveNumberTitle.loadFromRenderedText("Wave " + std::to_string(waveNumber) + " Start!", white, Title);
             comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
@@ -184,6 +195,10 @@ int main( int argc, char* args[] ) {
             Uint32 startWaveLoad = SDL_GetTicks();
 
             while(inWave && !quit) {
+
+                if(!dimpy.getEntity()->isSpawned() && multiplayer) {
+                    dimpy.getEntity()->spawn();
+                }
 
                 Uint64 start = SDL_GetPerformanceCounter();
 
@@ -248,6 +263,40 @@ int main( int argc, char* args[] ) {
                         if(e.key.keysym.sym == SDLK_SPACE) {
                             shootingReset = true;
                         }
+                    } else if( e.type == SDL_JOYAXISMOTION && waveStarted && multiplayer) {
+                        if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
+                            if(dimpy.getDirection() && canShoot && dimpy.getWeapon() == Weapon::revolver && shootingReset) {
+                                eBullets.emplace_back(dimpy.getEntity()->getRect().x+scale(60),dimpy.getEntity()->getRect().y+scale(19),bulletSpeed,0,gameRenderer);
+                                bullets.emplace_back(&eBullets.back());
+                                bullets.back().setIterator(--eBullets.end());
+                                canShoot = false;
+                                shootingReset = false;
+                            } else if(canShoot && dimpy.getWeapon() == Weapon::revolver && shootingReset) {
+                                eBullets.emplace_back(dimpy.getEntity()->getRect().x,dimpy.getEntity()->getRect().y+scale(19),-bulletSpeed,0,gameRenderer);
+                                bullets.emplace_back(&eBullets.back());
+                                bullets.back().setIterator(--eBullets.end());
+                                canShoot = false;
+                                shootingReset = false;
+                            }
+
+                        } else {
+                            shootingReset = true;
+                        }
+
+                        if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX) > JOYSTICK_DEAD_ZONE) {
+                            dimpy.setDirection(true);
+                        } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX) < -JOYSTICK_DEAD_ZONE) {
+                            dimpy.setDirection(false);
+                        }
+
+                        if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
+                            dimpy.getEntity()->setXVelocity(timpyXVelocity);
+                        } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) < -JOYSTICK_DEAD_ZONE) {
+                            dimpy.getEntity()->setXVelocity(-timpyXVelocity);
+                        } else {
+                            dimpy.getEntity()->setXVelocity(0);
+                        }
+
                     } else if( e.type == SDL_JOYAXISMOTION && waveStarted) {
                         if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
                             if(timpy.getDirection() && canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
@@ -281,7 +330,6 @@ int main( int argc, char* args[] ) {
                         } else {
                             timpy.getEntity()->setXVelocity(0);
                         }
-
                     } else if(e.type == SDL_JOYDEVICEADDED ) {
                          loadController();
                     } else if (e.type == SDL_JOYDEVICEREMOVED) {
@@ -372,6 +420,41 @@ int main( int argc, char* args[] ) {
                                 }
                             }
                         }
+                        if(dimpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),dimpy.getWeaponRect())) {
+                            it->alive = false;
+                        } else {
+                            if( Entity::isColliding(it->getEntity()->getRect(),dimpy.getEntity()->getRect())) {
+                                if(dimpy.getShield() == 2) {
+                                    topLevelShieldHit = true;
+                                    dimpy.decreaseShield();
+                                    dimpy.getEntity()->despawn();
+                                    dimpy.getEntity()->spawn();
+                                    playerCombo = 0;
+                                    comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                } else if(dimpy.getShield() == 1) {
+                                    dimpy.decreaseShield();
+                                    dimpy.getEntity()->despawn();
+                                    dimpy.getEntity()->spawn();
+                                    playerCombo = 0;
+                                    comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                } else {
+                                    if(dimpy.getHP() == 2) {
+                                        dimpy.damage();
+                                        dimpy.getEntity()->despawn();
+                                        dimpy.getEntity()->spawn();
+                                        playerCombo = 0;
+                                        comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                    } else if (dimpy.getHP() == 1) {
+                                        playerAlive = false;
+                                        waveNumber = 0;
+                                        dimpy.setHP(2);
+                                        dimpy.getEntity()->despawn();
+                                        playerCombo = 0;
+                                        comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                    }
+                                }
+                            }
+                        }
                         for(auto bit = bullets.begin(); bit != bullets.end();) {
                             if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
                                 //TODO: Does this despawn the enemy type?
@@ -407,9 +490,19 @@ int main( int argc, char* args[] ) {
                     timpy.render();
                 }
 
+                if(dimpy.getEntity()->isSpawned()) {
+                    if(waveStarted) {
+                        dimpy.move(dt, platforms);
+                    }
+                    dimpy.render();
+                }
+
                 SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
                 if(developerMode) {
                     SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
+                    if(multiplayer) {
+                        SDL_RenderDrawRect(gameRenderer,&dimpy.getEntity()->getRect());
+                    }
                 }
 
                 renderPlatforms(platforms);

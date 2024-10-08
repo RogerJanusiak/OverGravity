@@ -115,6 +115,7 @@ int main( int argc, char* args[] ) {
         logoTexture.loadFromFile("logo.png");
 
         TTF_Font* Sans = TTF_OpenFont("resources/sans.ttf",scale(18));
+        TTF_Font* Title = TTF_OpenFont("resources/sans.ttf",scale(34));
 
         Texture startGameText(gameRenderer);
         if(controller == nullptr) {
@@ -125,6 +126,7 @@ int main( int argc, char* args[] ) {
         startGameText.render((WINDOW_WIDTH-startGameText.getWidth())/2,scale(300));
 
         Texture waveNumberText(gameRenderer);
+        Texture waveNumberTitle(gameRenderer);
         Texture comboNumberText(gameRenderer);
         Texture fpsText(gameRenderer);
 
@@ -174,7 +176,11 @@ int main( int argc, char* args[] ) {
             }
             timpy.getEntity()->spawn();
             waveNumberText.loadFromRenderedText("Wave: " + std::to_string(waveNumber), white, Sans);
+            waveNumberTitle.loadFromRenderedText("Wave " + std::to_string(waveNumber) + " Start!", white, Title);
             comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+
+            bool waveStarted = false;
+            Uint32 startWaveLoad = SDL_GetTicks();
 
             while(inWave && !quit) {
 
@@ -209,7 +215,7 @@ int main( int argc, char* args[] ) {
                         if(e.key.keysym.sym == SDLK_w) {
                             timpy.changeWeapon();
                         }
-                        if(e.key.keysym.sym == SDLK_SPACE) {
+                        if(e.key.keysym.sym == SDLK_SPACE && waveStarted) {
                             if(timpy.getDirection() && canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
                                 eBullets.emplace_back(timpy.getEntity()->getRect().x+scale(60),timpy.getEntity()->getRect().y+scale(19),bulletSpeed,0,gameRenderer);
                                 bullets.emplace_back(&eBullets.back());
@@ -241,7 +247,7 @@ int main( int argc, char* args[] ) {
                         if(e.key.keysym.sym == SDLK_SPACE) {
                             shootingReset = true;
                         }
-                    } else if( e.type == SDL_JOYAXISMOTION ) {
+                    } else if( e.type == SDL_JOYAXISMOTION && waveStarted) {
                         if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
                             if(timpy.getDirection() && canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
                                 eBullets.emplace_back(timpy.getEntity()->getRect().x+scale(60),timpy.getEntity()->getRect().y+scale(19),bulletSpeed,0,gameRenderer);
@@ -286,6 +292,10 @@ int main( int argc, char* args[] ) {
                 float dt = (current - lastUpdate) / 1000.0f;
                 lastUpdate = current;
 
+                if((current-startWaveLoad)/1000.0f > 1) {
+                    waveStarted = true;
+                }
+
                 if (lastShotTimeDifference > revolverReloadSpeed) {
                     timeToShoot.w = scale(75);
                     lastShotTimeDifference = 0;
@@ -322,7 +332,7 @@ int main( int argc, char* args[] ) {
                     if(it->alive && it->getEntity()->isSpawned()) {
                         robotAlive = true;
 
-                        if(!firstLoop) {
+                        if(!firstLoop && waveStarted) {
                             it->move(dt, platforms);
                         }
                         it->render();
@@ -363,6 +373,9 @@ int main( int argc, char* args[] ) {
                         }
                         for(auto bit = bullets.begin(); bit != bullets.end();) {
                             if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
+                                //TODO: Does this despawn the enemy type?
+                                //TODO: This should probably erase the enemy
+                                //TODO: Check behaivor when enemy goes off map it doesn't end the wave
                                 it->alive = false;
                                 eBullets.erase(bit->getIterator());
                                 bit = bullets.erase(bit);
@@ -387,7 +400,9 @@ int main( int argc, char* args[] ) {
                 }
 
                 if(timpy.getEntity()->isSpawned()) {
-                    timpy.move(dt, platforms);
+                    if(waveStarted) {
+                        timpy.move(dt, platforms);
+                    }
                     timpy.render();
                 }
 
@@ -451,6 +466,10 @@ int main( int argc, char* args[] ) {
                     timpy.increaseShield();
                 }
 
+                if(!waveStarted) {
+                    waveNumberTitle.render((WINDOW_WIDTH-waveNumberTitle.getWidth())/2,scale(200));
+                }
+
 
                 SDL_SetRenderDrawColor(gameRenderer, 150, 150, 150, 255);
                 SDL_RenderFillRect(gameRenderer,&timeToShootBack);
@@ -469,6 +488,7 @@ int main( int argc, char* args[] ) {
         }
 
         TTF_CloseFont(Sans);
+        TTF_CloseFont(Title);
 
     }
 

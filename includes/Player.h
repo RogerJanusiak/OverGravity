@@ -33,9 +33,12 @@ public:
     int getHP() const { return playerHealth; }
     void setHP(int newHP) { playerHealth = newHP; }
 
-    void increaseShield() { playerShield++; }
-    void decreaseShield() { playerShield--; }
+    void decreaseShield();
     int getShield() const { return playerShield; }
+
+    void increaseCombo(int comboToGetShield);
+    void zeroCombo() { combo = 0;}
+    int getCombo() const { return combo; }
 
     void shoot() const;
 
@@ -59,6 +62,9 @@ private:
 
     int playerHealth = 2;
     int playerShield = 0;
+
+    int combo = 0;
+    bool topLevelShieldHit = false;
 
     SDL_Rect weaponRect;
     Texture knifeTextureRight;

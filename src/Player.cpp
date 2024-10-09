@@ -126,6 +126,23 @@ void Player::changeWeapon() {
     } else {
         currentWeapon = Weapon::knife;
     }
-
-
 }
+
+void Player::increaseCombo(int comboToGetShield) {
+    combo++;
+    if(combo == comboToGetShield && (getShield() == 0 || topLevelShieldHit)) {
+        playerShield++;
+        topLevelShieldHit = false;
+    } else if(combo == comboToGetShield*2 && getShield() == 1) {
+        playerShield++;
+    }
+}
+
+void Player::decreaseShield() {
+    if(playerShield == 2) {
+        topLevelShieldHit = true;
+    }
+    playerShield--;
+}
+
+

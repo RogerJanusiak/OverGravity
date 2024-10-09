@@ -15,6 +15,10 @@ void Texture::setup(const int w, const int h,SDL_Renderer *renderer) {
     gameRenderer = renderer;
 }
 
+void Texture::setup(SDL_Renderer *renderer) {
+    gameRenderer = renderer;
+}
+
 Texture::~Texture() {
     free();
 }

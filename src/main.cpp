@@ -16,6 +16,8 @@
 
 #include <SDL_ttf.h>
 
+#include "../includes/UI.h"
+
 SDL_Window *gameWindow = nullptr;
 SDL_Renderer *gameRenderer = nullptr;
 
@@ -49,19 +51,6 @@ int main( int argc, char* args[] ) {
         SDL_Log("Initialization failed!\n");
     } else {
         bool quit = false;
-
-        SDL_Rect timeToShootBack;
-        SDL_Rect timeToShoot;
-
-        timeToShootBack.x = WINDOW_WIDTH-scale(90);
-        timeToShootBack.y = WINDOW_HEIGHT-scale(25);
-        timeToShootBack.w = scale(75);
-        timeToShootBack.h = scale(15);
-
-        timeToShoot.x = WINDOW_WIDTH-scale(90);
-        timeToShoot.y = WINDOW_HEIGHT-scale(25);
-        timeToShoot.w = scale(75);
-        timeToShoot.h = scale(15);
 
         SDL_Event e;
         Uint32 lastUpdate = SDL_GetTicks();
@@ -116,29 +105,10 @@ int main( int argc, char* args[] ) {
         int playerCombo = 0;
         bool topLevelShieldHit = false;
 
-        SDL_Color white = { 255, 255, 255 };
-
-        Texture logoTexture;
-        logoTexture.setup(scale(454),scale(92),gameRenderer);
-        logoTexture.loadFromFile("logo.png");
-
-        TTF_Font* Sans = TTF_OpenFont("resources/sans.ttf",scale(18));
-        TTF_Font* Title = TTF_OpenFont("resources/sans.ttf",scale(34));
-
-        Texture startGameText(gameRenderer);
-        if(controller == nullptr) {
-            startGameText.loadFromRenderedText("Press Enter to Start.", white, Sans);
-        } else {
-            startGameText.loadFromRenderedText("Press A to Start.", white, Sans);
-        }
-        startGameText.render((WINDOW_WIDTH-startGameText.getWidth())/2,scale(300));
-
-        Texture waveNumberText(gameRenderer);
-        Texture waveNumberTitle(gameRenderer);
-        Texture comboNumberText(gameRenderer);
-        Texture fpsText(gameRenderer);
-
         float lastFPS = 0;
+
+        UI_init(gameRenderer);
+        initStartScreen(controller != nullptr);
 
         //Game Loop
         while(!quit) {
@@ -157,16 +127,15 @@ int main( int argc, char* args[] ) {
                             started = true;
                         }
                     } else if(e.type == SDL_JOYDEVICEADDED ) {
-                        startGameText.loadFromRenderedText("Press A to Start.", white, Sans);
                         loadController();
+                        initStartScreen(controller != nullptr);
                     } else if (e.type == SDL_JOYDEVICEREMOVED) {
-                        startGameText.loadFromRenderedText("Press Enter to Start.", white, Sans);
                         controller = nullptr;
+                        initStartScreen(controller != nullptr);
                     }
                 }
 
-                logoTexture.render(scale(173),scale(100));
-                startGameText.render((WINDOW_WIDTH-startGameText.getWidth())/2,scale(300));
+                renderStartScreen();
                 SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
                 SDL_RenderPresent(gameRenderer);
             }
@@ -186,10 +155,6 @@ int main( int argc, char* args[] ) {
                 allCharacterEntities.push_back(&(*it));
             }
             timpy.getEntity()->spawn();
-
-            waveNumberText.loadFromRenderedText("Wave: " + std::to_string(waveNumber), white, Sans);
-            waveNumberTitle.loadFromRenderedText("Wave " + std::to_string(waveNumber) + " Start!", white, Title);
-            comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
 
             bool waveStarted = false;
             Uint32 startWaveLoad = SDL_GetTicks();
@@ -346,12 +311,12 @@ int main( int argc, char* args[] ) {
                 }
 
                 if (lastShotTimeDifference > revolverReloadSpeed) {
-                    timeToShoot.w = scale(75);
+                    updateTimeToShoot(scale(75));
                     lastShotTimeDifference = 0;
                     canShoot = true;
                 } else if(!canShoot) {
                     lastShotTimeDifference += dt;
-                    timeToShoot.w = scale(75)*lastShotTimeDifference*(1/revolverReloadSpeed)-2;
+                    updateTimeToShoot(scale(75)*lastShotTimeDifference*(1/revolverReloadSpeed)-2);
                 }
 
                 SDL_RenderClear(gameRenderer);
@@ -395,27 +360,27 @@ int main( int argc, char* args[] ) {
                                     timpy.getEntity()->despawn();
                                     timpy.getEntity()->spawn();
                                     playerCombo = 0;
-                                    comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                    updateInGameText(playerCombo,waveNumber);
                                 } else if(timpy.getShield() == 1) {
                                     timpy.decreaseShield();
                                     timpy.getEntity()->despawn();
                                     timpy.getEntity()->spawn();
                                     playerCombo = 0;
-                                    comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                    updateInGameText(playerCombo,waveNumber);
                                 } else {
                                     if(timpy.getHP() == 2) {
                                         timpy.damage();
                                         timpy.getEntity()->despawn();
                                         timpy.getEntity()->spawn();
                                         playerCombo = 0;
-                                        comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                        updateInGameText(playerCombo,waveNumber);
                                     } else if (timpy.getHP() == 1) {
                                         playerAlive = false;
                                         waveNumber = 0;
                                         timpy.setHP(2);
                                         timpy.getEntity()->despawn();
                                         playerCombo = 0;
-                                        comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                        updateInGameText(playerCombo,waveNumber);
                                     }
                                 }
                             }
@@ -430,27 +395,27 @@ int main( int argc, char* args[] ) {
                                     dimpy.getEntity()->despawn();
                                     dimpy.getEntity()->spawn();
                                     playerCombo = 0;
-                                    comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                    updateInGameText(playerCombo,waveNumber);
                                 } else if(dimpy.getShield() == 1) {
                                     dimpy.decreaseShield();
                                     dimpy.getEntity()->despawn();
                                     dimpy.getEntity()->spawn();
                                     playerCombo = 0;
-                                    comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                    updateInGameText(playerCombo,waveNumber);
                                 } else {
                                     if(dimpy.getHP() == 2) {
                                         dimpy.damage();
                                         dimpy.getEntity()->despawn();
                                         dimpy.getEntity()->spawn();
                                         playerCombo = 0;
-                                        comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                        updateInGameText(playerCombo,waveNumber);
                                     } else if (dimpy.getHP() == 1) {
                                         playerAlive = false;
                                         waveNumber = 0;
                                         dimpy.setHP(2);
                                         dimpy.getEntity()->despawn();
                                         playerCombo = 0;
-                                        comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                                        updateInGameText(playerCombo,waveNumber);
                                     }
                                 }
                             }
@@ -468,7 +433,7 @@ int main( int argc, char* args[] ) {
                                 ++bit;
                             }
                         }
-                        comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, Sans);
+                        updateInGameText(playerCombo,waveNumber);
                         if(developerMode) {
                             SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                         }
@@ -505,53 +470,9 @@ int main( int argc, char* args[] ) {
                     }
                 }
 
-                renderPlatforms(platforms);
+
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
-
-                waveNumberText.render(scale(10),scale(5));
-                comboNumberText.render(scale(10),scale(30));
-
-                if(developerMode) {
-                    fpsText.loadFromRenderedText("FPS: " + std::to_string(lastFPS), white, Sans);
-                    fpsText.render(scale(10),scale(90));
-                }
-
-
-                switch(timpy.getShield()) {
-                    case 2: {
-                        SDL_SetRenderDrawColor(gameRenderer, 0, 0, 255, 255);
-                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield1);
-                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield2);
-                    } break;
-                    case 1: {
-                        SDL_SetRenderDrawColor(gameRenderer, 183, 201, 226, 255);
-                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield2);
-                        SDL_SetRenderDrawColor(gameRenderer, 0, 0, 255, 255);
-                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield1);
-                    } break;
-                    default: {
-                        SDL_SetRenderDrawColor(gameRenderer, 183, 201, 226, 255);
-                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield1);
-                        SDL_RenderFillRect(gameRenderer,&timpy.playerShield2);
-                    } break;
-                }
-
-                switch(timpy.getHP()) {
-                    case 2: {
-                        SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
-                        SDL_RenderFillRect(gameRenderer,&timpy.playerHealth1);
-                        SDL_RenderFillRect(gameRenderer,&timpy.playerHealth2);
-                    } break;
-                    case 1: {
-                        SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
-                        SDL_RenderFillRect(gameRenderer,&timpy.playerHealth1);
-                        SDL_SetRenderDrawColor(gameRenderer, 170, 104, 95, 255);
-                        SDL_RenderFillRect(gameRenderer,&timpy.playerHealth2);
-                    } break;
-                    default:
-                        break;
-                }
 
                 if(playerCombo == comboToGetShield && (timpy.getShield() == 0 || topLevelShieldHit)) {
                     timpy.increaseShield();
@@ -560,16 +481,11 @@ int main( int argc, char* args[] ) {
                     timpy.increaseShield();
                 }
 
-                if(!waveStarted) {
-                    waveNumberTitle.render((WINDOW_WIDTH-waveNumberTitle.getWidth())/2,scale(200));
-                }
+                renderPlatforms(platforms);
 
+                renderInGameText(developerMode, lastFPS, waveStarted);
 
-                SDL_SetRenderDrawColor(gameRenderer, 150, 150, 150, 255);
-                SDL_RenderFillRect(gameRenderer,&timeToShootBack);
-
-                SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
-                SDL_RenderFillRect(gameRenderer,&timeToShoot);
+                renderPlayerUI(&timpy);
 
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);
@@ -580,9 +496,6 @@ int main( int argc, char* args[] ) {
                 lastFPS = (1.0f / elapsed);
             }
         }
-
-        TTF_CloseFont(Sans);
-        TTF_CloseFont(Title);
 
     }
 

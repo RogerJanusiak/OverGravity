@@ -15,6 +15,7 @@ public:
     void free();
 
     void setup(int w, int h,SDL_Renderer *renderer);
+    void setup(SDL_Renderer *renderer);
 
     bool loadFromFile(const std::string& filePath);
     bool loadFromRenderedText(const std::string &textureText, const SDL_Color &textColor,TTF_Font * font);

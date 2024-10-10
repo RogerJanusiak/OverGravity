@@ -183,17 +183,8 @@ int main( int argc, char* args[] ) {
                             timpy.changeWeapon();
                         }
                         if(e.key.keysym.sym == SDLK_SPACE && waveStarted) {
-                            if(timpy.getDirection() && canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
-                                eBullets.emplace_back(timpy.getEntity()->getRect().x+scale(60),timpy.getEntity()->getRect().y+scale(19),bulletSpeed,0,gameRenderer);
-                                bullets.emplace_back(&eBullets.back());
-                                bullets.back().setIterator(--eBullets.end());
-                                canShoot = false;
-                                shootingReset = false;
-                            } else if(canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
-                                eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+scale(19),-bulletSpeed,0,gameRenderer);
-                                bullets.emplace_back(&eBullets.back());
-                                bullets.back().setIterator(--eBullets.end());
-                                canShoot = false;
+                            if(shootingReset) {
+                                timpy.shoot(&eBullets,&bullets,bulletSpeed);
                                 shootingReset = false;
                             }
                         }
@@ -216,20 +207,10 @@ int main( int argc, char* args[] ) {
                         }
                     } else if( e.type == SDL_JOYAXISMOTION && waveStarted) {
                         if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
-                            if(timpy.getDirection() && canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
-                                eBullets.emplace_back(timpy.getEntity()->getRect().x+scale(60),timpy.getEntity()->getRect().y+scale(19),bulletSpeed,0,gameRenderer);
-                                bullets.emplace_back(&eBullets.back());
-                                bullets.back().setIterator(--eBullets.end());
-                                canShoot = false;
-                                shootingReset = false;
-                            } else if(canShoot && timpy.getWeapon() == Weapon::revolver && shootingReset) {
-                                eBullets.emplace_back(timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y+scale(19),-bulletSpeed,0,gameRenderer);
-                                bullets.emplace_back(&eBullets.back());
-                                bullets.back().setIterator(--eBullets.end());
-                                canShoot = false;
+                            if(shootingReset) {
+                                timpy.shoot(&eBullets,&bullets,bulletSpeed);
                                 shootingReset = false;
                             }
-
                         } else {
                             shootingReset = true;
                         }
@@ -262,14 +243,7 @@ int main( int argc, char* args[] ) {
                     waveStarted = true;
                 }
 
-                if (lastShotTimeDifference > revolverReloadSpeed) {
-                    updateTimeToShoot(scale(75));
-                    lastShotTimeDifference = 0;
-                    canShoot = true;
-                } else if(!canShoot) {
-                    lastShotTimeDifference += dt;
-                    updateTimeToShoot(scale(75)*lastShotTimeDifference*(1/revolverReloadSpeed)-2);
-                }
+                updateTimeToShoot(scale(timpy.reload(dt,revolverReloadSpeed)));
 
                 SDL_RenderClear(gameRenderer);
 

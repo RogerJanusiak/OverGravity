@@ -1,4 +1,6 @@
 #include "../includes/Player.h"
+#include "../includes/Entity.h"
+#include "../includes/Bullet.h"
 
 #include <iostream>
 #include <list>
@@ -143,6 +145,36 @@ void Player::decreaseShield() {
         topLevelShieldHit = true;
     }
     playerShield--;
+}
+
+bool Player::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, int bulletSpeed) {
+    if(reloaded && currentWeapon == Weapon::revolver) {
+        if(playerDirection) {
+            eBullets->emplace_back(getEntity()->getRect().x+scale(60),getEntity()->getRect().y+scale(19),bulletSpeed,0,getEntity()->getRenderer());
+            bullets->emplace_back(&eBullets->back());
+            bullets->back().setIterator(--eBullets->end());
+        } else {
+            eBullets->emplace_back(getEntity()->getRect().x,getEntity()->getRect().y+scale(19),-bulletSpeed,0,getEntity()->getRenderer());
+            bullets->emplace_back(&eBullets->back());
+            bullets->back().setIterator(--eBullets->end());
+        }
+        reloaded = false;
+        return true;
+    }
+    return false;
+}
+
+int Player::reload(float dt,double revolverReloadSpeed) {
+    if (timeSinceShot >= revolverReloadSpeed) {
+        timeSinceShot = 0;
+        reloaded = true;
+        return 75;
+    }
+    if(!reloaded) {
+        timeSinceShot += dt;
+        return 75*timeSinceShot*(1/revolverReloadSpeed)-2;
+    }
+    return 75;
 }
 
 

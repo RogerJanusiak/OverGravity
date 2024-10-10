@@ -1,6 +1,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include <list>
+
+#include "Bullet.h"
 #include "Platform.h"
 #include "Texture.h"
 
@@ -25,7 +27,7 @@ public:
     const SDL_Rect &getWeaponRect() const { return weaponRect; }
 
     void setDirection (bool direction);
-    bool getDirection () const { return playerDirection; }
+
     Entity* getEntity() const { return playerEntity; }
     Weapon getWeapon() const { return currentWeapon; }
 
@@ -40,7 +42,8 @@ public:
     void zeroCombo() { combo = 0;}
     int getCombo() const { return combo; }
 
-    void shoot() const;
+    bool shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, int bulletSpeed);
+    int reload(float dt,double revolverReloadSpeed);
 
     SDL_Rect playerHealth1;
     SDL_Rect playerHealth2;
@@ -65,6 +68,9 @@ private:
 
     int combo = 0;
     bool topLevelShieldHit = false;
+
+    bool reloaded = true;
+    float timeSinceShot;
 
     SDL_Rect weaponRect;
     Texture knifeTextureRight;

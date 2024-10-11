@@ -139,6 +139,7 @@ int main( int argc, char* args[] ) {
             std::vector<Robor> robors;
             std::vector<Entity*> allCharacterEntities;
             allCharacterEntities.push_back(timpy.getEntity());
+            timpy.getEntity()->setXVelocity(0);
 
             for (auto it = eRobots.begin(); it != eRobots.end(); ++it) {
                 robors.emplace_back(&(*it),roborXVelocity);
@@ -531,8 +532,6 @@ bool init() {
 }
 
 void close() {
-
-
     SDL_DestroyRenderer(gameRenderer);
     gameRenderer = nullptr;
 

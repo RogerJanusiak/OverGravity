@@ -21,8 +21,8 @@ public:
 
 private:
 
-    const int width = scale(3);
-    const int height = scale(3);
+    const int width = scale(6);
+    const int height = scale(6);
 
     int platformStatus = 0;
 

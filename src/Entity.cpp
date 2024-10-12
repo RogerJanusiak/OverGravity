@@ -76,6 +76,19 @@ void Entity::spawn() {
     }
 }
 
+void Entity::forceSpawn() {
+    for(auto it = spawns->begin(); it != spawns->end(); it++) {
+        if(!it->getOccupied() && it->getOnScreen()) {
+            offPlatform = false;
+            spawned = true;
+            setPosition(it->getX(),it->getY());
+            setYVelocity(0);
+            it->setOccupied(true);
+            break;
+        }
+    }
+}
+
 
 bool Entity::isColliding(SDL_Rect& rectA, const SDL_Rect& rectB) {
     if (rectA.y + rectA.h >= rectB.y && rectA.y <= rectB.y + rectB.h && rectA.x + rectA.w >= rectB.x && rectA.x <= rectB.x + rectB.w) {

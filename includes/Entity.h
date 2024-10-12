@@ -35,6 +35,7 @@ public:
 
     bool isSpawned() const { return spawned; }
     void spawn();
+    void forceSpawn();
     void despawn() { spawned = false;justSpawned = true;entityRect.x = -1000,entityRect.y = -1000; }
 
     bool move(float dt,const std::list<Platform*> &platforms);

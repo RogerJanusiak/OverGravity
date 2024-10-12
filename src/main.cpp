@@ -28,6 +28,7 @@ SDL_GameController* controller;
 
 bool init();
 void close();
+void checkIfSpawnsAreOnScreen(std::vector<Spawn*>& allSpawns);
 void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& eRobots);
 void renderPlatforms(std::list<Platform*>& platforms);
 std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<Spawn>* spawns);
@@ -85,8 +86,11 @@ int main( int argc, char* args[] ) {
         std::list<Entity> eBullets;
         std::list<Bullet> bullets;
 
+        checkIfSpawnsAreOnScreen(allSpawns);
+
         Entity eTimpy = Entity(&playerSpawns,gameRenderer);
         Player timpy = Player(&eTimpy);
+        timpy.getEntity()->forceSpawn();
 
         bool leftMovement = false;
         bool rightMovement = false;
@@ -153,8 +157,7 @@ int main( int argc, char* args[] ) {
             bool waveStarted = false;
             Uint32 startWaveLoad = SDL_GetTicks();
 
-            timpy.getEntity()->despawn();
-            timpy.getEntity()->spawn();
+            checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
             while(inWave && !quit) {
                 Uint64 start = SDL_GetPerformanceCounter();
@@ -170,6 +173,9 @@ int main( int argc, char* args[] ) {
                         if(e.key.keysym.sym == SDLK_2) {
                             waveNumber = 30;
                             waveOverride = true;
+                        }
+                        if(e.key.keysym.sym == SDLK_3) {
+                            timpy.getEntity()->forceSpawn();
                         }
                         if(e.key.keysym.sym == SDLK_d) {
                             timpy.getEntity()->setXVelocity(timpyXVelocity);
@@ -267,15 +273,13 @@ int main( int argc, char* args[] ) {
                 }
 
                 //Render/Move/Collision Enemies
+                bool playerDamaged = false;
                 SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
                 for (auto it = robors.begin(); it != robors.end();it++) {
                     bool firstLoop = false;
                     if(!it->getEntity()->isSpawned()) {
                         it->getEntity()->spawn();
                         firstLoop = true;
-                    }
-                    if(it->alive) {
-                        robotAlive = true;
                     }
                     if(it->alive && it->getEntity()->isSpawned()) {
                         if(!firstLoop && waveStarted) {
@@ -287,26 +291,19 @@ int main( int argc, char* args[] ) {
                         } else {
                             if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
                                 if(timpy.getShield() == 2) {
+                                    playerDamaged = true;
                                     timpy.decreaseShield();
-                                    timpy.getEntity()->despawn();
-                                    timpy.zeroCombo();
-                                    updateInGameText(timpy.getCombo(),waveNumber);
                                 } else if(timpy.getShield() == 1) {
+                                    playerDamaged = true;
                                     timpy.decreaseShield();
-                                    timpy.getEntity()->despawn();
-                                    timpy.zeroCombo();
-                                    updateInGameText(timpy.getCombo(),waveNumber);
                                 } else {
                                     if(timpy.getHP() == 2) {
+                                        playerDamaged = true;
                                         timpy.damage();
-                                        timpy.getEntity()->despawn();
-                                        timpy.zeroCombo();
-                                        updateInGameText(timpy.getCombo(),waveNumber);
                                     } else if (timpy.getHP() == 1) {
                                         playerAlive = false;
                                         waveNumber = 0;
                                         timpy.setHP(2);
-                                        timpy.getEntity()->despawn();
                                         timpy.zeroCombo();
                                         updateInGameText(timpy.getCombo(),waveNumber);
                                     }
@@ -329,14 +326,27 @@ int main( int argc, char* args[] ) {
                             SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                         }
                     }
+                    if(it->alive) {
+                        robotAlive = true;
+                    }
+                }
+
+                if(playerDamaged) {
+                    timpy.zeroCombo();
+                    updateInGameText(timpy.getCombo(),waveNumber);
                 }
 
                 if(!playerAlive || waveOverride) {
                     inWave = false;
                     waveOverride = false;
-                }
-                else {
+                } else {
                     inWave = robotAlive;
+                }
+
+                if(playerDamaged) {
+                    timpy.getEntity()->forceSpawn();
+                } else if(!inWave) {
+                    timpy.getEntity()->forceSpawn();
                 }
 
                 if(timpy.getEntity()->isSpawned()) {
@@ -344,8 +354,6 @@ int main( int argc, char* args[] ) {
                         timpy.move(dt, platforms);
                     }
                     timpy.render();
-                } else {
-                    timpy.getEntity()->spawn();
                 }
 
                 SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
@@ -435,6 +443,25 @@ void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::lis
 
 }
 
+void checkIfSpawnsAreOnScreen(std::vector<Spawn*>& allSpawns) {
+    for (auto sit = allSpawns.begin(); sit != allSpawns.end(); ++sit) {
+        if((*sit)->getSpawnType() == 1) {
+            if((*sit)->getRect().x > MOVE_BUFFER && (*sit)->getRect().x+(*sit)->getRect().w < WINDOW_WIDTH-MOVE_BUFFER) {
+                (*sit)->setOnScreen(true);
+            } else {
+                (*sit)->setOnScreen(false);
+            }
+        } else {
+            if((*sit)->getRect().x > 0 && (*sit)->getRect().x < WINDOW_WIDTH) {
+                (*sit)->setOnScreen(true);
+            } else {
+                (*sit)->setOnScreen(false);
+            }
+        }
+
+    }
+}
+
 void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& allCharacterEntities) {
     for (auto sit = allSpawns.begin(); sit != allSpawns.end(); ++sit) {
         (*sit)->setOccupied(false);
@@ -444,7 +471,7 @@ void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& a
             }
         }
         if((*sit)->getSpawnType() == 1) {
-            if((*sit)->getRect().x > MOVE_BUFFER && (*sit)->getRect().x < WINDOW_WIDTH-MOVE_BUFFER) {
+            if((*sit)->getRect().x > MOVE_BUFFER && (*sit)->getRect().x+(*sit)->getRect().w < WINDOW_WIDTH-MOVE_BUFFER) {
                 (*sit)->setOnScreen(true);
             } else {
                 (*sit)->setOnScreen(false);

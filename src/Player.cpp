@@ -98,8 +98,6 @@ void Player::move(float dt,const std::list<Platform*> &platforms) {
     weaponRect.y = playerEntity->getRect().y+scale(20);
 
     if(playerEntity->getRect().y >= WINDOW_HEIGHT) {
-        playerEntity->setYVelocity(0);
-        playerEntity->setXVelocity(0);
         playerEntity->spawn();
     }
 

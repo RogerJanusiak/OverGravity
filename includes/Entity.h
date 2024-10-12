@@ -19,7 +19,7 @@ public:
 
     void render() const;
 
-    void setPosition (int x,int y) { entityRect.x = x; entityRect.y = y; yVelocity = 0; }
+    void setPosition (int x,int y) { entityRect.x = x; entityRect.y = y; }
     void setXVelocity (const float Vx) { xVelocity = Vx; }
     void setYVelocity (const float Vy) { yVelocity = Vy; }
     void setDimensions (const int w, const int h) { entityRect.w = w; entityRect.h = h; }

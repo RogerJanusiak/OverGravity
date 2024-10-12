@@ -14,6 +14,12 @@ Platform::Platform(int x, int y, SDL_Renderer* renderer) {
 
 }
 
-void Platform::render() {
+void Platform::render(){
     texture.render(box.x,box.y);
 }
+
+void Platform::setPosition(int x, int y) {
+    box.x = x;
+    box.y = y;
+}
+

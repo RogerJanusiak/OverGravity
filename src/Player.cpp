@@ -87,7 +87,7 @@ void Player::render() const {
 }
 
 void Player::move(float dt,const std::list<Platform*> &platforms) {
-   playerEntity->move(dt,platforms);
+    playerEntity->move(dt,platforms);
 
     if(playerDirection) {
         weaponRect.x = playerEntity->getRect().x+scale(40);
@@ -97,18 +97,20 @@ void Player::move(float dt,const std::list<Platform*> &platforms) {
 
     weaponRect.y = playerEntity->getRect().y+scale(20);
 
-    if(playerEntity->getRect().x >= WINDOW_WIDTH) {
-        playerEntity->setPosition(-scale(40),playerEntity->getRect().y);
-    }
-
     if(playerEntity->getRect().y >= WINDOW_HEIGHT) {
         playerEntity->setYVelocity(0);
         playerEntity->setXVelocity(0);
         playerEntity->spawn();
     }
 
-    if(playerEntity->getRect().x < -scale(40)) {
-        playerEntity->setPosition(WINDOW_WIDTH, playerEntity->getRect().y);
+    if(playerEntity->getRect().x+playerEntity->getRect().w >= WINDOW_WIDTH) {
+        playerEntity->setXVelocity(0);
+        playerEntity->setPosition(WINDOW_WIDTH-playerEntity->getRect().w,playerEntity->getRect().y);
+    }
+
+    if(playerEntity->getRect().x <= 0) {
+        playerEntity->setXVelocity(0);
+        playerEntity->setPosition(0,playerEntity->getRect().y);
     }
 
 }

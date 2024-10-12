@@ -28,11 +28,13 @@ SDL_GameController* controller;
 
 bool init();
 void close();
-void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::vector<Entity*>& allCharacterEntities);
+void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& eRobots);
 void renderPlatforms(std::list<Platform*>& platforms);
-std::vector<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<Spawn>* spawns);
+std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<Spawn>* spawns);
 void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
 void loadController();
+
+void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns);
 
 bool loadValuesFromCSV(std::string &filePath);
 
@@ -45,6 +47,8 @@ int timpyXVelocity = 1;
 int roborXVelocity = 1;
 double revolverReloadSpeed = 1;
 int comboToGetShield = 1;
+
+int camX=0;
 
 int main( int argc, char* args[] ) {
     if(!init()) {
@@ -83,16 +87,13 @@ int main( int argc, char* args[] ) {
 
         Entity eTimpy = Entity(&playerSpawns,gameRenderer);
         Player timpy = Player(&eTimpy);
-        timpy.getEntity()->spawn();
 
         bool leftMovement = false;
         bool rightMovement = false;
 
         bool waveOverride = false;
 
-        bool canShoot = true;
         bool shootingReset = true;
-        float lastShotTimeDifference = 0;
 
         bool inWave;
         int waveNumber = 0;
@@ -135,23 +136,27 @@ int main( int argc, char* args[] ) {
 
             inWave = true;
             waveNumber++;
-            std::vector<Entity> eRobots = getWaveEnemyEntities(waveNumber,1, &enemySpawns);
-            std::vector<Robor> robors;
-            std::vector<Entity*> allCharacterEntities;
-            allCharacterEntities.push_back(timpy.getEntity());
-            timpy.getEntity()->setXVelocity(0);
 
-            for (auto it = eRobots.begin(); it != eRobots.end(); ++it) {
+            std::list<Entity> tempRobors = getWaveEnemyEntities(waveNumber,1, &enemySpawns);
+            std::list<Entity> eRobots;
+            std::list<Robor> robors;
+            std::list<Entity*> allCharacterEntities;
+
+            allCharacterEntities.push_back(timpy.getEntity());
+
+            for (auto it = tempRobors.begin(); it != tempRobors.end(); ++it) {
+                eRobots.push_back(*it);
                 robors.emplace_back(&(*it),roborXVelocity);
-                allCharacterEntities.push_back(&(*it));
+                allCharacterEntities.emplace_back(&(*it));
             }
-            timpy.getEntity()->spawn();
 
             bool waveStarted = false;
             Uint32 startWaveLoad = SDL_GetTicks();
 
-            while(inWave && !quit) {
+            timpy.getEntity()->despawn();
+            timpy.getEntity()->spawn();
 
+            while(inWave && !quit) {
                 Uint64 start = SDL_GetPerformanceCounter();
 
                 //Controls Loop
@@ -189,7 +194,6 @@ int main( int argc, char* args[] ) {
                                 shootingReset = false;
                             }
                         }
-
                     } else if(e.type == SDL_KEYUP) {
                         if(e.key.keysym.sym == SDLK_d)
                             rightMovement = false;
@@ -264,17 +268,18 @@ int main( int argc, char* args[] ) {
 
                 //Render/Move/Collision Enemies
                 SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
-                for (auto it = robors.begin(); it != robors.end(); ++it) {
+                for (auto it = robors.begin(); it != robors.end();it++) {
                     bool firstLoop = false;
                     if(!it->getEntity()->isSpawned()) {
                         it->getEntity()->spawn();
                         firstLoop = true;
                     }
-                    if(it->alive && it->getEntity()->isSpawned()) {
+                    if(it->alive) {
                         robotAlive = true;
-
+                    }
+                    if(it->alive && it->getEntity()->isSpawned()) {
                         if(!firstLoop && waveStarted) {
-                            it->move(dt, platforms);
+                            it->move(dt, platforms,camX);
                         }
                         it->render();
                         if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
@@ -284,20 +289,17 @@ int main( int argc, char* args[] ) {
                                 if(timpy.getShield() == 2) {
                                     timpy.decreaseShield();
                                     timpy.getEntity()->despawn();
-                                    timpy.getEntity()->spawn();
                                     timpy.zeroCombo();
                                     updateInGameText(timpy.getCombo(),waveNumber);
                                 } else if(timpy.getShield() == 1) {
                                     timpy.decreaseShield();
                                     timpy.getEntity()->despawn();
-                                    timpy.getEntity()->spawn();
                                     timpy.zeroCombo();
                                     updateInGameText(timpy.getCombo(),waveNumber);
                                 } else {
                                     if(timpy.getHP() == 2) {
                                         timpy.damage();
                                         timpy.getEntity()->despawn();
-                                        timpy.getEntity()->spawn();
                                         timpy.zeroCombo();
                                         updateInGameText(timpy.getCombo(),waveNumber);
                                     } else if (timpy.getHP() == 1) {
@@ -309,17 +311,15 @@ int main( int argc, char* args[] ) {
                                         updateInGameText(timpy.getCombo(),waveNumber);
                                     }
                                 }
+                                it->alive = false;
                             }
                         }
                         for(auto bit = bullets.begin(); bit != bullets.end();) {
                             if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
-                                //TODO: Does this despawn the enemy type?
-                                //TODO: This should probably erase the enemy
-                                //TODO: Check behaivor when enemy goes off map it doesn't end the wave
-                                it->alive = false;
                                 eBullets.erase(bit->getIterator());
                                 bit = bullets.erase(bit);
                                 timpy.increaseCombo(comboToGetShield);
+                                it->alive = false;
                             } else {
                                 ++bit;
                             }
@@ -344,11 +344,23 @@ int main( int argc, char* args[] ) {
                         timpy.move(dt, platforms);
                     }
                     timpy.render();
+                } else {
+                    timpy.getEntity()->spawn();
                 }
 
                 SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
                 if(developerMode) {
                     SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
+                }
+
+                if((timpy.getEntity()->getRect().x+timpy.getEntity()->getRect().w) > WINDOW_WIDTH-MOVE_BUFFER && camX > -1*(LEVEL_WIDTH-WINDOW_WIDTH)) {
+                    int change = -1*((timpy.getEntity()->getRect().x+timpy.getEntity()->getRect().w)-(WINDOW_WIDTH-MOVE_BUFFER));
+                    moveCamera(change,0,allCharacterEntities,platforms,allSpawns);
+                }
+
+                if((timpy.getEntity()->getRect().x) < MOVE_BUFFER && camX < 0) {
+                    int change = MOVE_BUFFER-timpy.getEntity()->getRect().x;
+                    moveCamera(change,0,allCharacterEntities,platforms,allSpawns);
                 }
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
@@ -359,13 +371,32 @@ int main( int argc, char* args[] ) {
 
                 renderPlayerUI(&timpy);
 
+                if(developerMode) {
+                    for(auto spawn : allSpawns) {
+                        if(spawn->getOnScreen() && !spawn->getOccupied()) {
+                            SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
+                        } else {
+                            SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
+                        }
+                        SDL_RenderDrawRect(gameRenderer, &spawn->getRect());
+                    }
+                }
+
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);
+
+                if(camX > 0) {
+                    moveCamera(0-camX,0,allCharacterEntities
+                        ,platforms,allSpawns);
+                }
 
                 Uint64 end = SDL_GetPerformanceCounter();
 
                 float elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
                 lastFPS = (1.0f / elapsed);
+
+
+
             }
         }
 
@@ -386,7 +417,25 @@ void renderPlatforms(std::list<Platform*>& platforms) {
     }
 }
 
-void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::vector<Entity*>& allCharacterEntities) {
+void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns) {
+
+    camX += x;
+
+    for (auto entites : allCharacterEntities) {
+        entites->setPosition(entites->getRect().x+x,entites->getRect().y+y);
+    }
+
+    for (auto platform : platforms) {
+        platform->setPosition(platform->getPlatformRect().x+x,platform->getPlatformRect().y+y);
+    }
+
+    for(auto spawn : allSpawns) {
+        spawn->setPosition(spawn->getRect().x+x,spawn->getRect().y+y);
+    }
+
+}
+
+void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& allCharacterEntities) {
     for (auto sit = allSpawns.begin(); sit != allSpawns.end(); ++sit) {
         (*sit)->setOccupied(false);
         for (auto it = allCharacterEntities.begin(); it != allCharacterEntities.end(); ++it) {
@@ -394,11 +443,25 @@ void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::vector<Entity*>&
                 (*sit)->setOccupied(true);
             }
         }
+        if((*sit)->getSpawnType() == 1) {
+            if((*sit)->getRect().x > MOVE_BUFFER && (*sit)->getRect().x < WINDOW_WIDTH-MOVE_BUFFER) {
+                (*sit)->setOnScreen(true);
+            } else {
+                (*sit)->setOnScreen(false);
+            }
+        } else {
+            if((*sit)->getRect().x > 0 && (*sit)->getRect().x < WINDOW_WIDTH) {
+                (*sit)->setOnScreen(true);
+            } else {
+                (*sit)->setOnScreen(false);
+            }
+        }
+
     }
 }
 
-std::vector<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, std::vector<Spawn>* spawns) {
-    std::vector<Entity> entities;
+std::list<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, std::vector<Spawn>* spawns) {
+    std::list<Entity> entities;
     for(int i = 1; i <= waveNumber; i++) {
         if(i % divisor == 0) {
             entities.emplace_back(spawns,gameRenderer);
@@ -434,10 +497,10 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
             platforms.emplace_back(std::stoi(data[i][1]),std::stoi(data[i][2]),gameRenderer);
         }
         if(std::stoi(data[i][0]) == 1) {
-            playerSpawns.emplace_back(scale(std::stoi(data[i][1])),scale(std::stoi(data[i][2])),scale(50),scale(60));
+            playerSpawns.emplace_back(scale(std::stoi(data[i][1])),scale(std::stoi(data[i][2])),scale(50),scale(60),1);
         }
         if(std::stoi(data[i][0]) == 2) {
-            enemySpawns.emplace_back(scale(std::stoi(data[i][1])),scale(std::stoi(data[i][2])),scale(50),scale(50));
+            enemySpawns.emplace_back(scale(std::stoi(data[i][1])),scale(std::stoi(data[i][2])),scale(50),scale(50),2);
         }
     }
 }

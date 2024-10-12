@@ -15,6 +15,7 @@ public:
     void render();
 
     SDL_Rect &getPlatformRect() { return box; }
+    void setPosition(int x, int y);
 
 private:
     SDL_Rect box;
@@ -24,7 +25,5 @@ private:
     const int height = scale(17);
 
 };
-
-
 
 #endif //PLATFORM_H

@@ -12,7 +12,7 @@ const int WINDOW_HEIGHT = scale(450);
 
 const int TILE_SIZE = 80;
 
-const int ACCELERATION = scale(7000);
+const int ACCELERATION = scale(6000);
 
 constexpr int JOYSTICK_DEAD_ZONE = 18000;
 

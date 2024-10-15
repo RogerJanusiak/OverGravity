@@ -45,6 +45,7 @@ bool loadValuesFromCSV(std::string &filePath);
 bool developerMode = false;
 bool started = false;
 bool multiplayer = false;
+bool pauseEnemy = false;
 
 int bulletSpeed = 1;
 int timpyXVelocity = 1;
@@ -130,9 +131,11 @@ int main( int argc, char* args[] ) {
                     } else if(e.type == SDL_JOYDEVICEADDED ) {
                         loadController();
                         initStartScreen(controller != nullptr);
+                        renderStartScreen();
                     } else if (e.type == SDL_JOYDEVICEREMOVED) {
                         controller = nullptr;
                         initStartScreen(controller != nullptr);
+                        renderStartScreen();
                     }
                 }
 
@@ -173,12 +176,16 @@ int main( int argc, char* args[] ) {
                         if(e.key.keysym.sym == SDLK_1) {
                             developerMode = !developerMode;
                         }
-                        if(e.key.keysym.sym == SDLK_2) {
+                        if(e.key.keysym.sym == SDLK_2 && developerMode) {
                             waveNumber = 30;
                             waveOverride = true;
                         }
-                        if(e.key.keysym.sym == SDLK_3) {
+                        if(e.key.keysym.sym == SDLK_3 && developerMode) {
+                            moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
                             timpy.getEntity()->forceSpawn();
+                        }
+                        if(e.key.keysym.sym == SDLK_4 && developerMode) {
+                           pauseEnemy = !pauseEnemy;
                         }
                         if(e.key.keysym.sym == SDLK_d) {
                             timpy.getEntity()->setXVelocity(timpyXVelocity);
@@ -261,6 +268,21 @@ int main( int argc, char* args[] ) {
 
                 SDL_RenderClear(gameRenderer);
 
+                if(developerMode) {
+                    for(auto spawn : allSpawns) {
+                        if(!spawn->getOccupied()) {
+                            SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
+                        } else {
+                            SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
+                        }
+                        SDL_RenderDrawRect(gameRenderer, &spawn->getRect());
+                    }
+                } else {
+                    for(auto spawn : allSpawns) {
+                        spawn->render(gameRenderer);
+                    }
+                }
+
                 bool robotAlive = false;
                 bool playerAlive = true;
 
@@ -285,7 +307,7 @@ int main( int argc, char* args[] ) {
                         firstLoop = true;
                     }
                     if(it->alive && it->getEntity()->isSpawned()) {
-                        if(!firstLoop && waveStarted) {
+                        if(!firstLoop && waveStarted && !pauseEnemy) {
                             it->move(dt, platforms,camY,levelHeight);
                         }
                         it->render();
@@ -293,22 +315,26 @@ int main( int argc, char* args[] ) {
                             it->alive = false;
                         } else {
                             if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
-                                if(timpy.getShield() == 2) {
-                                    playerDamaged = true;
-                                    timpy.decreaseShield();
-                                } else if(timpy.getShield() == 1) {
-                                    playerDamaged = true;
-                                    timpy.decreaseShield();
+                                if(timpy.getEntity()->getRect().y + timpy.getEntity()->getRect().h*0.5 < it->getEntity()->getRect().y) {
+                                    timpy.getEntity()->setYVelocity(-1800);
                                 } else {
-                                    if(timpy.getHP() == 2) {
+                                    if(timpy.getShield() == 2) {
                                         playerDamaged = true;
-                                        timpy.damage();
-                                    } else if (timpy.getHP() == 1) {
-                                        playerAlive = false;
-                                        waveNumber = 0;
-                                        timpy.setHP(2);
-                                        timpy.zeroCombo();
-                                        updateInGameText(timpy.getCombo(),waveNumber);
+                                        timpy.decreaseShield();
+                                    } else if(timpy.getShield() == 1) {
+                                        playerDamaged = true;
+                                        timpy.decreaseShield();
+                                    } else {
+                                        if(timpy.getHP() == 2) {
+                                            playerDamaged = true;
+                                            timpy.damage();
+                                        } else if (timpy.getHP() == 1) {
+                                            playerAlive = false;
+                                            waveNumber = 0;
+                                            timpy.setHP(2);
+                                            timpy.zeroCombo();
+                                            updateInGameText(timpy.getCombo(),waveNumber);
+                                        }
                                     }
                                 }
                                 it->alive = false;
@@ -358,7 +384,7 @@ int main( int argc, char* args[] ) {
                     if(waveStarted) {
 
                         //TODO: Check if moveCamera will over shoot and then set it to max.
-                        if(timpy.getEntity()->getRect().y >= scale(225) && camY > -1*(scale(levelHeight)-WINDOW_HEIGHT)) {
+                        if(timpy.getEntity()->getRect().y >= scale(195) && camY > -1*(scale(levelHeight)-WINDOW_HEIGHT)) {
                             moveCamera(0,timpy.move(dt, platforms,camY),allCharacterEntities,platforms,allSpawns);
                         } else {
                             timpy.move(dt, platforms,camY);
@@ -385,17 +411,6 @@ int main( int argc, char* args[] ) {
                 renderInGameText(developerMode, lastFPS, waveStarted);
 
                 renderPlayerUI(&timpy);
-
-                if(developerMode) {
-                    for(auto spawn : allSpawns) {
-                        if(!spawn->getOccupied()) {
-                            SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
-                        } else {
-                            SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
-                        }
-                        SDL_RenderDrawRect(gameRenderer, &spawn->getRect());
-                    }
-                }
 
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);
@@ -486,11 +501,11 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
                 platforms.emplace_back(j*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
             }
             if(std::stoi(data[i][j]) == 1) {
-                playerSpawns.emplace_back(scale(j*TILE_SIZE),scale(i*TILE_SIZE+(TILE_SIZE-17-60)),scale(50),scale(60),1);
+                playerSpawns.emplace_back(scale(j*TILE_SIZE-25),scale(i*TILE_SIZE+(TILE_SIZE-17-60)),scale(50),scale(60),1);
                 platforms.emplace_back(j*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
             }
             if(std::stoi(data[i][j]) == 2) {
-                enemySpawns.emplace_back(scale(j*TILE_SIZE),scale(i*TILE_SIZE+(TILE_SIZE-17-50)),scale(50),scale(50),2);
+                enemySpawns.emplace_back(scale(j*TILE_SIZE+(TILE_SIZE-50)/2),scale(i*TILE_SIZE+(TILE_SIZE-17-50)),scale(50),scale(50),2);
                 platforms.emplace_back(j*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
             }
         }

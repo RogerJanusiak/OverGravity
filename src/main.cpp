@@ -34,6 +34,10 @@ std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<S
 void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
 void loadController();
 
+void log(int x) {
+    SDL_Log(std::to_string(x).c_str());
+}
+
 void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns);
 
 bool loadValuesFromCSV(std::string &filePath);
@@ -47,6 +51,8 @@ int timpyXVelocity = 1;
 int roborXVelocity = 1;
 double revolverReloadSpeed = 1;
 int comboToGetShield = 1;
+
+int levelHeight = 0;
 
 int camY=0;
 
@@ -280,7 +286,7 @@ int main( int argc, char* args[] ) {
                     }
                     if(it->alive && it->getEntity()->isSpawned()) {
                         if(!firstLoop && waveStarted) {
-                            it->move(dt, platforms,camY);
+                            it->move(dt, platforms,camY,levelHeight);
                         }
                         it->render();
                         if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
@@ -344,23 +350,25 @@ int main( int argc, char* args[] ) {
                     moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
                     timpy.getEntity()->forceSpawn();
                 } else if(!inWave) {
-                    moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
-                    timpy.getEntity()->forceSpawn();
+                    //moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
+                    //timpy.getEntity()->forceSpawn();
                 }
 
                 if(timpy.getEntity()->isSpawned()) {
                     if(waveStarted) {
-                        if(timpy.getEntity()->getRect().y >= scale(225) && camY >= -1*scale(450)) {
-                            moveCamera(0,timpy.move(dt, platforms,camY),allCharacterEntities,platforms,allSpawns);
-                        } else if(camY <= -1*scale(450*2-60)) {
 
+                        //TODO: Check if moveCamera will over shoot and then set it to max.
+                        if(timpy.getEntity()->getRect().y >= scale(225) && camY > -1*(scale(levelHeight)-WINDOW_HEIGHT)) {
+                            moveCamera(0,timpy.move(dt, platforms,camY),allCharacterEntities,platforms,allSpawns);
                         } else {
                             timpy.move(dt, platforms,camY);
                             if(timpy.getEntity()->getRect().y > WINDOW_HEIGHT) {
                                 moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
                                 timpy.getEntity()->forceSpawn();
+                            } else if (camY < -1*(scale(levelHeight)-WINDOW_HEIGHT)) {
+                                moveCamera(0,-1*(camY+scale(levelHeight)-WINDOW_HEIGHT),allCharacterEntities,platforms,allSpawns);
                             }
-                        }
+                         }
                     }
                     timpy.render();
                 }
@@ -455,7 +463,7 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
         SDL_Log("Could not load level file!");
     }
     constexpr int MAX_ROWS = 100;
-    constexpr int MAX_COLS = 3;
+    constexpr int MAX_COLS = 10;
     std::string data[MAX_ROWS][MAX_COLS];
     std::string line;
     int row = 0;
@@ -471,15 +479,20 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
         row++;
     }
     file.close();
+    levelHeight = row*TILE_SIZE;
     for (int i = 0; i < row; i++) {
-        if(std::stoi(data[i][0]) == 0) {
-            platforms.emplace_back(std::stoi(data[i][1]),std::stoi(data[i][2]),gameRenderer);
-        }
-        if(std::stoi(data[i][0]) == 1) {
-            playerSpawns.emplace_back(scale(std::stoi(data[i][1])),scale(std::stoi(data[i][2])),scale(50),scale(60),1);
-        }
-        if(std::stoi(data[i][0]) == 2) {
-            enemySpawns.emplace_back(scale(std::stoi(data[i][1])),scale(std::stoi(data[i][2])),scale(50),scale(50),2);
+        for(int j = 0; j < MAX_COLS; j++) {
+            if(std::stoi(data[i][j]) == 0) {
+                platforms.emplace_back(j*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
+            }
+            if(std::stoi(data[i][j]) == 1) {
+                playerSpawns.emplace_back(scale(j*TILE_SIZE),scale(i*TILE_SIZE+(TILE_SIZE-17-60)),scale(50),scale(60),1);
+                platforms.emplace_back(j*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
+            }
+            if(std::stoi(data[i][j]) == 2) {
+                enemySpawns.emplace_back(scale(j*TILE_SIZE),scale(i*TILE_SIZE+(TILE_SIZE-17-50)),scale(50),scale(50),2);
+                platforms.emplace_back(j*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
+            }
         }
     }
 }

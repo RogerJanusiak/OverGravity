@@ -16,7 +16,7 @@ Robor::Robor(Entity *entity, const int Vx) {
     }
 }
 
-void Robor::move(const float dt,const std::list<Platform*> &platforms, int levelY) const {
+void Robor::move(const float dt,const std::list<Platform*> &platforms, int levelY, int levelHeight) const {
     if(roborEntity->justSpawned) {
         roborEntity->justSpawned = false;
         if(roborEntity->getRect().x <=scale(400)) {
@@ -26,8 +26,7 @@ void Robor::move(const float dt,const std::list<Platform*> &platforms, int level
         }
     }
     roborEntity->move(dt,platforms);
-
-    if(roborEntity->getRect().y >= WINDOW_HEIGHT) {
+    if(roborEntity->getRect().y >= scale(levelHeight)+levelY) {
         roborEntity->despawn();
     }
 

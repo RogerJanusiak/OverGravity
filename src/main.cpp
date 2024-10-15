@@ -28,7 +28,6 @@ SDL_GameController* controller;
 
 bool init();
 void close();
-void checkIfSpawnsAreOnScreen(std::vector<Spawn*>& allSpawns);
 void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& eRobots);
 void renderPlatforms(std::list<Platform*>& platforms);
 std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<Spawn>* spawns);
@@ -49,7 +48,6 @@ int roborXVelocity = 1;
 double revolverReloadSpeed = 1;
 int comboToGetShield = 1;
 
-int camX=0;
 int camY=0;
 
 int main( int argc, char* args[] ) {
@@ -86,8 +84,6 @@ int main( int argc, char* args[] ) {
 
         std::list<Entity> eBullets;
         std::list<Bullet> bullets;
-
-        checkIfSpawnsAreOnScreen(allSpawns);
 
         Entity eTimpy = Entity(&playerSpawns,gameRenderer);
         Player timpy = Player(&eTimpy);
@@ -284,7 +280,7 @@ int main( int argc, char* args[] ) {
                     }
                     if(it->alive && it->getEntity()->isSpawned()) {
                         if(!firstLoop && waveStarted) {
-                            it->move(dt, platforms,camX);
+                            it->move(dt, platforms,camY);
                         }
                         it->render();
                         if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
@@ -348,7 +344,8 @@ int main( int argc, char* args[] ) {
                     moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
                     timpy.getEntity()->forceSpawn();
                 } else if(!inWave) {
-                    //timpy.getEntity()->forceSpawn();
+                    moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
+                    timpy.getEntity()->forceSpawn();
                 }
 
                 if(timpy.getEntity()->isSpawned()) {
@@ -373,16 +370,6 @@ int main( int argc, char* args[] ) {
                     SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
                 }
 
-                if((timpy.getEntity()->getRect().x+timpy.getEntity()->getRect().w) > WINDOW_WIDTH-MOVE_BUFFER && camX > -1*(LEVEL_WIDTH-WINDOW_WIDTH)) {
-                    int change = -1*((timpy.getEntity()->getRect().x+timpy.getEntity()->getRect().w)-(WINDOW_WIDTH-MOVE_BUFFER));
-                    //moveCamera(change,0,allCharacterEntities,platforms,allSpawns);
-                }
-
-                if((timpy.getEntity()->getRect().x) < MOVE_BUFFER && camX < 0) {
-                    int change = MOVE_BUFFER-timpy.getEntity()->getRect().x;
-                    //moveCamera(change,0,allCharacterEntities,platforms,allSpawns);
-                }
-
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
                 renderPlatforms(platforms);
@@ -393,7 +380,7 @@ int main( int argc, char* args[] ) {
 
                 if(developerMode) {
                     for(auto spawn : allSpawns) {
-                        if(spawn->getOnScreen() && !spawn->getOccupied()) {
+                        if(!spawn->getOccupied()) {
                             SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
                         } else {
                             SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
@@ -402,29 +389,17 @@ int main( int argc, char* args[] ) {
                     }
                 }
 
-                checkIfSpawnsAreOnScreen(allSpawns);
-
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);
-
-                if(camX > 0) {
-                    moveCamera(0-camX,0,allCharacterEntities
-                        ,platforms,allSpawns);
-                }
 
                 Uint64 end = SDL_GetPerformanceCounter();
 
                 float elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
                 lastFPS = (1.0f / elapsed);
-
-
-
             }
         }
 
     }
-
-
     close();
     return 0;
 }
@@ -440,42 +415,16 @@ void renderPlatforms(std::list<Platform*>& platforms) {
 }
 
 void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns) {
-
-    camX += x;
     camY += y;
 
     for (auto entites : allCharacterEntities) {
         entites->setPosition(entites->getRect().x+x,entites->getRect().y+y);
     }
-
     for (auto platform : platforms) {
         platform->setPosition(platform->getPlatformRect().x+x,platform->getPlatformRect().y+y);
     }
-
     for(auto spawn : allSpawns) {
         spawn->setPosition(spawn->getRect().x+x,spawn->getRect().y+y);
-    }
-
-}
-
-void checkIfSpawnsAreOnScreen(std::vector<Spawn*>& allSpawns) {
-    for (auto sit = allSpawns.begin(); sit != allSpawns.end(); ++sit) {
-        if((*sit)->getSpawnType() == 1) {
-            if((*sit)->getRect().x > MOVE_BUFFER && (*sit)->getRect().x+(*sit)->getRect().w < WINDOW_WIDTH-MOVE_BUFFER
-                && (*sit)->getRect().y >= 0 && (*sit)->getRect().y+(*sit)->getRect().h <= WINDOW_HEIGHT-scale(100)) {
-                (*sit)->setOnScreen(true);
-            } else {
-                (*sit)->setOnScreen(false);
-            }
-        } else {
-            if((*sit)->getRect().x > 0 && (*sit)->getRect().x < WINDOW_WIDTH
-                && (*sit)->getRect().y >= 0 && (*sit)->getRect().y+(*sit)->getRect().h <= WINDOW_HEIGHT) {
-                (*sit)->setOnScreen(true);
-            } else {
-                (*sit)->setOnScreen(false);
-            }
-        }
-
     }
 }
 

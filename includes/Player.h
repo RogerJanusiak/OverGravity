@@ -80,6 +80,4 @@ private:
     Texture revolverTextureLeft;
 };
 
-
-
 #endif //PLAYER_H

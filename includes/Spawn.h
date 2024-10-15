@@ -21,9 +21,6 @@ public:
     void setOccupied(const bool occupy) { occupied = occupy; }
     bool getOccupied() const { return occupied; }
 
-    void setOnScreen(const bool _onScreen) { onScreen = _onScreen; }
-    bool getOnScreen() const { return onScreen; }
-
     int getSpawnType() const { return type; }
 
     SDL_Rect& getRect() { return rect; }
@@ -33,7 +30,6 @@ private:
 
     SDL_Rect rect;
     bool occupied = false;
-    bool onScreen = false;
     int type = 0;
 
 };

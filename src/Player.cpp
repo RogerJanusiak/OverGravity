@@ -98,15 +98,12 @@ int Player::move(float dt,const std::list<Platform*> &platforms,int camY) {
 
     weaponRect.y = playerEntity->getRect().y+scale(20);
 
-    if(playerEntity->getRect().x+playerEntity->getRect().w >= WINDOW_WIDTH) {
-        playerEntity->setXVelocity(0);
-        playerEntity->setPosition(WINDOW_WIDTH-playerEntity->getRect().w,playerEntity->getRect().y);
+    if(playerEntity->getRect().x >= WINDOW_WIDTH) {
+        playerEntity->setPosition(-scale(40),playerEntity->getRect().y);
+    } else if(playerEntity->getRect().x < -scale(40)) {
+        playerEntity->setPosition(WINDOW_WIDTH, playerEntity->getRect().y);
     }
 
-    if(playerEntity->getRect().x <= 0) {
-        playerEntity->setXVelocity(0);
-        playerEntity->setPosition(0,playerEntity->getRect().y);
-    }
     return amountFallen;
 }
 

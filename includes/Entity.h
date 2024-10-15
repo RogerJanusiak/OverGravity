@@ -38,7 +38,7 @@ public:
     void forceSpawn();
     void despawn() { spawned = false;justSpawned = true;entityRect.x = -1000,entityRect.y = -1000; }
 
-    bool move(float dt,const std::list<Platform*> &platforms);
+    bool move(float dt,const std::list<Platform*> &platforms, int* amountFallen = nullptr);
 
     static bool isColliding(SDL_Rect& rectA, const SDL_Rect& rectB);
 

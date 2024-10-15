@@ -42,7 +42,8 @@ Platform* Entity::onPlatform(const std::list<Platform*> &platforms, SDL_Rect& mo
     return nullptr;
 }
 
-bool Entity::move(float dt,const std::list<Platform*> &platforms) {
+bool Entity::move(float dt,const std::list<Platform*> &platforms, int* amountFallen) {
+    int startY = entityRect.y;
     getRect().x += getXVelocity()*dt;
     float nextYPosition = entityRect.y + yVelocity*dt;
     offPlatform = true;
@@ -62,6 +63,9 @@ bool Entity::move(float dt,const std::list<Platform*> &platforms) {
         entityRect.y = potentialPlatform->getPlatformRect().y-entityRect.h;
         yVelocity = 0;
     }
+    if(amountFallen != nullptr) {
+        *amountFallen = startY - entityRect.y;
+    }
     return offPlatform;
 }
 
@@ -78,14 +82,14 @@ void Entity::spawn() {
 
 void Entity::forceSpawn() {
     for(auto it = spawns->begin(); it != spawns->end(); it++) {
-        if(!it->getOccupied() && it->getOnScreen()) {
+        //if(!it->getOccupied() && it->getOnScreen()) {
             offPlatform = false;
             spawned = true;
             setPosition(it->getX(),it->getY());
             setYVelocity(0);
             it->setOccupied(true);
             break;
-        }
+        //}
     }
 }
 

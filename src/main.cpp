@@ -50,6 +50,7 @@ double revolverReloadSpeed = 1;
 int comboToGetShield = 1;
 
 int camX=0;
+int camY=0;
 
 int main( int argc, char* args[] ) {
     if(!init()) {
@@ -344,14 +345,25 @@ int main( int argc, char* args[] ) {
                 }
 
                 if(playerDamaged) {
+                    moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
                     timpy.getEntity()->forceSpawn();
                 } else if(!inWave) {
-                    timpy.getEntity()->forceSpawn();
+                    //timpy.getEntity()->forceSpawn();
                 }
 
                 if(timpy.getEntity()->isSpawned()) {
                     if(waveStarted) {
-                        timpy.move(dt, platforms);
+                        if(timpy.getEntity()->getRect().y >= scale(225) && camY >= -1*scale(450)) {
+                            moveCamera(0,timpy.move(dt, platforms,camY),allCharacterEntities,platforms,allSpawns);
+                        } else if(camY <= -1*scale(450*2-60)) {
+
+                        } else {
+                            timpy.move(dt, platforms,camY);
+                            if(timpy.getEntity()->getRect().y > WINDOW_HEIGHT) {
+                                moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
+                                timpy.getEntity()->forceSpawn();
+                            }
+                        }
                     }
                     timpy.render();
                 }
@@ -363,12 +375,12 @@ int main( int argc, char* args[] ) {
 
                 if((timpy.getEntity()->getRect().x+timpy.getEntity()->getRect().w) > WINDOW_WIDTH-MOVE_BUFFER && camX > -1*(LEVEL_WIDTH-WINDOW_WIDTH)) {
                     int change = -1*((timpy.getEntity()->getRect().x+timpy.getEntity()->getRect().w)-(WINDOW_WIDTH-MOVE_BUFFER));
-                    moveCamera(change,0,allCharacterEntities,platforms,allSpawns);
+                    //moveCamera(change,0,allCharacterEntities,platforms,allSpawns);
                 }
 
                 if((timpy.getEntity()->getRect().x) < MOVE_BUFFER && camX < 0) {
                     int change = MOVE_BUFFER-timpy.getEntity()->getRect().x;
-                    moveCamera(change,0,allCharacterEntities,platforms,allSpawns);
+                    //moveCamera(change,0,allCharacterEntities,platforms,allSpawns);
                 }
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
@@ -389,6 +401,8 @@ int main( int argc, char* args[] ) {
                         SDL_RenderDrawRect(gameRenderer, &spawn->getRect());
                     }
                 }
+
+                checkIfSpawnsAreOnScreen(allSpawns);
 
                 SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                 SDL_RenderPresent(gameRenderer);
@@ -428,6 +442,7 @@ void renderPlatforms(std::list<Platform*>& platforms) {
 void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns) {
 
     camX += x;
+    camY += y;
 
     for (auto entites : allCharacterEntities) {
         entites->setPosition(entites->getRect().x+x,entites->getRect().y+y);
@@ -446,13 +461,15 @@ void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::lis
 void checkIfSpawnsAreOnScreen(std::vector<Spawn*>& allSpawns) {
     for (auto sit = allSpawns.begin(); sit != allSpawns.end(); ++sit) {
         if((*sit)->getSpawnType() == 1) {
-            if((*sit)->getRect().x > MOVE_BUFFER && (*sit)->getRect().x+(*sit)->getRect().w < WINDOW_WIDTH-MOVE_BUFFER) {
+            if((*sit)->getRect().x > MOVE_BUFFER && (*sit)->getRect().x+(*sit)->getRect().w < WINDOW_WIDTH-MOVE_BUFFER
+                && (*sit)->getRect().y >= 0 && (*sit)->getRect().y+(*sit)->getRect().h <= WINDOW_HEIGHT-scale(100)) {
                 (*sit)->setOnScreen(true);
             } else {
                 (*sit)->setOnScreen(false);
             }
         } else {
-            if((*sit)->getRect().x > 0 && (*sit)->getRect().x < WINDOW_WIDTH) {
+            if((*sit)->getRect().x > 0 && (*sit)->getRect().x < WINDOW_WIDTH
+                && (*sit)->getRect().y >= 0 && (*sit)->getRect().y+(*sit)->getRect().h <= WINDOW_HEIGHT) {
                 (*sit)->setOnScreen(true);
             } else {
                 (*sit)->setOnScreen(false);
@@ -470,20 +487,6 @@ void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& a
                 (*sit)->setOccupied(true);
             }
         }
-        if((*sit)->getSpawnType() == 1) {
-            if((*sit)->getRect().x > MOVE_BUFFER && (*sit)->getRect().x+(*sit)->getRect().w < WINDOW_WIDTH-MOVE_BUFFER) {
-                (*sit)->setOnScreen(true);
-            } else {
-                (*sit)->setOnScreen(false);
-            }
-        } else {
-            if((*sit)->getRect().x > 0 && (*sit)->getRect().x < WINDOW_WIDTH) {
-                (*sit)->setOnScreen(true);
-            } else {
-                (*sit)->setOnScreen(false);
-            }
-        }
-
     }
 }
 

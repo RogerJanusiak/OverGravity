@@ -20,7 +20,7 @@ class Player {
 public:
     Player(Entity* entity);
 
-    void move(float dt,const std::list<Platform*> &platforms);
+    int move(float dt,const std::list<Platform*> &platforms, int camY);
     void render() const;
     void changeWeapon();
 

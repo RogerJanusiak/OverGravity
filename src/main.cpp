@@ -57,6 +57,8 @@ int levelHeight = 0;
 
 int camY=0;
 
+Player* timpyPointer = nullptr;
+
 int main( int argc, char* args[] ) {
     if(!init()) {
         SDL_Log("Initialization failed!\n");
@@ -94,6 +96,7 @@ int main( int argc, char* args[] ) {
 
         Entity eTimpy = Entity(&playerSpawns,gameRenderer);
         Player timpy = Player(&eTimpy);
+        timpyPointer = &timpy;
         timpy.getEntity()->forceSpawn();
 
         bool leftMovement = false;
@@ -385,7 +388,10 @@ int main( int argc, char* args[] ) {
 
                         //TODO: Check if moveCamera will over shoot and then set it to max.
                         if(timpy.getEntity()->getRect().y >= scale(195) && camY > -1*(scale(levelHeight)-WINDOW_HEIGHT)) {
-                            moveCamera(0,timpy.move(dt, platforms,camY),allCharacterEntities,platforms,allSpawns);
+                            int movmentDistance = timpy.move(dt, platforms,camY);
+                            if(movmentDistance < 0) {
+                                moveCamera(0,movmentDistance,allCharacterEntities,platforms,allSpawns);
+                            }
                         } else {
                             timpy.move(dt, platforms,camY);
                             if(timpy.getEntity()->getRect().y > WINDOW_HEIGHT) {
@@ -402,6 +408,7 @@ int main( int argc, char* args[] ) {
                 SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
                 if(developerMode) {
                     SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
+                    SDL_RenderDrawRect(gameRenderer, timpy.getWheelRect());
                 }
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
@@ -443,6 +450,7 @@ void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::lis
     for (auto entites : allCharacterEntities) {
         entites->setPosition(entites->getRect().x+x,entites->getRect().y+y);
     }
+    timpyPointer->updateWheelRect();
     for (auto platform : platforms) {
         platform->setPosition(platform->getPlatformRect().x+x,platform->getPlatformRect().y+y);
     }

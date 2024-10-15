@@ -42,16 +42,23 @@ Platform* Entity::onPlatform(const std::list<Platform*> &platforms, SDL_Rect& mo
     return nullptr;
 }
 
-bool Entity::move(float dt,const std::list<Platform*> &platforms, int* amountFallen) {
+bool Entity::move(float dt,const std::list<Platform*> &platforms, int* amountFallen, SDL_Rect* movementHitBox) {
     int startY = entityRect.y;
     getRect().x += getXVelocity()*dt;
     float nextYPosition = entityRect.y + yVelocity*dt;
     offPlatform = true;
 
     SDL_Rect movementBox;
-    movementBox.x = entityRect.x;
+
+    if(movementHitBox == nullptr) {
+        movementBox.x = entityRect.x;
+        movementBox.w = entityRect.w;
+    } else {
+        movementBox.x = movementHitBox->x;
+        movementBox.w = movementHitBox->w;
+    }
+
     movementBox.y = entityRect.y;
-    movementBox.w = entityRect.w;
     movementBox.h = entityRect.h + (nextYPosition-entityRect.y);
     Platform* potentialPlatform = onPlatform(platforms,movementBox, entityRect);
 

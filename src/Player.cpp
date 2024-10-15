@@ -12,6 +12,9 @@ Player::Player(Entity* entity) : playerEntity(entity) {
 
     currentWeapon = Weapon::revolver;
 
+    wheelRect.w = 20;
+    wheelRect.h = 20;
+
     weaponRect.x = 0;
     weaponRect.y = 0;
     weaponRect.w = scale(42);
@@ -87,15 +90,15 @@ void Player::render() const {
 }
 
 int Player::move(float dt,const std::list<Platform*> &platforms,int camY) {
+
     int amountFallen = 0;
-    playerEntity->move(dt,platforms,&amountFallen);
+    playerEntity->move(dt,platforms,&amountFallen,&wheelRect);
 
     if(playerDirection) {
         weaponRect.x = playerEntity->getRect().x+scale(40);
     } else {
         weaponRect.x = playerEntity->getRect().x-scale(27);
     }
-
     weaponRect.y = playerEntity->getRect().y+scale(20);
 
     if(playerEntity->getRect().x >= WINDOW_WIDTH) {
@@ -103,6 +106,9 @@ int Player::move(float dt,const std::list<Platform*> &platforms,int camY) {
     } else if(playerEntity->getRect().x < -scale(40)) {
         playerEntity->setPosition(WINDOW_WIDTH, playerEntity->getRect().y);
     }
+
+    wheelRect.x = getEntity()->getRect().x+((getEntity()->getRect().w-20)/2);
+    wheelRect.y = getEntity()->getRect().y+getEntity()->getRect().h-20;
 
     return amountFallen;
 }

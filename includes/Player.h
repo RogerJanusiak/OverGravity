@@ -45,6 +45,12 @@ public:
     bool shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, int bulletSpeed);
     int reload(float dt,double revolverReloadSpeed);
 
+    SDL_Rect* getWheelRect() { return &wheelRect; }
+    void updateWheelRect() {
+        wheelRect.x = getEntity()->getRect().x+((getEntity()->getRect().w-20)/2);
+        wheelRect.y = getEntity()->getRect().y+getEntity()->getRect().h-20;
+    }
+
     SDL_Rect playerHealth1;
     SDL_Rect playerHealth2;
     SDL_Rect playerShield1;
@@ -57,6 +63,8 @@ private:
     bool playerDirection = false;
 
     Entity* playerEntity;
+
+    SDL_Rect wheelRect;
 
     Texture playerTextureRight;
     Texture playerTextureLeft;

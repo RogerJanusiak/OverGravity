@@ -1,0 +1,155 @@
+cmake_minimum_required(VERSION 3.22)
+
+if(WIN32)
+project(Over_Gravity)
+
+set(CMAKE_CXX_STANDARD 14)
+
+add_executable(${PROJECT_NAME} src/Player.cpp
+        src/Texture.cpp
+        src/Platform.cpp
+        src/Robor.cpp
+        includes/Robor.h
+        src/Entity.cpp
+        includes/Entity.h
+        src/Bullet.cpp
+        includes/Bullet.h
+        includes/Spawn.h
+        includes/Bullet.h
+        src/main.cpp
+        src/UI.cpp
+        includes/UI.h
+        src/main.cpp)
+
+# --- SDL2 SETUP ---
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMAKE/cmakepc )
+set(SDL2_PATH "SDL2/x86_64-w64-mingw32")
+set(SDL2_IMAGE_PATH "SDL2/x86_64-w64-mingw32")
+set(SDL2_TTF_PATH "SDL2/x86_64-w64-mingw32")
+
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_ttf REQUIRED)
+
+include_directories(${SDL2_INCLUDE_DIR}
+        ${SDL2_IMAGE_INCLUDE_DIR}
+        ${SDL2_TTF_INCLUDE_DIR})
+
+set(SDL_LIBRARIES ${SDL_LIBRARIES} SDL2main SDL2_image-static SDL2-static SDL2_ttf-static)
+
+target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}
+        ${SDL2_IMAGE_LIBRARIES}
+        ${SDL2_TTF_LIBRARIES} -static  )
+# -fsanitize=address
+# Specify the resource folder
+set(RESOURCE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/resources")
+
+# Copy resources from source to build directory
+file(COPY ${RESOURCE_SOURCE_DIR} DESTINATION ${CMAKE_BINARY_DIR}/)
+endif()
+
+if(APPLE)
+    cmake_minimum_required(VERSION 3.22)
+
+    Message("")
+    Message( STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR} )
+    Message( STATUS "CMAKE_SOURCE_DIR: " ${CMAKE_SOURCE_DIR} )
+    Message( STATUS "CMAKE_COMMAND: " ${CMAKE_COMMAND} )
+    Message( STATUS "CMAKE_VERSION: " ${CMAKE_VERSION} )
+    Message( STATUS "CMAKE_C_COMPILER: " ${CMAKE_C_COMPILER} )
+    Message( STATUS "CMAKE_PROJECT_NAME: " ${CMAKE_PROJECT_NAME} )
+    Message( STATUS "CMAKE_FINDCMAKE: " ${CMAKE_SOURCE_DIR}/CMAKE )
+
+    project(Over_Gravity)
+
+    # ------- Set Vars ------- #
+
+    set(CMAKE_CXX_STANDARD 23)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMAKE")
+    set(SOURCE_FILES    src/Player.cpp
+            src/Texture.cpp
+            src/Platform.cpp
+            src/Robor.cpp
+            includes/Robor.h
+            src/Entity.cpp
+            includes/Entity.h
+            src/Bullet.cpp
+            includes/Bullet.h
+            includes/Spawn.h
+            includes/Bullet.h
+            src/main.cpp
+            src/UI.cpp
+            includes/UI.h
+            src/main.cpp)
+
+    Message("")
+    Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )
+    Message("")
+
+    # ------- End Set Vars --- #
+
+    # ------- Executable ----- #
+
+    ADD_EXECUTABLE(Over_Gravity ${SOURCE_FILES})
+
+    # ------- End Executable - #
+
+    # ------- Finds ---------- #
+
+    FIND_PACKAGE(SDL2 REQUIRED)
+    Message("")
+    Message( STATUS "FINDING SDL2" )
+    IF (${SDL2_FOUND})
+        Message( STATUS "SDL2_FOUND: " ${SDL2_FOUND})
+        Message( STATUS "SDL2_INCLUDE_DIR:" ${SDL2_INCLUDE_DIR})
+        Message( STATUS "SDL2_LIBRARY: " ${SDL2_LIBRARY})
+    ELSE()
+        Message( STATUS "SDL2_FOUND: " ${SDL2_FOUND})
+        Message( FATAL_ERROR "SDL2 NOT FOUND" )
+    ENDIF()
+
+    FIND_PACKAGE(SDL2_IMAGE)
+    Message("")
+    Message( STATUS "FINDING SDL2_IMAGE" )
+    Message( STATUS "SDL2_IMAGE_FOUND: " ${SDL2_IMAGE_FOUND})
+    IF (${SDL2_IMAGE_FOUND})
+        Message( STATUS "SDL2_IMAGE_INCLUDE_DIR: " ${SDL2_IMAGE_INCLUDE_DIR})
+        Message( STATUS "SDL2_IMAGE_LIBRARY: " ${SDL2_IMAGE_LIBRARY})
+    ELSE()
+        Message( FATAL_ERROR "SDL2_IMAGE NOT FOUND" )
+    ENDIF()
+
+    FIND_PACKAGE(SDL2TTF)
+    Message("")
+    Message( STATUS "FINDING SDL2TTF" )
+    Message( STATUS "SDL2TTF_FOUND: " ${SDL2TTF_FOUND} )
+    IF (${SDL2TTF_FOUND})
+        Message( STATUS "SDL2TTF_INCLUDE_DIR: " ${SDL2TTF_INCLUDE_DIR})
+        Message( STATUS "SDL2TTF_LIBRARY: " ${SDL2TTF_LIBRARY})
+    ELSE()
+        Message( FATAL_ERROR "SDL2TTF NOT FOUND" )
+    ENDIF()
+    Message("")
+
+    FIND_PACKAGE(SDL2Mixer)
+
+    Message( STATUS "FINDING SDL2Mixer" )
+    Message( STATUS "SDL2Mixer_FOUND: " ${SDL2Mixer_FOUND} )
+
+    Message("")
+
+    file(COPY resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+    # ------- End Finds ------ #
+
+    # ------- Inc & Link ---- #
+
+    INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIR} ${SDL2TTF_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIR} ${SDL2Mixer_INCLUDE_DIR})
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${SDL2_LIBRARY} ${SDL2TTF_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2Mixer_LIBRARY} )
+
+    # ------- End ----------- #
+
+
+
+endif ()

@@ -1,0 +1,9 @@
+
+.DS_Store
+build/*
+cmake-build-debug/*
+cmake-build-debug-clang/*
+cmake-build-release/*
+SDL2/*
+.idea/*
+CMAKE/*

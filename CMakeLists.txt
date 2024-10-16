@@ -81,7 +81,8 @@ if(APPLE)
             src/main.cpp
             src/UI.cpp
             includes/UI.h
-            src/main.cpp)
+            src/main.cpp
+            includes/State.h)
 
     Message("")
     Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )

@@ -8,6 +8,7 @@
 #include "../includes/Texture.h"
 
 SDL_Color white = { 255, 255, 255 };
+SDL_Color gray = { 105, 105, 105 };
 TTF_Font *counter;
 TTF_Font *title;
 
@@ -60,19 +61,34 @@ void renderInGameText(bool developerMode, float lastFPS,bool waveStarted) {
     }
 }
 
+UI_Button arcadeModeButton;
+UI_Button storyModeButton;
+UI_Button settingsButton;
+
+UI_Button level1;
+UI_Button level2;
+
 void initStartScreen(bool controller) {
     logoTexture.setup(scale(454),scale(92),renderer);
     logoTexture.loadFromFile("logo.png");
-    if(controller) {
-        startGameText.loadFromRenderedText("Press A to Start.", white, counter);
-    } else {
-        startGameText.loadFromRenderedText("Press Enter to Start.", white, counter);
-    }
+    arcadeModeButton.setup((WINDOW_WIDTH-arcadeModeButton.getWidth())/2,scale(215),"Arcade Mode", renderer);
+    storyModeButton.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(280),"Story Mode", renderer);
+    settingsButton.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(345),"Settings", renderer);
+    level1.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(215),"Level 1", renderer);
+    level2.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(280),"Level 2", renderer);
 }
 
-void renderStartScreen() {
-    startGameText.render((WINDOW_WIDTH-startGameText.getWidth())/2,scale(300));
+void renderStartScreen(State& state) {
     logoTexture.render((WINDOW_WIDTH-logoTexture.getWidth())/2,scale(100));
+    if(state.mainMenu) {
+        arcadeModeButton.render();
+        storyModeButton.render();
+        settingsButton.render();
+    } else if(state.levelSelect) {
+        level1.render();
+        level2.render();
+    }
+
 }
 
 
@@ -138,3 +154,46 @@ void renderPlayerUI(Player* player) {
     }
 
 }
+
+void mouseMove(State& state) {
+    int x, y;
+    SDL_GetMouseState( &x, &y );
+
+}
+
+void mouseClick(State& state) {
+    int x, y;
+    SDL_GetMouseState( &x, &y );
+    if(arcadeModeButton.mouseEvent(x,y) && state.mainMenu) {
+        state.mainMenu = false;
+        state.levelSelect = true;
+    } else if(level1.mouseEvent(x,y) && state.levelSelect) {
+        state.level = 1;
+        state.levelSelect = false;
+        state.started = true;
+    } else if(level2.mouseEvent(x,y) && state.levelSelect) {
+        state.level = 2;
+        state.levelSelect = false;
+        state.started = true;
+    }
+}
+
+
+void UI_Button::setup(const int _x, const int _y, std::string text, SDL_Renderer* renderer) {
+    x = _x;
+    y = _y;
+    texture.setup(width,height,renderer);
+    texture.loadFromFile("button.png");
+
+    textTexture.setup(0,0,renderer);
+    textTexture.loadFromRenderedText(text, white, counter);
+}
+
+bool UI_Button::mouseEvent(const int mouseX, const int mouseY) const {
+    if(mouseX >= x && mouseX <= x+width && mouseY >= y && mouseY <= y+height) {
+        return true;
+    }
+    return false;
+}
+
+

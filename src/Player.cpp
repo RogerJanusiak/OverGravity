@@ -12,8 +12,8 @@ Player::Player(Entity* entity) : playerEntity(entity) {
 
     currentWeapon = Weapon::revolver;
 
-    wheelRect.w = 20;
-    wheelRect.h = 20;
+    wheelRect.w = scale(13);
+    wheelRect.h = scale(13);
 
     weaponRect.x = 0;
     weaponRect.y = 0;

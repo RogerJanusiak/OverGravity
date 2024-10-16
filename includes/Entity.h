@@ -14,7 +14,7 @@ class Entity {
 public:
 
     Entity() = default;
-    Entity(std::vector<Spawn>* spawn, SDL_Renderer* renderer) : spawns(spawn), gameRender(renderer) {}
+    Entity(std::list<Spawn>* spawn, SDL_Renderer* renderer) : spawns(spawn), gameRender(renderer) {}
     Entity(int x, int y, int Vx, int Vy,SDL_Renderer *tempGameRenderer);
 
     void render() const;
@@ -56,7 +56,7 @@ private:
     Platform* lastPlatform = nullptr;
     bool offPlatform = false;
 
-    std::vector<Spawn>* spawns;
+    std::list<Spawn>* spawns;
     bool spawned = false;
 
     bool isOnPlatform = true;

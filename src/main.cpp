@@ -13,6 +13,7 @@
 #include "../includes/Platform.h"
 #include "../includes/Player.h"
 #include "../includes/Spawn.h"
+#include "../includes/State.h"
 
 #include <SDL_ttf.h>
 
@@ -28,23 +29,21 @@ SDL_GameController* controller;
 
 bool init();
 void close();
-void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& eRobots);
+void checkIfSpawnsOccupied(std::list<Spawn*>& allSpawns, std::list<Entity*>& eRobots);
 void renderPlatforms(std::list<Platform*>& platforms);
-std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<Spawn>* spawns);
-void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
+std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::list<Spawn>* spawns);
+void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::list<Spawn>& enemySpawns, std::list<Spawn>& playerSpawns);
 void loadController();
 
 void log(int x) {
     SDL_Log(std::to_string(x).c_str());
 }
 
-void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns);
+void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::list<Spawn*>& allSpawns);
 
 bool loadValuesFromCSV(std::string &filePath);
 
-bool developerMode = false;
-bool started = false;
-bool multiplayer = false;
+
 bool pauseEnemy = false;
 
 int bulletSpeed = 1;
@@ -55,9 +54,9 @@ int comboToGetShield = 1;
 
 int levelHeight = 0;
 
-int camY=0;
-
 Player* timpyPointer = nullptr;
+
+State state = { true, false, false, false, 0,0, false };
 
 int main( int argc, char* args[] ) {
     if(!init()) {
@@ -69,27 +68,11 @@ int main( int argc, char* args[] ) {
         Uint32 lastUpdate = SDL_GetTicks();
 
         std::list<Platform> ePlatforms;
-        std::vector<Spawn> enemySpawns;
-        std::vector<Spawn> playerSpawns;
+        std::list<Spawn> enemySpawns;
+        std::list<Spawn> playerSpawns;
 
-        char* appDir = SDL_GetBasePath();
-        std::string currentPath(appDir);
-        SDL_free(appDir);
-        std::string levelPath = currentPath + "resources/levels/level1.csv";
-        loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns);
-
-        std::vector<Spawn*> allSpawns;
-        for(auto it = enemySpawns.begin(); it != enemySpawns.end(); ++it) {
-            allSpawns.push_back(&*it);
-        }
-        for(auto it = playerSpawns.begin(); it != playerSpawns.end(); ++it) {
-            allSpawns.push_back(&*it);
-        }
-
+        std::list<Spawn*> allSpawns;
         std::list<Platform*> platforms;
-        for(auto it = ePlatforms.begin(); it != ePlatforms.end(); ++it) {
-            platforms.push_back(&*it);
-        }
 
         std::list<Entity> eBullets;
         std::list<Bullet> bullets;
@@ -97,7 +80,6 @@ int main( int argc, char* args[] ) {
         Entity eTimpy = Entity(&playerSpawns,gameRenderer);
         Player timpy = Player(&eTimpy);
         timpyPointer = &timpy;
-        timpy.getEntity()->forceSpawn();
 
         bool leftMovement = false;
         bool rightMovement = false;
@@ -117,7 +99,7 @@ int main( int argc, char* args[] ) {
         //Game Loop
         while(!quit) {
 
-            while(!started && !quit) {
+            while(!state.started && !quit) {
                 SDL_RenderClear(gameRenderer);
 
                 while(SDL_PollEvent(&e) != 0) {
@@ -125,26 +107,60 @@ int main( int argc, char* args[] ) {
                         quit = true;
                     } else if( e.type == SDL_KEYDOWN ) {
                         if(e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_RETURN2) {
-                            started = true;
+                            state.started = true;
                         }
                     } else if( e.type == SDL_JOYBUTTONDOWN ) {
                         if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-                            started = true;
+                            state.started = true;
                         }
                     } else if(e.type == SDL_JOYDEVICEADDED ) {
                         loadController();
                         initStartScreen(controller != nullptr);
-                        renderStartScreen();
+                        renderStartScreen(state);
                     } else if (e.type == SDL_JOYDEVICEREMOVED) {
                         controller = nullptr;
                         initStartScreen(controller != nullptr);
-                        renderStartScreen();
+                        renderStartScreen(state);
+                    } else  if( e.type == SDL_MOUSEMOTION) {
+                        mouseMove(state);
+                    } else if(e.type == SDL_MOUSEBUTTONDOWN) {
+                        mouseClick(state);
                     }
                 }
 
-                renderStartScreen();
+                renderStartScreen(state);
                 SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
                 SDL_RenderPresent(gameRenderer);
+            }
+
+            if(!state.initialLoad) {
+                SDL_Log("test");
+                char* appDir = SDL_GetBasePath();
+                std::string currentPath(appDir);
+                SDL_free(appDir);
+                std::string levelPath;
+
+                if(state.level == 1) {
+                    levelPath = currentPath + "resources/levels/level1.csv";
+                } else if(state.level == 2) {
+                    levelPath = currentPath + "resources/levels/level2.csv";
+                }
+
+                loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns);
+
+                for(auto it = enemySpawns.begin(); it != enemySpawns.end(); ++it) {
+                    allSpawns.push_back(&*it);
+                }
+                for(auto it = playerSpawns.begin(); it != playerSpawns.end(); ++it) {
+                    allSpawns.push_back(&*it);
+                }
+
+                for(auto it = ePlatforms.begin(); it != ePlatforms.end(); ++it) {
+                    platforms.push_back(&*it);
+                }
+
+                timpy.getEntity()->forceSpawn();
+                state.initialLoad = true;
             }
 
             inWave = true;
@@ -177,17 +193,17 @@ int main( int argc, char* args[] ) {
                         quit = true;
                     } else if( e.type == SDL_KEYDOWN ) {
                         if(e.key.keysym.sym == SDLK_1) {
-                            developerMode = !developerMode;
+                            state.developerMode = !state.developerMode;
                         }
-                        if(e.key.keysym.sym == SDLK_2 && developerMode) {
+                        if(e.key.keysym.sym == SDLK_2 && state.developerMode) {
                             waveNumber = 30;
                             waveOverride = true;
                         }
-                        if(e.key.keysym.sym == SDLK_3 && developerMode) {
-                            moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
+                        if(e.key.keysym.sym == SDLK_3 && state.developerMode) {
+                            moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                             timpy.getEntity()->forceSpawn();
                         }
-                        if(e.key.keysym.sym == SDLK_4 && developerMode) {
+                        if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
                            pauseEnemy = !pauseEnemy;
                         }
                         if(e.key.keysym.sym == SDLK_d) {
@@ -271,7 +287,7 @@ int main( int argc, char* args[] ) {
 
                 SDL_RenderClear(gameRenderer);
 
-                if(developerMode) {
+                if(state.developerMode) {
                     for(auto spawn : allSpawns) {
                         if(!spawn->getOccupied()) {
                             SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
@@ -291,7 +307,7 @@ int main( int argc, char* args[] ) {
 
                 //Render/Move Bullets
                 for (auto it = bullets.begin(); it != bullets.end();) {
-                    if(it->move(dt, platforms, developerMode)) {
+                    if(it->move(dt, platforms, state.developerMode)) {
                         eBullets.erase(it->getIterator());
                         it = bullets.erase(it);
                     } else {
@@ -311,7 +327,7 @@ int main( int argc, char* args[] ) {
                     }
                     if(it->alive && it->getEntity()->isSpawned()) {
                         if(!firstLoop && waveStarted && !pauseEnemy) {
-                            it->move(dt, platforms,camY,levelHeight);
+                            it->move(dt, platforms,state.camY,levelHeight);
                         }
                         it->render();
                         if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
@@ -354,7 +370,7 @@ int main( int argc, char* args[] ) {
                             }
                         }
                         updateInGameText(timpy.getCombo(),waveNumber);
-                        if(developerMode) {
+                        if(state.developerMode) {
                             SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                         }
                     }
@@ -376,7 +392,7 @@ int main( int argc, char* args[] ) {
                 }
 
                 if(playerDamaged) {
-                    moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
+                    moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                     timpy.getEntity()->forceSpawn();
                 } else if(!inWave) {
                     //moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
@@ -387,18 +403,18 @@ int main( int argc, char* args[] ) {
                     if(waveStarted) {
 
                         //TODO: Check if moveCamera will over shoot and then set it to max.
-                        if(timpy.getEntity()->getRect().y >= scale(195) && camY > -1*(scale(levelHeight)-WINDOW_HEIGHT)) {
-                            int movmentDistance = timpy.move(dt, platforms,camY);
+                        if(timpy.getEntity()->getRect().y >= scale(195) && state.camY > -1*(scale(levelHeight)-WINDOW_HEIGHT)) {
+                            int movmentDistance = timpy.move(dt, platforms,state.camY);
                             if(movmentDistance < 0) {
                                 moveCamera(0,movmentDistance,allCharacterEntities,platforms,allSpawns);
                             }
                         } else {
-                            timpy.move(dt, platforms,camY);
+                            timpy.move(dt, platforms,state.camY);
                             if(timpy.getEntity()->getRect().y > WINDOW_HEIGHT) {
-                                moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
+                                moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                                 timpy.getEntity()->forceSpawn();
-                            } else if (camY < -1*(scale(levelHeight)-WINDOW_HEIGHT)) {
-                                moveCamera(0,-1*(camY+scale(levelHeight)-WINDOW_HEIGHT),allCharacterEntities,platforms,allSpawns);
+                            } else if (state.camY < -1*(scale(levelHeight)-WINDOW_HEIGHT)) {
+                                moveCamera(0,-1*(state.camY+scale(levelHeight)-WINDOW_HEIGHT),allCharacterEntities,platforms,allSpawns);
                             }
                          }
                     }
@@ -406,7 +422,7 @@ int main( int argc, char* args[] ) {
                 }
 
                 SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
-                if(developerMode) {
+                if(state.developerMode) {
                     SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
                     SDL_RenderDrawRect(gameRenderer, timpy.getWheelRect());
                 }
@@ -415,7 +431,7 @@ int main( int argc, char* args[] ) {
 
                 renderPlatforms(platforms);
 
-                renderInGameText(developerMode, lastFPS, waveStarted);
+                renderInGameText(state.developerMode, lastFPS, waveStarted);
 
                 renderPlayerUI(&timpy);
 
@@ -438,14 +454,14 @@ void renderPlatforms(std::list<Platform*>& platforms) {
     SDL_SetRenderDrawColor(gameRenderer, 0, 0, 255, 255);
     for (auto it = platforms.begin(); it != platforms.end(); ++it) {
         (*it)->render();
-        if(developerMode) {
+        if(state.developerMode) {
             SDL_RenderDrawRect(gameRenderer,&(*it)->getPlatformRect());
         }
     }
 }
 
-void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns) {
-    camY += y;
+void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::list<Spawn*>& allSpawns) {
+    state.camY += y;
 
     for (auto entites : allCharacterEntities) {
         entites->setPosition(entites->getRect().x+x,entites->getRect().y+y);
@@ -459,7 +475,7 @@ void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::lis
     }
 }
 
-void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& allCharacterEntities) {
+void checkIfSpawnsOccupied(std::list<Spawn*>& allSpawns, std::list<Entity*>& allCharacterEntities) {
     for (auto sit = allSpawns.begin(); sit != allSpawns.end(); ++sit) {
         (*sit)->setOccupied(false);
         for (auto it = allCharacterEntities.begin(); it != allCharacterEntities.end(); ++it) {
@@ -470,7 +486,7 @@ void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& a
     }
 }
 
-std::list<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, std::vector<Spawn>* spawns) {
+std::list<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, std::list<Spawn>* spawns) {
     std::list<Entity> entities;
     for(int i = 1; i <= waveNumber; i++) {
         if(i % divisor == 0) {
@@ -480,7 +496,7 @@ std::list<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, s
     return entities;
 }
 
-void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns) {
+void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::list<Spawn>& enemySpawns, std::list<Spawn>& playerSpawns) {
     std::ifstream file((filePath).c_str());
     if (!file.is_open()) {
         SDL_Log("Could not load level file!");

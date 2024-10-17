@@ -16,6 +16,7 @@ void UI_close();
 
 void initPlayerUI();
 void updateTimeToShoot(double width);
+void updateTimeToAbility(double width);
 void renderPlayerUI(Player* player);
 
 void mouseMove(State& state);

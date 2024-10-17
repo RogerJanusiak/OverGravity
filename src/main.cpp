@@ -53,6 +53,7 @@ int timpyXVelocity = 1;
 int roborXVelocity = 1;
 double revolverReloadSpeed = 1;
 int comboToGetShield = 1;
+double abilityChargeSpeed = 15;
 
 int levelHeight = 0;
 
@@ -142,7 +143,6 @@ int main( int argc, char* args[] ) {
             }
 
             if(!state.initialLoad) {
-                SDL_Log("test");
                 char* appDir = SDL_GetBasePath();
                 std::string currentPath(appDir);
                 SDL_free(appDir);
@@ -236,6 +236,11 @@ int main( int argc, char* args[] ) {
                                 timpy.shoot(&eBullets,&bullets,bulletSpeed);
                                 shootingReset = false;
                             }
+                        } else if(e.key.keysym.sym == SDLK_e) {
+                            if(timpy.useAbility()) {
+                                moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
+                                timpy.getEntity()->forceSpawn();
+                            }
                         }
                     } else if(e.type == SDL_KEYUP) {
                         if(e.key.keysym.sym == SDLK_d)
@@ -290,8 +295,8 @@ int main( int argc, char* args[] ) {
                 if((current-startWaveLoad)/1000.0f > 1) {
                     waveStarted = true;
                 }
-                int reload = timpy.reload(dt,revolverReloadSpeed);
-                updateTimeToShoot(scale(reload));
+                updateTimeToShoot(scale(timpy.reload(dt,revolverReloadSpeed)));
+                updateTimeToAbility(scale(timpy.charge(dt,abilityChargeSpeed)));
                 if (timpy.wasJustReloaded()) {
                     pistolReload.play();
                 }
@@ -361,6 +366,7 @@ int main( int argc, char* args[] ) {
                                             playerDamaged = true;
                                             timpy.damage();
                                         } else if (timpy.getHP() == 1) {
+                                            playerDamaged = true;
                                             playerAlive = false;
                                             waveNumber = 0;
                                             timpy.setHP(2);
@@ -396,6 +402,9 @@ int main( int argc, char* args[] ) {
                 if(playerDamaged) {
                     timpy.zeroCombo();
                     updateInGameText(timpy.getCombo(),waveNumber);
+                    timpy.charge(abilityChargeSpeed,abilityChargeSpeed);
+                    moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
+                    timpy.getEntity()->forceSpawn();
                 }
 
                 if(!playerAlive || waveOverride) {
@@ -403,14 +412,6 @@ int main( int argc, char* args[] ) {
                     waveOverride = false;
                 } else {
                     inWave = robotAlive;
-                }
-
-                if(playerDamaged) {
-                    moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
-                    timpy.getEntity()->forceSpawn();
-                } else if(!inWave) {
-                    //moveCamera(0,-1*camY,allCharacterEntities,platforms,allSpawns);
-                    //timpy.getEntity()->forceSpawn();
                 }
 
                 if(timpy.getEntity()->isSpawned()) {

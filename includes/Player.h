@@ -46,6 +46,9 @@ public:
     int reload(float dt,double revolverReloadSpeed);
     bool wasJustReloaded();
 
+    int charge(float dt,double abilityReloadSpeed);
+    bool useAbility();
+
     SDL_Rect* getWheelRect() { return &wheelRect; }
     void updateWheelRect() {
         wheelRect.x = getEntity()->getRect().x+((getEntity()->getRect().w-20)/2);
@@ -81,7 +84,11 @@ private:
     bool reloaded = true;
     bool justReloaded = false;
 
+    bool charged = true;
+    bool justCharged = false;
+
     float timeSinceShot;
+    float timeSinceAbilty;
 
     SDL_Rect weaponRect;
     Texture knifeTextureRight;

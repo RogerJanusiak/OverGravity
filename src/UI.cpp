@@ -95,6 +95,9 @@ void renderStartScreen(State& state) {
 SDL_Rect timeToShootBack;
 SDL_Rect timeToShoot;
 
+SDL_Rect timeToAbilityBack;
+SDL_Rect timeToAbility;
+
 void initPlayerUI() {
     timeToShootBack.x = WINDOW_WIDTH-scale(90);
     timeToShootBack.y = WINDOW_HEIGHT-scale(25);
@@ -105,18 +108,36 @@ void initPlayerUI() {
     timeToShoot.y = WINDOW_HEIGHT-scale(25);
     timeToShoot.w = scale(75);
     timeToShoot.h = scale(15);
+
+    timeToAbilityBack.x = WINDOW_WIDTH-scale(90);
+    timeToAbilityBack.y = WINDOW_HEIGHT-scale(45);
+    timeToAbilityBack.w = scale(75);
+    timeToAbilityBack.h = scale(15);
+
+    timeToAbility.x = WINDOW_WIDTH-scale(90);
+    timeToAbility.y = WINDOW_HEIGHT-scale(45);
+    timeToAbility.w = scale(75);
+    timeToAbility.h = scale(15);
 }
 
 void updateTimeToShoot(const double width) {
     timeToShoot.w = width;
 }
 
+void updateTimeToAbility(const double width) {
+    timeToAbility.w = width;
+}
+
 void renderPlayerUI(Player* player) {
     SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
     SDL_RenderFillRect(renderer,&timeToShootBack);
+    SDL_RenderFillRect(renderer,&timeToAbilityBack);
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer,&timeToShoot);
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    SDL_RenderFillRect(renderer,&timeToAbility);
 
     switch(player->getShield()) {
         case 2: {

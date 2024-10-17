@@ -186,4 +186,25 @@ bool Player::wasJustReloaded() {
     return false;
 }
 
+int Player::charge(float dt,double abilityReloadSpeed) {
+    if (timeSinceAbilty >= abilityReloadSpeed) {
+        timeSinceAbilty = 0;
+        charged = true;
+        justCharged = true;
+        return 75;
+    }
+    if(!charged) {
+        timeSinceAbilty += dt;
+        return 75*timeSinceAbilty*(1/abilityReloadSpeed)-2;
+    }
+    return 75;
+}
+
+bool Player::useAbility() {
+    if(charged) {
+        charged = false;
+        return true;
+    }
+    return false;
+}
 

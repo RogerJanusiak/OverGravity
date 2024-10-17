@@ -13,6 +13,7 @@ Player::Player(Entity* entity) : playerEntity(entity) {
     currentWeapon = Weapon::revolver;
 
     gunshot.init("resources/sounds/gunshot.wav",0);
+    damageSound.init("resources/sounds/playerDamage.wav",0);
 
     wheelRect.w = scale(13);
     wheelRect.h = scale(13);
@@ -134,19 +135,12 @@ void Player::changeWeapon() {
 
 void Player::increaseCombo(int comboToGetShield) {
     combo++;
-    if(combo == comboToGetShield && (getShield() == 0 || topLevelShieldHit)) {
+    if(combo == comboToGetShield && (playerShield == 0 || topLevelShieldHit)) {
         playerShield++;
         topLevelShieldHit = false;
-    } else if(combo == comboToGetShield*2 && getShield() == 1) {
+    } else if(combo == comboToGetShield*2 && playerShield == 1) {
         playerShield++;
     }
-}
-
-void Player::decreaseShield() {
-    if(playerShield == 2) {
-        topLevelShieldHit = true;
-    }
-    playerShield--;
 }
 
 bool Player::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, int bulletSpeed) {
@@ -208,6 +202,25 @@ bool Player::useAbility() {
         charged = false;
         return true;
     }
+    return false;
+}
+
+bool Player::damage() {
+    if(playerShield == 2) {
+        playerShield--;
+        topLevelShieldHit = true;
+    } else if(playerShield == 1) {
+        playerShield--;
+    } else {
+        if(playerHealth == 2) {
+            playerHealth--;
+        } else if (playerHealth == 1) {
+            playerHealth = 2;
+            combo = 0;
+            return true;
+        }
+    }
+    damageSound.play();
     return false;
 }
 

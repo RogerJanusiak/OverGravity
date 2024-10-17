@@ -57,6 +57,8 @@ double abilityChargeSpeed = 15;
 
 int levelHeight = 0;
 
+std::vector<std::vector<int>> map;
+
 Player* timpyPointer = nullptr;
 
 State state = { true, false, false, false, 0,0, false };
@@ -358,25 +360,13 @@ int main( int argc, char* args[] ) {
                                     timpy.getEntity()->setYVelocity(-1800);
                                     explosion.play();
                                 } else {
-                                    if(timpy.getShield() == 2) {
-                                        playerDamaged = true;
-                                        timpy.decreaseShield();
-                                    } else if(timpy.getShield() == 1) {
-                                        playerDamaged = true;
-                                        timpy.decreaseShield();
-                                    } else {
-                                        if(timpy.getHP() == 2) {
-                                            playerDamaged = true;
-                                            timpy.damage();
-                                        } else if (timpy.getHP() == 1) {
-                                            playerDamaged = true;
-                                            playerAlive = false;
-                                            waveNumber = 0;
-                                            timpy.setHP(2);
-                                            timpy.zeroCombo();
-                                            updateInGameText(timpy.getCombo(),waveNumber);
-                                        }
+                                    if(timpy.damage()) {
+                                        playerAlive = false;
+                                        waveNumber = 0;
+                                        timpy.zeroCombo();
+                                        updateInGameText(timpy.getCombo(),waveNumber);
                                     }
+                                    playerDamaged = true;
                                 }
                                 it->alive = false;
                             }
@@ -538,20 +528,25 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
     file.close();
     levelHeight = row*TILE_SIZE;
     for (int i = 0; i < row; i++) {
+        std::vector<int> mapRow;
         for(int j = 0; j < MAX_COLS; j++) {
             int multiplier = j-1;
             if(std::stoi(data[i][j]) == 0) {
                 platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
-            }
-            if(std::stoi(data[i][j]) == 1) {
+                mapRow.push_back(0);
+            } else if(std::stoi(data[i][j]) == 1) {
                 playerSpawns.emplace_back(scale(multiplier*TILE_SIZE-25),scale(i*TILE_SIZE+(TILE_SIZE-17-60)),scale(50),scale(60),1);
                 platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
-            }
-            if(std::stoi(data[i][j]) == 2) {
+                mapRow.push_back(1);
+            } else if(std::stoi(data[i][j]) == 2) {
                 enemySpawns.emplace_back(scale(multiplier*TILE_SIZE+(TILE_SIZE-50)/2),scale(i*TILE_SIZE+(TILE_SIZE-17-50)),scale(50),scale(50),2);
                 platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
+                mapRow.push_back(2);
+            } else {
+                mapRow.push_back(-1);
             }
         }
+        map.push_back(mapRow);
     }
 }
 

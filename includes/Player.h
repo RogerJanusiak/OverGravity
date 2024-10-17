@@ -32,7 +32,7 @@ public:
     Entity* getEntity() const { return playerEntity; }
     Weapon getWeapon() const { return currentWeapon; }
 
-    void damage() { playerHealth--; }
+    bool damage();
     int getHP() const { return playerHealth; }
     void setHP(int newHP) { playerHealth = newHP; }
 
@@ -99,6 +99,7 @@ private:
     Texture revolverTextureLeft;
 
     Sound gunshot;
+    Sound damageSound;
 };
 
 #endif //PLAYER_H

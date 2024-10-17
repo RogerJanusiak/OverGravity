@@ -77,8 +77,7 @@ bool Entity::move(float dt,const std::list<Platform*> &platforms, int* amountFal
 }
 
 void Entity::spawn() {
-    auto currentSpawnIt = spawns->begin();
-    std::advance(currentSpawnIt,rand() % spawns->size());
+    auto currentSpawnIt = spawns->begin() + (rand() % spawns->size());
     if(!currentSpawnIt->getOccupied()) {
         offPlatform = false;
         spawned = true;
@@ -90,14 +89,12 @@ void Entity::spawn() {
 
 void Entity::forceSpawn() {
     for(auto it = spawns->begin(); it != spawns->end(); it++) {
-        //if(!it->getOccupied() && it->getOnScreen()) {
-            offPlatform = false;
-            spawned = true;
-            setPosition(it->getX(),it->getY());
-            setYVelocity(0);
-            it->setOccupied(true);
-            break;
-        //}
+        offPlatform = false;
+        spawned = true;
+        setPosition(it->getX(),it->getY());
+        setYVelocity(0);
+        it->setOccupied(true);
+        break;
     }
 }
 

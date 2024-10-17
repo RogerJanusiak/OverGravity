@@ -12,6 +12,8 @@ Player::Player(Entity* entity) : playerEntity(entity) {
 
     currentWeapon = Weapon::revolver;
 
+    gunshot.init("resources/sounds/gunshot.wav",0);
+
     wheelRect.w = scale(13);
     wheelRect.h = scale(13);
 
@@ -158,6 +160,7 @@ bool Player::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, int 
             bullets->emplace_back(&eBullets->back());
             bullets->back().setIterator(--eBullets->end());
         }
+        gunshot.play();
         reloaded = false;
         return true;
     }

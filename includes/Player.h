@@ -7,6 +7,7 @@
 #include "Texture.h"
 
 #include "Entity.h"
+#include "Sound.h"
 #include "Spawn.h"
 
 enum class Weapon {
@@ -96,6 +97,8 @@ private:
 
     Texture revolverTextureRight;
     Texture revolverTextureLeft;
+
+    Sound gunshot;
 };
 
 #endif //PLAYER_H

@@ -12,8 +12,11 @@ class Sound {
 
 public:
 
+    Sound();
     Sound(std::string filePath, int loop);
     ~Sound();
+
+    void init(const std::string& filePath, int loop);
 
     void play();
 

@@ -31,17 +31,17 @@ SDL_GameController* controller;
 
 bool init();
 void close();
-void checkIfSpawnsOccupied(std::list<Spawn*>& allSpawns, std::list<Entity*>& eRobots);
+void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& eRobots);
 void renderPlatforms(std::list<Platform*>& platforms);
-std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::list<Spawn>* spawns);
-void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::list<Spawn>& enemySpawns, std::list<Spawn>& playerSpawns);
+std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<Spawn>* spawns);
+void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
 void loadController();
 
 void log(int x) {
     SDL_Log(std::to_string(x).c_str());
 }
 
-void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::list<Spawn*>& allSpawns);
+void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns);
 
 bool loadValuesFromCSV(std::string &filePath);
 
@@ -71,10 +71,13 @@ int main( int argc, char* args[] ) {
         Uint32 lastUpdate = SDL_GetTicks();
 
         std::list<Platform> ePlatforms;
-        std::list<Spawn> enemySpawns;
-        std::list<Spawn> playerSpawns;
+        std::vector<Spawn> enemySpawns;
+        enemySpawns.reserve(15);
+        std::vector<Spawn> playerSpawns;
+        playerSpawns.reserve(2);
 
-        std::list<Spawn*> allSpawns;
+        std::vector<Spawn*> allSpawns;
+        allSpawns.reserve(15);
         std::list<Platform*> platforms;
 
         std::list<Entity> eBullets;
@@ -335,7 +338,7 @@ int main( int argc, char* args[] ) {
                 //Render/Move/Collision Enemies
                 bool playerDamaged = false;
                 SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
-                for (auto it = robors.begin(); it != robors.end();it++) {
+                for (auto it = robors.begin(); it != robors.end();++it) {
                     bool firstLoop = false;
                     if(!it->getEntity()->isSpawned()) {
                         it->getEntity()->spawn();
@@ -475,7 +478,7 @@ void renderPlatforms(std::list<Platform*>& platforms) {
     }
 }
 
-void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::list<Spawn*>& allSpawns) {
+void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns) {
     state.camY += y;
 
     for (auto entites : allCharacterEntities) {
@@ -490,7 +493,7 @@ void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::lis
     }
 }
 
-void checkIfSpawnsOccupied(std::list<Spawn*>& allSpawns, std::list<Entity*>& allCharacterEntities) {
+void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& allCharacterEntities) {
     for (auto sit = allSpawns.begin(); sit != allSpawns.end(); ++sit) {
         (*sit)->setOccupied(false);
         for (auto it = allCharacterEntities.begin(); it != allCharacterEntities.end(); ++it) {
@@ -501,7 +504,7 @@ void checkIfSpawnsOccupied(std::list<Spawn*>& allSpawns, std::list<Entity*>& all
     }
 }
 
-std::list<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, std::list<Spawn>* spawns) {
+std::list<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, std::vector<Spawn>* spawns) {
     std::list<Entity> entities;
     for(int i = 1; i <= waveNumber; i++) {
         if(i % divisor == 0) {
@@ -511,7 +514,7 @@ std::list<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, s
     return entities;
 }
 
-void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::list<Spawn>& enemySpawns, std::list<Spawn>& playerSpawns) {
+void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns) {
     std::ifstream file((filePath).c_str());
     if (!file.is_open()) {
         SDL_Log("Could not load level file!");

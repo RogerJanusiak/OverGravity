@@ -14,7 +14,7 @@ class Entity {
 public:
 
     Entity() = default;
-    Entity(std::list<Spawn>* spawn, SDL_Renderer* renderer) : spawns(spawn), gameRender(renderer) {}
+    Entity(std::vector<Spawn>* spawn, SDL_Renderer* renderer) : spawns(spawn), gameRender(renderer) {}
     Entity(int x, int y, int Vx, int Vy,SDL_Renderer *tempGameRenderer);
 
     void render() const;
@@ -48,7 +48,7 @@ private:
     float xVelocity = 0;
     float yVelocity = 0;
 
-    //TO-DO: Render the texture once in main.cpp and then pass it to the entity.
+    //TODO: Render the texture once in main.cpp and then pass it to the entity.
     Texture entityTexture;
 
     Platform* onPlatform(const std::list<Platform*> &platforms, SDL_Rect& movementBox, SDL_Rect& hitBox) const;
@@ -56,7 +56,7 @@ private:
     Platform* lastPlatform = nullptr;
     bool offPlatform = false;
 
-    std::list<Spawn>* spawns;
+    std::vector<Spawn>* spawns;
     bool spawned = false;
 
     bool isOnPlatform = true;

@@ -5,6 +5,7 @@
 #include <SDL_image.h>
 #include <sstream>
 #include <vector>
+#include <SDL_mixer.h>
 #include <filesystem>
 
 #include "../includes/Bullet.h"
@@ -17,6 +18,7 @@
 
 #include <SDL_ttf.h>
 
+#include "../includes/Sound.h"
 #include "../includes/UI.h"
 
 SDL_Window *gameWindow = nullptr;
@@ -96,8 +98,14 @@ int main( int argc, char* args[] ) {
         UI_init(gameRenderer);
         initStartScreen(controller != nullptr);
 
+        Sound pistolReload("resources/sounds/pistolReload.wav", 0);
+        Sound explosion("resources/sounds/explosion.wav", 0);
+        Sound song("resources/sounds/song.wav", -1);
+
         //Game Loop
         while(!quit) {
+
+            song.play();
 
             while(!state.started && !quit) {
                 SDL_RenderClear(gameRenderer);
@@ -282,8 +290,11 @@ int main( int argc, char* args[] ) {
                 if((current-startWaveLoad)/1000.0f > 1) {
                     waveStarted = true;
                 }
-
-                updateTimeToShoot(scale(timpy.reload(dt,revolverReloadSpeed)));
+                int reload = timpy.reload(dt,revolverReloadSpeed);
+                updateTimeToShoot(scale(reload));
+                if (timpy.wasJustReloaded()) {
+                    pistolReload.play();
+                }
 
                 SDL_RenderClear(gameRenderer);
 
@@ -332,10 +343,12 @@ int main( int argc, char* args[] ) {
                         it->render();
                         if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
                             it->alive = false;
+                            explosion.play();
                         } else {
                             if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
-                                if(timpy.getEntity()->getRect().y + timpy.getEntity()->getRect().h*0.5 < it->getEntity()->getRect().y) {
+                                if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y) {
                                     timpy.getEntity()->setYVelocity(-1800);
+                                    explosion.play();
                                 } else {
                                     if(timpy.getShield() == 2) {
                                         playerDamaged = true;
@@ -365,6 +378,7 @@ int main( int argc, char* args[] ) {
                                 bit = bullets.erase(bit);
                                 timpy.increaseCombo(comboToGetShield);
                                 it->alive = false;
+                                explosion.play();
                             } else {
                                 ++bit;
                             }
@@ -502,7 +516,7 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
         SDL_Log("Could not load level file!");
     }
     constexpr int MAX_ROWS = 100;
-    constexpr int MAX_COLS = 10;
+    constexpr int MAX_COLS = 12;
     std::string data[MAX_ROWS][MAX_COLS];
     std::string line;
     int row = 0;
@@ -521,16 +535,17 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
     levelHeight = row*TILE_SIZE;
     for (int i = 0; i < row; i++) {
         for(int j = 0; j < MAX_COLS; j++) {
+            int multiplier = j-1;
             if(std::stoi(data[i][j]) == 0) {
-                platforms.emplace_back(j*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
+                platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
             }
             if(std::stoi(data[i][j]) == 1) {
-                playerSpawns.emplace_back(scale(j*TILE_SIZE-25),scale(i*TILE_SIZE+(TILE_SIZE-17-60)),scale(50),scale(60),1);
-                platforms.emplace_back(j*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
+                playerSpawns.emplace_back(scale(multiplier*TILE_SIZE-25),scale(i*TILE_SIZE+(TILE_SIZE-17-60)),scale(50),scale(60),1);
+                platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
             }
             if(std::stoi(data[i][j]) == 2) {
-                enemySpawns.emplace_back(scale(j*TILE_SIZE+(TILE_SIZE-50)/2),scale(i*TILE_SIZE+(TILE_SIZE-17-50)),scale(50),scale(50),2);
-                platforms.emplace_back(j*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
+                enemySpawns.emplace_back(scale(multiplier*TILE_SIZE+(TILE_SIZE-50)/2),scale(i*TILE_SIZE+(TILE_SIZE-17-50)),scale(50),scale(50),2);
+                platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
             }
         }
     }
@@ -591,7 +606,7 @@ void loadController() {
 bool init() {
     bool success = true;
 
-    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK ) < 0 ) {
+    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO ) < 0 ) {
         SDL_Log( "SDL could not initialize! SDL Error: %s\n", SDL_GetError() );
         success = false;
     } else if (TTF_Init() < 0) {
@@ -620,6 +635,11 @@ bool init() {
             success = false;
         }
 
+        if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
+            printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
+            success = false;
+        }
+
     }
 
     return success;
@@ -635,6 +655,7 @@ void close() {
     SDL_DestroyWindow(gameWindow);
     gameWindow = nullptr;
 
+    Mix_Quit();
     IMG_Quit();
     SDL_Quit();
     TTF_Quit();

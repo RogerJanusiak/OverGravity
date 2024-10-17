@@ -168,6 +168,7 @@ int Player::reload(float dt,double revolverReloadSpeed) {
     if (timeSinceShot >= revolverReloadSpeed) {
         timeSinceShot = 0;
         reloaded = true;
+        justReloaded = true;
         return 75;
     }
     if(!reloaded) {
@@ -175,6 +176,14 @@ int Player::reload(float dt,double revolverReloadSpeed) {
         return 75*timeSinceShot*(1/revolverReloadSpeed)-2;
     }
     return 75;
+}
+
+bool Player::wasJustReloaded() {
+    if(justReloaded) {
+        justReloaded = false;
+        return true;
+    }
+    return false;
 }
 
 

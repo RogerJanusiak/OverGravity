@@ -44,6 +44,7 @@ public:
 
     bool shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, int bulletSpeed);
     int reload(float dt,double revolverReloadSpeed);
+    bool wasJustReloaded();
 
     SDL_Rect* getWheelRect() { return &wheelRect; }
     void updateWheelRect() {
@@ -78,6 +79,8 @@ private:
     bool topLevelShieldHit = false;
 
     bool reloaded = true;
+    bool justReloaded = false;
+
     float timeSinceShot;
 
     SDL_Rect weaponRect;

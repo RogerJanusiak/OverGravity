@@ -7,9 +7,12 @@
 Sound::Sound() {
     sound = nullptr;
     loop = 0;
+    channel = -1;
 }
 
-void Sound::init(const std::string& filePath, int loop) {
+void Sound::init(const std::string& filePath, int _loop, int _channel) {
+    loop = _loop;
+    channel = _channel;
     sound = Mix_LoadWAV( filePath.c_str() );
     if( sound == nullptr ) {
         printf( "Failed to load scratch sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
@@ -17,9 +20,9 @@ void Sound::init(const std::string& filePath, int loop) {
 }
 
 
-Sound::Sound(std::string filePath, int loop) : loop(loop) {
+Sound::Sound(std::string filePath, int loop, int channel) : loop(loop), channel(channel) {
 
-    init(filePath,loop);
+    init(filePath, loop, channel);
 
 }
 Sound::~Sound() {
@@ -28,5 +31,5 @@ Sound::~Sound() {
 }
 
 void Sound::play() {
-    Mix_PlayChannel( -1, sound, loop );
+    Mix_PlayChannel( channel, sound, loop );
 }

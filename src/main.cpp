@@ -101,14 +101,14 @@ int main( int argc, char* args[] ) {
         UI_init(gameRenderer);
         initStartScreen();
 
-        Sound pistolReload("resources/sounds/pistolReload.wav", 0);
-        Sound explosion("resources/sounds/explosion.wav", 0);
-        Sound song("resources/sounds/song.wav", -1);
+        Sound pistolReload("resources/sounds/pistolReload.wav", 0,-1);
+        Sound explosion("resources/sounds/explosion.wav", 0,-1);
+        Sound song("resources/sounds/song.wav", -1,0);
+
+        song.play();
 
         //Game Loop
         while(!quit) {
-
-            song.play();
 
             while(!state.started && !quit) {
                 SDL_RenderClear(gameRenderer);
@@ -227,6 +227,10 @@ int main( int argc, char* args[] ) {
                             int finalY;
                             robortos.begin()->pathFind(9,3, finalX, finalY,state);
                             SDL_Log("Weights: %i,%i", finalX, finalY);
+                        } else if(e.key.keysym.sym == SDLK_6) {
+                            if (Mix_Playing(3)) {
+                                SDL_Log("Sound playing");
+                            }
                         }
                         if(e.key.keysym.sym == SDLK_d) {
                             timpy.getEntity()->setXVelocity(timpyXVelocity);

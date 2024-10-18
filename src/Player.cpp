@@ -12,8 +12,8 @@ Player::Player(Entity* entity) : playerEntity(entity) {
 
     currentWeapon = Weapon::revolver;
 
-    gunshot.init("resources/sounds/gunshot.wav",0);
-    damageSound.init("resources/sounds/playerDamage.wav",0);
+    gunshot.init("resources/sounds/gunshot.wav",0,-1);
+    damageSound.init("resources/sounds/playerDamage.wav",0,-1);
 
     wheelRect.w = scale(13);
     wheelRect.h = scale(13);

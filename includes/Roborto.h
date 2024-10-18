@@ -1,18 +1,20 @@
-#ifndef ENEMY_H
-#define ENEMY_H
+#ifndef ROBORTO_H
+#define ROBORTO_H
+
 #include <list>
 #include "Entity.h"
 #include "Platform.h"
+#include "State.h"
 
-
-class Robor {
-
+class Roborto {
 public:
-    explicit Robor(Entity* entity, int Vx);
+    explicit Roborto(Entity* entity, int Vx);
 
-    void move(float dt,const std::list<Platform*> &platformsm, int levelY, int levelHeight) const;
+    void move(float dt,const std::list<Platform*> &platforms, State& state);
     void render() const { roborEntity->render(); }
     Entity* getEntity() const { return roborEntity; }
+
+    void pathFind(int x, int y, int& leftWeight, int& rightWeight, State state);
 
     bool alive = true;
 
@@ -25,4 +27,6 @@ private:
     Entity* roborEntity;
 };
 
-#endif //ENEMY_H
+
+
+#endif //ROBORTO_H

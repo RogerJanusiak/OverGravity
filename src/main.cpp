@@ -18,6 +18,7 @@
 
 #include <SDL_ttf.h>
 
+#include "../includes/Roborto.h"
 #include "../includes/Sound.h"
 #include "../includes/UI.h"
 
@@ -55,13 +56,9 @@ double revolverReloadSpeed = 1;
 int comboToGetShield = 1;
 double abilityChargeSpeed = 15;
 
-int levelHeight = 0;
-
-std::vector<std::vector<int>> map;
-
 Player* timpyPointer = nullptr;
 
-State state = { true, false, false, false, 0,0, false };
+State state;
 
 int main( int argc, char* args[] ) {
     if(!init()) {
@@ -182,6 +179,11 @@ int main( int argc, char* args[] ) {
             std::list<Entity> tempRobors = getWaveEnemyEntities(waveNumber,1, &enemySpawns);
             std::list<Entity> eRobots;
             std::list<Robor> robors;
+
+            std::list<Entity> tempRobortos = getWaveEnemyEntities(waveNumber,2, &enemySpawns);
+            std::list<Entity> eRobortos;
+            std::list<Roborto> robortos;
+
             std::list<Entity*> allCharacterEntities;
 
             allCharacterEntities.push_back(timpy.getEntity());
@@ -189,6 +191,12 @@ int main( int argc, char* args[] ) {
             for (auto it = tempRobors.begin(); it != tempRobors.end(); ++it) {
                 eRobots.push_back(*it);
                 robors.emplace_back(&(*it),roborXVelocity);
+                allCharacterEntities.emplace_back(&(*it));
+            }
+
+            for (auto it = tempRobortos.begin(); it != tempRobortos.end(); ++it) {
+                eRobortos.push_back(*it);
+                robortos.emplace_back(&(*it),roborXVelocity);
                 allCharacterEntities.emplace_back(&(*it));
             }
 
@@ -218,6 +226,11 @@ int main( int argc, char* args[] ) {
                         }
                         if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
                            pauseEnemy = !pauseEnemy;
+                        } else if(e.key.keysym.sym == SDLK_5) {
+                            int finalX;
+                            int finalY;
+                            robortos.begin()->pathFind(4,2, finalX, finalY,state);
+                            SDL_Log("Weights: %i,%i", finalX, finalY);
                         }
                         if(e.key.keysym.sym == SDLK_d) {
                             timpy.getEntity()->setXVelocity(timpyXVelocity);
@@ -348,7 +361,7 @@ int main( int argc, char* args[] ) {
                     }
                     if(it->alive && it->getEntity()->isSpawned()) {
                         if(!firstLoop && waveStarted && !pauseEnemy) {
-                            it->move(dt, platforms,state.camY,levelHeight);
+                            it->move(dt, platforms,state.camY,state.levelHeight);
                         }
                         it->render();
                         if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
@@ -392,6 +405,53 @@ int main( int argc, char* args[] ) {
                     }
                 }
 
+                for (auto it = robortos.begin(); it != robortos.end();++it) {
+                    bool firstLoop = false;
+                    if(!it->getEntity()->isSpawned()) {
+                        it->getEntity()->spawn();
+                        firstLoop = true;
+                    }
+                    if(it->alive && it->getEntity()->isSpawned()) {
+                        if(!firstLoop && waveStarted && !pauseEnemy) {
+                            it->move(dt, platforms,state);
+                        }
+                        it->render();
+                        if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
+                            if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y) {
+                                timpy.getEntity()->setYVelocity(-1800);
+                                explosion.play();
+                            } else {
+                                if(timpy.damage()) {
+                                    playerAlive = false;
+                                    waveNumber = 0;
+                                    timpy.zeroCombo();
+                                    updateInGameText(timpy.getCombo(),waveNumber);
+                                }
+                                playerDamaged = true;
+                            }
+                            it->alive = false;
+                        }
+                        for(auto bit = bullets.begin(); bit != bullets.end();) {
+                            if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
+                                eBullets.erase(bit->getIterator());
+                                bit = bullets.erase(bit);
+                                timpy.increaseCombo(comboToGetShield);
+                                it->alive = false;
+                                explosion.play();
+                            } else {
+                                ++bit;
+                            }
+                        }
+                        updateInGameText(timpy.getCombo(),waveNumber);
+                        if(state.developerMode) {
+                            SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
+                        }
+                    }
+                    if(it->alive) {
+                        robotAlive = true;
+                    }
+                }
+
                 if(playerDamaged) {
                     timpy.zeroCombo();
                     updateInGameText(timpy.getCombo(),waveNumber);
@@ -411,7 +471,7 @@ int main( int argc, char* args[] ) {
                     if(waveStarted) {
 
                         //TODO: Check if moveCamera will over shoot and then set it to max.
-                        if(timpy.getEntity()->getRect().y >= scale(195) && state.camY > -1*(scale(levelHeight)-WINDOW_HEIGHT)) {
+                        if(timpy.getEntity()->getRect().y >= scale(195) && state.camY > -1*(scale(state.levelHeight)-WINDOW_HEIGHT)) {
                             int movmentDistance = timpy.move(dt, platforms,state.camY);
                             if(movmentDistance < 0) {
                                 moveCamera(0,movmentDistance,allCharacterEntities,platforms,allSpawns);
@@ -421,12 +481,21 @@ int main( int argc, char* args[] ) {
                             if(timpy.getEntity()->getRect().y > WINDOW_HEIGHT) {
                                 moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                                 timpy.getEntity()->forceSpawn();
-                            } else if (state.camY < -1*(scale(levelHeight)-WINDOW_HEIGHT)) {
-                                moveCamera(0,-1*(state.camY+scale(levelHeight)-WINDOW_HEIGHT),allCharacterEntities,platforms,allSpawns);
+                            } else if (state.camY < -1*(scale(state.levelHeight)-WINDOW_HEIGHT)) {
+                                moveCamera(0,-1*(state.camY+scale(state.levelHeight)-WINDOW_HEIGHT),allCharacterEntities,platforms,allSpawns);
                             }
                          }
                     }
                     timpy.render();
+                    state.playerX = timpy.getEntity()->getRect().x;
+                    state.playerTileX = state.playerX/TILE_SIZE_SCALED+1;
+                    state.playerTileY = (timpy.getEntity()->getRect().y/TILE_SIZE_SCALED);
+
+                    if(state.developerMode) {
+                        SDL_Rect playerTile = {(state.playerTileX-1)*TILE_SIZE_SCALED, state.playerTileY*TILE_SIZE_SCALED,TILE_SIZE_SCALED,TILE_SIZE_SCALED};
+                        SDL_SetRenderDrawColor(gameRenderer, 225, 225, 0, 255);
+                        SDL_RenderDrawRect(gameRenderer, &playerTile);
+                    }
                 }
 
                 SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
@@ -526,7 +595,7 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
         row++;
     }
     file.close();
-    levelHeight = row*TILE_SIZE;
+    state.levelHeight = row*TILE_SIZE;
     for (int i = 0; i < row; i++) {
         std::vector<int> mapRow;
         for(int j = 0; j < MAX_COLS; j++) {
@@ -546,7 +615,7 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
                 mapRow.push_back(-1);
             }
         }
-        map.push_back(mapRow);
+        state.levelMap.push_back(mapRow);
     }
 }
 

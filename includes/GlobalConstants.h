@@ -11,6 +11,7 @@ const int WINDOW_WIDTH = scale(800);
 const int WINDOW_HEIGHT = scale(480);
 
 const int TILE_SIZE = 80;
+const int TILE_SIZE_SCALED = scale(80);
 
 const int ACCELERATION = scale(5000);
 

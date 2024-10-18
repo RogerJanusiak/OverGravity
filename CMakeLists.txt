@@ -84,7 +84,10 @@ if(APPLE)
             src/main.cpp
             includes/State.h
             src/Sound.cpp
-            src/Sound.h)
+            includes/Sound.h
+            src/Roborto.cpp
+            src/Roborto.cpp
+            includes/Roborto.h)
 
     Message("")
     Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )

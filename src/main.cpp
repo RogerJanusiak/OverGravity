@@ -225,7 +225,7 @@ int main( int argc, char* args[] ) {
                         } else if(e.key.keysym.sym == SDLK_5) {
                             int finalX;
                             int finalY;
-                            robortos.begin()->pathFind(4,2, finalX, finalY,state);
+                            robortos.begin()->pathFind(9,3, finalX, finalY,state);
                             SDL_Log("Weights: %i,%i", finalX, finalY);
                         }
                         if(e.key.keysym.sym == SDLK_d) {
@@ -371,11 +371,13 @@ int main( int argc, char* args[] ) {
                         it->render();
                         if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
                             it->alive = false;
+                            timpy.increaseCombo(comboToGetShield);
                             explosion.play();
                         } else {
                             if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
                                 if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y) {
                                     timpy.getEntity()->setYVelocity(-1800);
+                                    timpy.increaseCombo(comboToGetShield);
                                     explosion.play();
                                 } else {
                                     if(timpy.damage()) {

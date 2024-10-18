@@ -151,106 +151,31 @@ void Roborto::move(float dt,const std::list<Platform*> &platforms, State& state)
     if(xDifference != 0) {
         direction = xDifference/abs(xDifference);
     }
-    if(tileY < state.levelMap.size()) {
-        if(tileY < state.playerTileY) {
-            int leftWeight;
-            int rightWeight;
-            pathFind(tileX,tileY,leftWeight,rightWeight,state);
-            if(leftWeight >= rightWeight) {
+    if(tileY < state.levelMap.size() && state.levelMap[tileY][tileX] != -1) {
+        int leftWeight;
+        int rightWeight;
+        pathFind(tileX,tileY,leftWeight,rightWeight,state);
+        if(leftWeight >= 1000 && rightWeight >= 1000) {
+            int numberTilesRight = findEdgeRight(tileX,tileY,state);
+            int numberTilesLeft = findEdgeLeft(tileX,tileY,state);
+
+            numberTilesRight = numberTilesRight > 0 ? numberTilesRight : 1000;
+            numberTilesLeft = numberTilesLeft > 0 ? numberTilesLeft : 1000;
+
+            if(numberTilesLeft > numberTilesRight) {
                 roborEntity->setXVelocity(xVelocity);
-            } else {
+            } else if(numberTilesLeft < numberTilesRight) {
+                roborEntity->setXVelocity(xVelocity*-1);
+            } else if(roborEntity->getXVelocity() == 0) {
+                roborEntity->setXVelocity(xVelocity);
+            }
+        } else {
+            if(leftWeight > rightWeight) {
+                roborEntity->setXVelocity(xVelocity);
+            } else if(leftWeight < rightWeight) {
                 roborEntity->setXVelocity(-xVelocity);
-            }
-        } else if(tileY == state.playerTileY) {
-            if(tileX == state.playerTileX) {
-                roborEntity->setXVelocity(xVelocity*direction);
-            } else {
-                bool allPlatforms = true;
-                for(int i = 1; i < abs(state.playerTileX - tileX); i++) {
-                    if(state.levelMap[tileY][tileX+(i*direction)] == -1) {
-                        allPlatforms = false;
-                    }
-                }
-
-                if(allPlatforms) {
-                    roborEntity->setXVelocity(xVelocity*direction);
-                } else {
-                    bool lookingRight = true;
-                    int numberTilesRight = 1;
-                    while(lookingRight) {
-                        int rightProbe = tileX+numberTilesRight;
-                        if(rightProbe > 11) {
-                            numberTilesRight = 100;
-                            lookingRight = false;
-                        } else {
-                            if(state.levelMap[tileY][rightProbe] != -1) {
-                                numberTilesRight++;
-                            } else {
-                                lookingRight = false;
-                            }
-                        }
-                    }
-
-                    bool lookingLeft = true;
-                    int numberTilesLeft = 1;
-                    while(lookingLeft) {
-                        int leftProbe = tileX+numberTilesLeft;
-                        if(leftProbe < 1) {
-                            numberTilesLeft = 100;
-                            lookingLeft = false;
-                        } else {
-                            if(state.levelMap[tileY][tileX-numberTilesLeft] != -1) {
-                                numberTilesLeft++;
-                            } else {
-                                lookingLeft = false;
-                            }
-                        }
-                    }
-                    if(numberTilesLeft > numberTilesRight) {
-                        roborEntity->setXVelocity(xVelocity);
-                    } else {
-                        roborEntity->setXVelocity(xVelocity*-1);
-                    }
-                }
-            }
-        } else if(tileY > state.playerTileY) {
-            if(state.levelMap[tileY][tileX] != -1) {
-                bool lookingRight = true;
-                int numberTilesRight = 1;
-                while(lookingRight) {
-                    int rightProbe = tileX+numberTilesRight;
-                    if(rightProbe > 11) {
-                        numberTilesRight = 100;
-                        lookingRight = false;
-                    } else {
-                        if(state.levelMap[tileY][rightProbe] != -1) {
-                            numberTilesRight++;
-                        } else {
-                            lookingRight = false;
-                        }
-                    }
-                }
-
-                bool lookingLeft = true;
-                int numberTilesLeft = 1;
-                while(lookingLeft) {
-                    int leftProbe = tileX+numberTilesLeft;
-                    if(leftProbe < 1) {
-                        numberTilesLeft = 100;
-                        lookingLeft = false;
-                    } else {
-                        if(state.levelMap[tileY][tileX-numberTilesLeft] != -1) {
-                            numberTilesLeft++;
-                        } else {
-                            lookingLeft = false;
-                        }
-                    }
-                }
-                if(numberTilesLeft > numberTilesRight) {
-                    roborEntity->setXVelocity(xVelocity);
-                } else {
-                    roborEntity->setXVelocity(xVelocity*-1);
-                }
+            } else if(roborEntity->getXVelocity() == 0) {
+                roborEntity->setXVelocity(xVelocity);
             }
         }
     }

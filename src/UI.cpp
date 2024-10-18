@@ -68,7 +68,7 @@ UI_Button settingsButton;
 UI_Button level1;
 UI_Button level2;
 
-void initStartScreen(bool controller) {
+void initStartScreen() {
     logoTexture.setup(scale(454),scale(92),renderer);
     logoTexture.loadFromFile("logo.png");
     arcadeModeButton.setup((WINDOW_WIDTH-arcadeModeButton.getWidth())/2,scale(215),"Arcade Mode", renderer);

@@ -8,7 +8,7 @@
 void renderInGameText(bool developerMode, float lastFPS, bool waveStarted);
 void updateInGameText(int playerCombo, int wave);
 
-void initStartScreen(bool controller);
+void initStartScreen();
 void renderStartScreen(State& state);
 
 void UI_init(SDL_Renderer* renderer);

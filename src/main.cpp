@@ -99,7 +99,7 @@ int main( int argc, char* args[] ) {
         float lastFPS = 0;
 
         UI_init(gameRenderer);
-        initStartScreen(controller != nullptr);
+        initStartScreen();
 
         Sound pistolReload("resources/sounds/pistolReload.wav", 0);
         Sound explosion("resources/sounds/explosion.wav", 0);
@@ -122,16 +122,12 @@ int main( int argc, char* args[] ) {
                         }
                     } else if( e.type == SDL_JOYBUTTONDOWN ) {
                         if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-                            state.started = true;
+
                         }
                     } else if(e.type == SDL_JOYDEVICEADDED ) {
                         loadController();
-                        initStartScreen(controller != nullptr);
-                        renderStartScreen(state);
                     } else if (e.type == SDL_JOYDEVICEREMOVED) {
                         controller = nullptr;
-                        initStartScreen(controller != nullptr);
-                        renderStartScreen(state);
                     } else  if( e.type == SDL_MOUSEMOTION) {
                         mouseMove(state);
                     } else if(e.type == SDL_MOUSEBUTTONDOWN) {
@@ -276,7 +272,7 @@ int main( int argc, char* args[] ) {
                         if(e.key.keysym.sym == SDLK_SPACE) {
                             shootingReset = true;
                         }
-                    } else if( e.type == SDL_JOYAXISMOTION && waveStarted) {
+                    } else if( e.type == SDL_JOYAXISMOTION) {
                         if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
                             if(shootingReset) {
                                 timpy.shoot(&eBullets,&bullets,bulletSpeed);
@@ -303,6 +299,15 @@ int main( int argc, char* args[] ) {
                          loadController();
                     } else if (e.type == SDL_JOYDEVICEREMOVED) {
                         controller = nullptr;
+                    } else if( e.type == SDL_JOYBUTTONDOWN ) {
+                        if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
+                            timpy.changeWeapon();
+                        } else  if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
+                            if(timpy.useAbility()) {
+                                moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
+                                timpy.getEntity()->forceSpawn();
+                            }
+                        }
                     }
                 }
 

@@ -19,27 +19,36 @@ add_executable(${PROJECT_NAME} src/Player.cpp
         src/main.cpp
         src/UI.cpp
         includes/UI.h
-        src/main.cpp)
+        src/main.cpp
+        includes/State.h
+        src/Sound.cpp
+        includes/Sound.h
+        src/Roborto.cpp
+        src/Roborto.cpp
+        includes/Roborto.h)
 
 # --- SDL2 SETUP ---
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMAKE/cmakepc )
 set(SDL2_PATH "SDL2/x86_64-w64-mingw32")
 set(SDL2_IMAGE_PATH "SDL2/x86_64-w64-mingw32")
 set(SDL2_TTF_PATH "SDL2/x86_64-w64-mingw32")
+set(SDL2_MIXER_PATH "SDL2/x86_64-w64-mingw32")
 
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
+find_package(SDL2_mixer REQUIRED)
 
 include_directories(${SDL2_INCLUDE_DIR}
         ${SDL2_IMAGE_INCLUDE_DIR}
-        ${SDL2_TTF_INCLUDE_DIR})
+        ${SDL2_TTF_INCLUDE_DIR}
+        ${SDL2_MIXER_INCLUDE_DIR})
 
-set(SDL_LIBRARIES ${SDL_LIBRARIES} SDL2main SDL2_image-static SDL2-static SDL2_ttf-static)
+set(SDL_LIBRARIES ${SDL_LIBRARIES} SDL2main SDL2_image-static SDL2-static SDL2_ttf-static SDL2_mixer-static)
 
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}
         ${SDL2_IMAGE_LIBRARIES}
-        ${SDL2_TTF_LIBRARIES} -static  )
+        ${SDL2_TTF_LIBRARIES} ${SDL2_MIXER_LIBRARIES} -static  )
 # -fsanitize=address
 # Specify the resource folder
 set(RESOURCE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/resources")

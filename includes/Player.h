@@ -13,6 +13,7 @@
 enum class Weapon {
     revolver,
     knife,
+    lazerPistol,
     machineGun,
     c4
 };
@@ -44,10 +45,10 @@ public:
     int getCombo() const { return combo; }
 
     bool shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, int bulletSpeed);
-    int reload(float dt,double revolverReloadSpeed);
+    int reload(float dt);
     bool wasJustReloaded();
 
-    int charge(float dt,double abilityReloadSpeed);
+    int charge(float dt);
     bool useAbility();
 
     SDL_Rect* getWheelRect() { return &wheelRect; }
@@ -88,6 +89,12 @@ private:
     bool charged = true;
     bool justCharged = false;
 
+    const double revolverReloadSpeed = 0.75;
+    const double lazerPistolReloadSpeed = 0.5;
+    double weaponReloadSpeed = revolverReloadSpeed;
+
+    const double abilityReloadSpeed = 15;
+
     float timeSinceShot;
     float timeSinceAbilty;
 
@@ -97,6 +104,8 @@ private:
 
     Texture revolverTextureRight;
     Texture revolverTextureLeft;
+
+    Texture lazerPistolTexture;
 
     Sound gunshot;
     Sound damageSound;

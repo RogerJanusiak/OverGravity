@@ -78,7 +78,7 @@ bool Texture::loadFromRenderedText(const std::string &textureText, const SDL_Col
     return mTexture != nullptr;
 }
 
-void Texture::render(const int x, const int y, const SDL_Rect *srcRect, const double angle, const SDL_Point *center, const SDL_RendererFlip flip) const {
+void Texture::render(const int x, const int y, const SDL_RendererFlip flip, const SDL_Rect *srcRect, const double angle, const SDL_Point *center) const {
     SDL_Rect dstRect = {x,y,mWidth,mHeight};
 
     if(srcRect != nullptr) {

@@ -26,8 +26,8 @@ public:
 
     void setTexture(SDL_Texture* texture) { mTexture = texture; }
 
-    void render(int x, int y, const SDL_Rect *srcRect = nullptr, double angle = 0.0, const SDL_Point *center = nullptr, SDL_RendererFlip
-                flip = SDL_FLIP_NONE) const;
+    void render(int x, int y, SDL_RendererFlip
+                flip = SDL_FLIP_NONE, const SDL_Rect *srcRect = nullptr, double angle = 0.0, const SDL_Point *center = nullptr) const;
 
 
 

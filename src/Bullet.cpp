@@ -1,25 +1,40 @@
 #include "../includes/Bullet.h"
 
-Bullet::Bullet(Entity* tempEntity) : entity(tempEntity) {
-    entity->setDimensions(width,height);
-    entity->getTexture()->setup(width,height,entity->getRenderer());
-    if(!entity->getTexture()->loadFromFile("bullet.png")) {
-        SDL_Log("Could not load bullet texture!");
+Bullet::Bullet(Entity* tempEntity, BULLET_TYPE type) : entity(tempEntity), type(type) {
+    switch(type) {
+        case BULLET_TYPE::lazer: {
+            entity->setDimensions(lazerWidth,lazerHeight);
+            entity->getTexture()->setup(lazerWidth,lazerHeight,entity->getRenderer());
+            if(!entity->getTexture()->loadFromFile("lazer.png")) {
+                SDL_Log("Could not load bullet texture!");
+            }
+        } break;
+        default: {
+            entity->setDimensions(normalWidth,normalHeight);
+            entity->getTexture()->setup(normalWidth,normalHeight,entity->getRenderer());
+            if(!entity->getTexture()->loadFromFile("bullet.png")) {
+                SDL_Log("Could not load bullet texture!");
+            }
+        }
     }
+
+
 }
 
 bool Bullet::move(float dt, const std::list<Platform*> &platforms, bool developerMode) {
-
-    if(!entity->move(dt, platforms)) {
-        if(platformStatus == 0) {
-            platformStatus = 1;
-        } else if(platformStatus == 2) {
-            return true;
+    if(type == BULLET_TYPE::normal) {
+        if(!entity->move(dt, platforms)) {
+            if(platformStatus == 0) {
+                platformStatus = 1;
+            } else if(platformStatus == 2) {
+                return true;
+            }
+        } else if(platformStatus == 1) {
+            platformStatus = 2;
         }
-    } else if(platformStatus == 1) {
-        platformStatus = 2;
+    } else if(type == BULLET_TYPE::lazer) {
+        entity->setPosition(entity->getRect().x + entity->getXVelocity()*dt,entity->getRect().y);
     }
-    //Not gravity bullet: entity->setPosition(entity->getRect().x + entity->getXVelocity()*dt,entity->getRect().y);
 
     if(entity->getRect().x > WINDOW_WIDTH || entity->getRect().x < 0) {
         return true;

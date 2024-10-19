@@ -52,9 +52,7 @@ bool pauseEnemy = false;
 int bulletSpeed = 1;
 int timpyXVelocity = 1;
 int roborXVelocity = 1;
-double revolverReloadSpeed = 1;
 int comboToGetShield = 1;
-double abilityChargeSpeed = 15;
 
 Player* timpyPointer = nullptr;
 
@@ -351,8 +349,8 @@ int main( int argc, char* args[] ) {
                     if((current-startWaveLoad)/1000.0f > 1) {
                         waveStarted = true;
                     }
-                    updateTimeToShoot(scale(timpy.reload(dt,revolverReloadSpeed)));
-                    updateTimeToAbility(scale(timpy.charge(dt,abilityChargeSpeed)));
+                    updateTimeToShoot(scale(timpy.reload(dt)));
+                    updateTimeToAbility(scale(timpy.charge(dt)));
                     if (timpy.wasJustReloaded()) {
                         pistolReload.play();
                     }
@@ -495,7 +493,7 @@ int main( int argc, char* args[] ) {
                     if(playerDamaged) {
                         timpy.zeroCombo();
                         updateInGameText(timpy.getCombo(),waveNumber);
-                        timpy.charge(abilityChargeSpeed,abilityChargeSpeed);
+                        timpy.charge(dt);
                         moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                         timpy.getEntity()->forceSpawn();
                     }
@@ -692,9 +690,6 @@ bool loadValuesFromCSV(std::string &filePath) {
         }
         if(std::stoi(data[i][0]) == 2) {
             roborXVelocity = scale(std::stoi(data[i][1]));
-        }
-        if(std::stoi(data[i][0]) == 3) {
-            revolverReloadSpeed = std::stod(data[i][1]);
         }
         if(std::stoi(data[i][0]) == 4) {
             comboToGetShield = std::stoi(data[i][1]);

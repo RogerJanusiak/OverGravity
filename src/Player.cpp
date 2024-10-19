@@ -50,6 +50,7 @@ Player::Player(Entity* entity) : playerEntity(entity) {
     knifeTextureRight.setup(scale(42),scale(21),playerEntity->getRenderer());
     revolverTextureLeft.setup(scale(42),scale(21),playerEntity->getRenderer());
     revolverTextureRight.setup(scale(42),scale(21),playerEntity->getRenderer());
+    lazerPistolTexture.setup(scale(42),scale(21),playerEntity->getRenderer());
 
     if(!playerTextureRight.loadFromFile("Timpy.png")) {
         SDL_Log("Could not load TimpyRight texture!");
@@ -69,25 +70,39 @@ Player::Player(Entity* entity) : playerEntity(entity) {
     if(!revolverTextureRight.loadFromFile("Revolver.png")) {
         SDL_Log("Could not load Revolver texture!");
     }
+    if(!lazerPistolTexture.loadFromFile("lazerPistol.png")) {
+        SDL_Log("Could not load lazerPistol texture!");
+    }
 
     playerEntity->setTexture(playerTextureLeft);
 
 }
 
+// TODO: Change all weapons to use flip, maybe timpy too.
 void Player::render() const {
     playerEntity->render();
 
-    if(currentWeapon == Weapon::revolver) {
-        if(playerDirection) {
-            revolverTextureRight.render(playerEntity->getRect().x+scale(40),playerEntity->getRect().y+scale(15));
-        } else {
-            revolverTextureLeft.render(playerEntity->getRect().x-scale(27),playerEntity->getRect().y+scale(15));
-        }
-    } else {
-        if(playerDirection) {
-            knifeTextureRight.render(playerEntity->getRect().x+scale(40),playerEntity->getRect().y+scale(15));
-        } else {
-            knifeTextureLeft.render(playerEntity->getRect().x-scale(27),playerEntity->getRect().y+scale(15));
+    switch (currentWeapon) {
+        case Weapon::lazerPistol: {
+            if(playerDirection) {
+                lazerPistolTexture.render(playerEntity->getRect().x+scale(30),playerEntity->getRect().y+scale(12));
+            } else {
+                lazerPistolTexture.render(playerEntity->getRect().x-scale(22),playerEntity->getRect().y+scale(12),SDL_FLIP_HORIZONTAL);
+            }
+        } break;
+        case Weapon::knife: {
+            if(playerDirection) {
+                knifeTextureRight.render(playerEntity->getRect().x+scale(40),playerEntity->getRect().y+scale(15));
+            } else {
+                knifeTextureLeft.render(playerEntity->getRect().x-scale(27),playerEntity->getRect().y+scale(15));
+            }
+        } break;
+        default: {
+            if(playerDirection) {
+                revolverTextureRight.render(playerEntity->getRect().x+scale(40),playerEntity->getRect().y+scale(15));
+            } else {
+                revolverTextureLeft.render(playerEntity->getRect().x-scale(27),playerEntity->getRect().y+scale(15));
+            }
         }
     }
 }
@@ -127,7 +142,11 @@ void Player::setDirection(bool direction) {
 
 void Player::changeWeapon() {
     if(currentWeapon == Weapon::knife) {
+        currentWeapon = Weapon::lazerPistol;
+        weaponReloadSpeed  = lazerPistolReloadSpeed;
+    } else if(currentWeapon == Weapon::lazerPistol) {
         currentWeapon = Weapon::revolver;
+        weaponReloadSpeed  = revolverReloadSpeed;
     } else {
         currentWeapon = Weapon::knife;
     }
@@ -144,25 +163,42 @@ void Player::increaseCombo(int comboToGetShield) {
 }
 
 bool Player::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, int bulletSpeed) {
-    if(reloaded && currentWeapon == Weapon::revolver) {
-        if(playerDirection) {
-            eBullets->emplace_back(getEntity()->getRect().x+scale(60),getEntity()->getRect().y+scale(19),bulletSpeed,0,getEntity()->getRenderer());
-            bullets->emplace_back(&eBullets->back());
-            bullets->back().setIterator(--eBullets->end());
-        } else {
-            eBullets->emplace_back(getEntity()->getRect().x,getEntity()->getRect().y+scale(19),-bulletSpeed,0,getEntity()->getRenderer());
-            bullets->emplace_back(&eBullets->back());
-            bullets->back().setIterator(--eBullets->end());
+    if(reloaded) {
+        switch(currentWeapon) {
+            case Weapon::lazerPistol: {
+                if(playerDirection) {
+                    eBullets->emplace_back(getEntity()->getRect().x+scale(30),getEntity()->getRect().y+scale(17),bulletSpeed,0,getEntity()->getRenderer());
+                    bullets->emplace_back(&eBullets->back(), BULLET_TYPE::lazer);
+                    bullets->back().setIterator(--eBullets->end());
+                } else {
+                    eBullets->emplace_back(getEntity()->getRect().x,getEntity()->getRect().y+scale(17),-bulletSpeed,0,getEntity()->getRenderer());
+                    bullets->emplace_back(&eBullets->back(), BULLET_TYPE::lazer);
+                    bullets->back().setIterator(--eBullets->end());
+                }
+                reloaded = false;
+                return true;
+            }
+            default: {
+                if(playerDirection) {
+                    eBullets->emplace_back(getEntity()->getRect().x+scale(60),getEntity()->getRect().y+scale(19),bulletSpeed,0,getEntity()->getRenderer());
+                    bullets->emplace_back(&eBullets->back(), BULLET_TYPE::normal);
+                    bullets->back().setIterator(--eBullets->end());
+                } else {
+                    eBullets->emplace_back(getEntity()->getRect().x,getEntity()->getRect().y+scale(19),-bulletSpeed,0,getEntity()->getRenderer());
+                    bullets->emplace_back(&eBullets->back(), BULLET_TYPE::normal);
+                    bullets->back().setIterator(--eBullets->end());
+                }
+                gunshot.play();
+                reloaded = false;
+                return true;
+            }
         }
-        gunshot.play();
-        reloaded = false;
-        return true;
     }
     return false;
 }
 
-int Player::reload(float dt,double revolverReloadSpeed) {
-    if (timeSinceShot >= revolverReloadSpeed) {
+int Player::reload(float dt) {
+    if (timeSinceShot >= weaponReloadSpeed) {
         timeSinceShot = 0;
         reloaded = true;
         justReloaded = true;
@@ -170,7 +206,7 @@ int Player::reload(float dt,double revolverReloadSpeed) {
     }
     if(!reloaded) {
         timeSinceShot += dt;
-        return 75*timeSinceShot*(1/revolverReloadSpeed)-2;
+        return 75*timeSinceShot*(1/weaponReloadSpeed)-2;
     }
     return 75;
 }
@@ -183,7 +219,7 @@ bool Player::wasJustReloaded() {
     return false;
 }
 
-int Player::charge(float dt,double abilityReloadSpeed) {
+int Player::charge(float dt) {
     if (timeSinceAbilty >= abilityReloadSpeed) {
         timeSinceAbilty = 0;
         charged = true;

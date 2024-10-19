@@ -18,6 +18,13 @@ enum class Weapon {
     c4
 };
 
+enum Ability {
+    bounce,
+    respawn,
+    c4,
+    none,
+};
+
 class Player {
 public:
     Player(Entity* entity);
@@ -49,7 +56,11 @@ public:
     bool wasJustReloaded();
 
     int charge(float dt);
-    bool useAbility();
+    Ability useAbility();
+    Ability getAbility() { return currentAbility; }
+    void changeAbility();
+
+    Entity* getC4Entity() { return &c4Entity; }
 
     SDL_Rect* getWheelRect() { return &wheelRect; }
     void updateWheelRect() {
@@ -76,6 +87,7 @@ private:
     Texture playerTextureLeft;
 
     Weapon currentWeapon;
+    Ability currentAbility = Ability::bounce;
 
     int playerHealth = 2;
     int playerShield = 0;
@@ -107,6 +119,12 @@ private:
     Texture revolverTextureLeft;
 
     Texture lazerPistolTexture;
+
+    //C4 Ability Variables
+    Entity c4Entity;
+    Texture c4Texture;
+    Texture detinatorTexture;
+    bool c4Placed = false;
 
     Sound gunshot;
     Sound damageSound;

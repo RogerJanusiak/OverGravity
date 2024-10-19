@@ -22,7 +22,7 @@ private:
     const int enemyWidth = scale(24);
     const int enemyHeight = scale(50);
 
-    const int xVelocity = scale(350);
+    const int xVelocity = scale(300);
 
     Entity* roborEntity;
 };

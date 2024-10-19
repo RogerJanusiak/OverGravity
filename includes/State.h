@@ -1,5 +1,6 @@
 #ifndef STATE_H
 #define STATE_H
+#include "Player.h"
 
 struct State {
     //Menu Status
@@ -21,6 +22,7 @@ struct State {
         int playerTileX = 0;
         int playerTileY = 0;
         int playerX = 0;
+        Player* player = nullptr;
 
 };
 

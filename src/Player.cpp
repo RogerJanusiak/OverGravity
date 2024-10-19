@@ -51,6 +51,8 @@ Player::Player(Entity* entity) : playerEntity(entity) {
     revolverTextureLeft.setup(scale(42),scale(21),playerEntity->getRenderer());
     revolverTextureRight.setup(scale(42),scale(21),playerEntity->getRenderer());
     lazerPistolTexture.setup(scale(42),scale(21),playerEntity->getRenderer());
+    c4Texture.setup(scale(32),scale(32),playerEntity->getRenderer());
+    detinatorTexture.setup(scale(32),scale(32),playerEntity->getRenderer());
 
     if(!playerTextureRight.loadFromFile("Timpy.png")) {
         SDL_Log("Could not load TimpyRight texture!");
@@ -73,16 +75,29 @@ Player::Player(Entity* entity) : playerEntity(entity) {
     if(!lazerPistolTexture.loadFromFile("lazerPistol.png")) {
         SDL_Log("Could not load lazerPistol texture!");
     }
+    if(!c4Texture.loadFromFile("C4.png")) {
+        SDL_Log("Could not load c4 texture!");
+    }
+    if(!detinatorTexture.loadFromFile("Detinator.png")) {
+        SDL_Log("Could not load detinator texture!");
+    }
 
+    c4Entity.setTexture(c4Texture);
+    c4Entity.setDimensions(scale(32),scale(32));
     playerEntity->setTexture(playerTextureLeft);
 
 }
 
 // TODO: Change all weapons to use flip, maybe timpy too.
 void Player::render() const {
+    if(c4Placed) {
+        c4Entity.render();
+    }
+
     playerEntity->render();
 
-    switch (currentWeapon) {
+    if(!c4Placed) {
+        switch (currentWeapon) {
         case Weapon::lazerPistol: {
             if(playerDirection) {
                 lazerPistolTexture.render(playerEntity->getRect().x+scale(30),playerEntity->getRect().y+scale(12));
@@ -104,10 +119,21 @@ void Player::render() const {
                 revolverTextureLeft.render(playerEntity->getRect().x-scale(27),playerEntity->getRect().y+scale(15));
             }
         }
+        }
+    } else {
+        if(playerDirection) {
+            detinatorTexture.render(playerEntity->getRect().x+scale(35),playerEntity->getRect().y+scale(12));
+        } else {
+            detinatorTexture.render(playerEntity->getRect().x-scale(17),playerEntity->getRect().y+scale(12),SDL_FLIP_HORIZONTAL);
+        }
     }
 }
 
 int Player::move(float dt,const std::list<Platform*> &platforms,int camY) {
+
+    if(c4Placed) {
+        c4Entity.move(dt,platforms);
+    }
 
     int amountFallen = 0;
     playerEntity->move(dt,platforms,&amountFallen,&wheelRect);
@@ -163,7 +189,7 @@ void Player::increaseCombo() {
 }
 
 bool Player::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets) {
-    if(reloaded) {
+    if(reloaded && !c4Placed) {
         switch(currentWeapon) {
             case Weapon::lazerPistol: {
                 if(playerDirection) {
@@ -178,20 +204,22 @@ bool Player::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets) {
                 reloaded = false;
                 return true;
             }
-            default: {
-                if(playerDirection) {
-                    eBullets->emplace_back(getEntity()->getRect().x+scale(60),getEntity()->getRect().y+scale(19),Bullet::getSpeed(),0,getEntity()->getRenderer());
-                    bullets->emplace_back(&eBullets->back(), BULLET_TYPE::normal);
-                    bullets->back().setIterator(--eBullets->end());
-                } else {
-                    eBullets->emplace_back(getEntity()->getRect().x,getEntity()->getRect().y+scale(19),-Bullet::getSpeed(),0,getEntity()->getRenderer());
-                    bullets->emplace_back(&eBullets->back(), BULLET_TYPE::normal);
-                    bullets->back().setIterator(--eBullets->end());
+            case Weapon::revolver: {
+                    if(playerDirection) {
+                        eBullets->emplace_back(getEntity()->getRect().x+scale(60),getEntity()->getRect().y+scale(19),Bullet::getSpeed(),0,getEntity()->getRenderer());
+                        bullets->emplace_back(&eBullets->back(), BULLET_TYPE::normal);
+                        bullets->back().setIterator(--eBullets->end());
+                    } else {
+                        eBullets->emplace_back(getEntity()->getRect().x,getEntity()->getRect().y+scale(19),-Bullet::getSpeed(),0,getEntity()->getRenderer());
+                        bullets->emplace_back(&eBullets->back(), BULLET_TYPE::normal);
+                        bullets->back().setIterator(--eBullets->end());
+                    }
+                    gunshot.play();
+                    reloaded = false;
+                    return true;
                 }
-                gunshot.play();
-                reloaded = false;
-                return true;
-            }
+            default:
+                break;
         }
     }
     return false;
@@ -233,12 +261,36 @@ int Player::charge(float dt) {
     return 75;
 }
 
-bool Player::useAbility() {
-    if(charged) {
+Ability Player::useAbility() {
+
+    if (charged && currentAbility == respawn) {
         charged = false;
-        return true;
+        return respawn;
     }
-    return false;
+    if (currentAbility == c4 && !c4Placed) {
+        c4Entity.setPhysics(playerEntity->getRect().x,playerEntity->getRect().y+playerEntity->getRect().h - scale(32),0,0);
+        c4Placed = true;
+        return none;
+    }
+    if(currentAbility == c4 && c4Placed) {
+        c4Placed = false;
+        return c4;
+    }
+  return none;
+}
+
+void Player::changeAbility() {
+    switch(currentAbility) {
+        case bounce:
+            currentAbility = respawn;
+            break;
+        case respawn:
+            currentAbility = c4;
+            break;
+        default:
+            currentAbility = Ability::bounce;
+            break;
+    }
 }
 
 bool Player::damage() {

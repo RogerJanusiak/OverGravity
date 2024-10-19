@@ -6,7 +6,7 @@
 #include "State.h"
 
 void renderInGameText(bool developerMode, float lastFPS, bool waveStarted);
-void updateInGameText(int playerCombo, int wave);
+void updateInGameText(int playerCombo, int wave, Ability ability);
 
 void initStartScreen();
 void renderStartScreen(State& state);

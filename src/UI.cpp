@@ -15,6 +15,7 @@ TTF_Font *title;
 Texture waveNumberText;
 Texture waveNumberTitle;
 Texture comboNumberText;
+Texture abilityText;
 Texture fpsText;
 
 Texture logoTexture;
@@ -32,6 +33,7 @@ void UI_init(SDL_Renderer* _renderer) {
     waveNumberText.setup(renderer);
     waveNumberTitle.setup(renderer);
     comboNumberText.setup(renderer);
+    abilityText.setup(renderer);
     fpsText.setup(renderer);
 
     startGameText.setup(renderer);
@@ -43,18 +45,30 @@ void UI_close() {
     TTF_CloseFont(title);
 }
 
-void updateInGameText(int playerCombo, int wave) {
+void updateInGameText(int playerCombo, int wave, Ability ability) {
     comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, counter);
     waveNumberText.loadFromRenderedText("Wave: " + std::to_string(wave), white, counter);
     waveNumberTitle.loadFromRenderedText("Wave " + std::to_string(wave) + " Start!", white, title);
+    switch(ability) {
+        case bounce:
+            abilityText.loadFromRenderedText("Ability: Bounce", white, counter);
+            break;
+        case respawn:
+            abilityText.loadFromRenderedText("Ability: Respawn", white, counter);
+            break;
+        default:
+            abilityText.loadFromRenderedText("Ability: C4", white, counter);
+    }
+
 }
 
 void renderInGameText(bool developerMode, float lastFPS,bool waveStarted) {
     waveNumberText.render(scale(10),scale(5));
     comboNumberText.render(scale(10),scale(30));
+    abilityText.render(scale(10),scale(55));
     if(developerMode) {
         fpsText.loadFromRenderedText("FPS: " + std::to_string(lastFPS), white, counter);
-        fpsText.render(scale(10),scale(55));
+        fpsText.render(scale(10),scale(80));
     }
     if(!waveStarted) {
         waveNumberTitle.render((WINDOW_WIDTH-waveNumberTitle.getWidth())/2,scale(200));
@@ -134,13 +148,17 @@ void updateTimeToAbility(const double width) {
 void renderPlayerUI(Player* player) {
     SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
     SDL_RenderFillRect(renderer,&timeToShootBack);
-    SDL_RenderFillRect(renderer,&timeToAbilityBack);
+
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer,&timeToShoot);
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-    SDL_RenderFillRect(renderer,&timeToAbility);
+    if(player->getAbility() == respawn) {
+        SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+        SDL_RenderFillRect(renderer,&timeToAbilityBack);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+        SDL_RenderFillRect(renderer,&timeToAbility);
+    }
 
     switch(player->getShield()) {
         case 2: {

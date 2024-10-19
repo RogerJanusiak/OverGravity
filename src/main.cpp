@@ -141,6 +141,7 @@ int main( int argc, char* args[] ) {
             Entity eTimpy = Entity(&playerSpawns,gameRenderer);
             Player timpy = Player(&eTimpy);
             timpyPointer = &timpy;
+            state.player = &timpy;
 
             bool leftMovement = false;
             bool rightMovement = false;
@@ -148,6 +149,7 @@ int main( int argc, char* args[] ) {
             bool waveOverride = false;
 
             bool shootingReset = true;
+            bool c4Exploded = false;
 
             bool inWave;
             int waveNumber = 0;
@@ -269,10 +271,20 @@ int main( int argc, char* args[] ) {
                                     shootingReset = false;
                                 }
                             } else if(e.key.keysym.sym == SDLK_e) {
-                                if(timpy.useAbility()) {
-                                    moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
-                                    timpy.getEntity()->forceSpawn();
+                                switch(timpy.useAbility()) {
+                                    case respawn: {
+                                        moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
+                                        timpy.getEntity()->forceSpawn();
+                                    } break;
+                                    case c4: {
+                                        c4Exploded = true;
+                                    } break;
+                                    default:
+                                        break;
                                 }
+                            } else if(e.key.keysym.sym == SDLK_q) {
+                                timpy.changeAbility();
+                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                             }
                         } else if(e.type == SDL_KEYUP) {
                             if(e.key.keysym.sym == SDLK_d)
@@ -321,9 +333,13 @@ int main( int argc, char* args[] ) {
                             if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
                                 timpy.changeWeapon();
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
-                                if(timpy.useAbility()) {
-                                    moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
-                                    timpy.getEntity()->forceSpawn();
+                                switch(timpy.useAbility()) {
+                                    case respawn: {
+                                        moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
+                                        timpy.getEntity()->forceSpawn();
+                                    } break;
+                                    default:
+                                        break;
                                 }
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START) == 1) {
                                 state.started = false;
@@ -395,19 +411,20 @@ int main( int argc, char* args[] ) {
                                 explosion.play();
                             } else {
                                 if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
-                                    if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y) {
+                                    if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y
+                                        && timpy.getAbility() == Ability::bounce) {
                                         timpy.getEntity()->setYVelocity(-1800);
                                         timpy.increaseCombo();
                                         explosion.play();
-                                    } else {
-                                        if(timpy.damage()) {
-                                            playerAlive = false;
-                                            waveNumber = 0;
-                                            timpy.zeroCombo();
-                                            updateInGameText(timpy.getCombo(),waveNumber);
+                                        } else {
+                                            if(timpy.damage()) {
+                                                playerAlive = false;
+                                                waveNumber = 0;
+                                                timpy.zeroCombo();
+                                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
+                                            }
+                                            playerDamaged = true;
                                         }
-                                        playerDamaged = true;
-                                    }
                                     it->alive = false;
                                 }
                             }
@@ -422,9 +439,17 @@ int main( int argc, char* args[] ) {
                                     ++bit;
                                 }
                             }
-                            updateInGameText(timpy.getCombo(),waveNumber);
+                            updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                             if(state.developerMode) {
                                 SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
+                            }
+                        }
+                        if(c4Exploded) {
+                            int c4x = timpy.getC4Entity()->getRect().x;
+                            int c4y = timpy.getC4Entity()->getRect().y;
+                            if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
+                                it->alive = false;
+                                timpy.increaseCombo();
                             }
                         }
                         if(it->alive) {
@@ -452,7 +477,7 @@ int main( int argc, char* args[] ) {
                                         playerAlive = false;
                                         waveNumber = 0;
                                         timpy.zeroCombo();
-                                        updateInGameText(timpy.getCombo(),waveNumber);
+                                        updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                                     }
                                     playerDamaged = true;
                                 }
@@ -469,9 +494,17 @@ int main( int argc, char* args[] ) {
                                     ++bit;
                                 }
                             }
-                            updateInGameText(timpy.getCombo(),waveNumber);
+                            updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                             if(state.developerMode) {
                                 SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
+                            }
+                        }
+                        if(c4Exploded) {
+                            int c4x = timpy.getC4Entity()->getRect().x;
+                            int c4y = timpy.getC4Entity()->getRect().y;
+                            if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
+                                it->alive = false;
+                                timpy.increaseCombo();
                             }
                         }
                         if(it->alive) {
@@ -479,9 +512,11 @@ int main( int argc, char* args[] ) {
                         }
                     }
 
+                    c4Exploded = false;
+
                     if(playerDamaged) {
                         timpy.zeroCombo();
-                        updateInGameText(timpy.getCombo(),waveNumber);
+                        updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                         timpy.charge(dt);
                         moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                         timpy.getEntity()->forceSpawn();

@@ -22,6 +22,16 @@ void renderPlayerUI(Player* player);
 void mouseMove(State& state);
 void mouseClick(State& state);
 
+enum controllerMenuControl {
+    connect,
+    disconnect,
+    up,
+    down,
+    select,
+    back
+};
+
+void controllerEvent(State& state, controllerMenuControl control);
 
 //Button Class
 class UI_Button {
@@ -32,8 +42,12 @@ public:
 
     void setup (int _x, int _y, std::string text, SDL_Renderer* renderer);
 
-    void render() const {texture.render(x,y); textTexture.render(x+(width-textTexture.getWidth())/2,y+(height-textTexture.getHeight())/2); }
+    void render();
     int getWidth() const {return width;}
+
+    void select() {selected = true;}
+    void deselect() {selected = false;}
+    bool isSelected() {return selected;}
 
     bool mouseEvent(int mouseX, int mouseY) const;
 
@@ -45,6 +59,7 @@ private:
     const int height = scale(32*1.5);
 
     Texture texture;
+    Texture hoverTexture;
     Texture textTexture;
 
     bool selected = false;

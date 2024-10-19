@@ -69,35 +69,6 @@ int main( int argc, char* args[] ) {
         SDL_Event e;
         Uint32 lastUpdate = SDL_GetTicks();
 
-        std::list<Platform> ePlatforms;
-        std::vector<Spawn> enemySpawns;
-        enemySpawns.reserve(15);
-        std::vector<Spawn> playerSpawns;
-        playerSpawns.reserve(2);
-
-        std::vector<Spawn*> allSpawns;
-        allSpawns.reserve(15);
-        std::list<Platform*> platforms;
-
-        std::list<Entity> eBullets;
-        std::list<Bullet> bullets;
-
-        Entity eTimpy = Entity(&playerSpawns,gameRenderer);
-        Player timpy = Player(&eTimpy);
-        timpyPointer = &timpy;
-
-        bool leftMovement = false;
-        bool rightMovement = false;
-
-        bool waveOverride = false;
-
-        bool shootingReset = true;
-
-        bool inWave;
-        int waveNumber = 0;
-
-        float lastFPS = 0;
-
         UI_init(gameRenderer);
         initStartScreen();
 
@@ -107,8 +78,19 @@ int main( int argc, char* args[] ) {
 
         song.play();
 
+        if(controller != nullptr) {
+            controllerEvent(state,controllerMenuControl::connect);
+        }
+
+        bool controllerStickReset = true;
+
         //Game Loop
         while(!quit) {
+
+            state.mainMenu = true;
+            if(controller != nullptr) {
+                controllerEvent(state,controllerMenuControl::connect);
+            }
 
             while(!state.started && !quit) {
                 SDL_RenderClear(gameRenderer);
@@ -117,21 +99,37 @@ int main( int argc, char* args[] ) {
                     if( e.type == SDL_QUIT ) {
                         quit = true;
                     } else if( e.type == SDL_KEYDOWN ) {
-                        if(e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_RETURN2) {
-                            state.started = true;
-                        }
+
                     } else if( e.type == SDL_JOYBUTTONDOWN ) {
                         if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-
+                            controllerEvent(state,controllerMenuControl::select);
+                        } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
+                            controllerEvent(state,controllerMenuControl::back);
                         }
                     } else if(e.type == SDL_JOYDEVICEADDED ) {
+                        controllerEvent(state,controllerMenuControl::connect);
                         loadController();
                     } else if (e.type == SDL_JOYDEVICEREMOVED) {
+                        controllerEvent(state,controllerMenuControl::disconnect);
                         controller = nullptr;
                     } else  if( e.type == SDL_MOUSEMOTION) {
                         mouseMove(state);
                     } else if(e.type == SDL_MOUSEBUTTONDOWN) {
                         mouseClick(state);
+                    } else if( e.type == SDL_JOYAXISMOTION) {
+                        if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
+                            if(controllerStickReset) {
+                                controllerEvent(state,controllerMenuControl::down);
+                                controllerStickReset = false;
+                            }
+                        } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) < -JOYSTICK_DEAD_ZONE) {
+                            if(controllerStickReset) {
+                                controllerEvent(state,controllerMenuControl::up);
+                                controllerStickReset = false;
+                            }
+                        } else {
+                            controllerStickReset = true;
+                        }
                     }
                 }
 
@@ -140,248 +138,327 @@ int main( int argc, char* args[] ) {
                 SDL_RenderPresent(gameRenderer);
             }
 
-            if(!state.initialLoad) {
-                char* appDir = SDL_GetBasePath();
-                std::string currentPath(appDir);
-                SDL_free(appDir);
-                std::string levelPath;
+            std::list<Platform> ePlatforms;
+            std::vector<Spawn> enemySpawns;
+            enemySpawns.reserve(15);
+            std::vector<Spawn> playerSpawns;
+            playerSpawns.reserve(2);
 
-                if(state.level == 1) {
-                    levelPath = currentPath + "resources/levels/level1.csv";
-                } else if(state.level == 2) {
-                    levelPath = currentPath + "resources/levels/level2.csv";
-                }
+            std::vector<Spawn*> allSpawns;
+            allSpawns.reserve(15);
+            std::list<Platform*> platforms;
 
-                loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns);
+            std::list<Entity> eBullets;
+            std::list<Bullet> bullets;
 
-                for(auto it = enemySpawns.begin(); it != enemySpawns.end(); ++it) {
-                    allSpawns.push_back(&*it);
-                }
-                for(auto it = playerSpawns.begin(); it != playerSpawns.end(); ++it) {
-                    allSpawns.push_back(&*it);
-                }
+            Entity eTimpy = Entity(&playerSpawns,gameRenderer);
+            Player timpy = Player(&eTimpy);
+            timpyPointer = &timpy;
 
-                for(auto it = ePlatforms.begin(); it != ePlatforms.end(); ++it) {
-                    platforms.push_back(&*it);
-                }
+            bool leftMovement = false;
+            bool rightMovement = false;
 
-                timpy.getEntity()->forceSpawn();
-                state.initialLoad = true;
+            bool waveOverride = false;
+
+            bool shootingReset = true;
+
+            bool inWave;
+            int waveNumber = 0;
+
+            float lastFPS = 0;
+
+            char* appDir = SDL_GetBasePath();
+            std::string currentPath(appDir);
+            SDL_free(appDir);
+            std::string levelPath;
+
+            if(state.level == 1) {
+                levelPath = currentPath + "resources/levels/level1.csv";
+            } else if(state.level == 2) {
+                levelPath = currentPath + "resources/levels/level2.csv";
             }
 
-            inWave = true;
-            waveNumber++;
+            loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns);
 
-            std::list<Entity> tempRobors = getWaveEnemyEntities(waveNumber,1, &enemySpawns);
-            std::list<Entity> eRobots;
-            std::list<Robor> robors;
-
-            std::list<Entity> tempRobortos = getWaveEnemyEntities(waveNumber,2, &enemySpawns);
-            std::list<Entity> eRobortos;
-            std::list<Roborto> robortos;
-
-            std::list<Entity*> allCharacterEntities;
-
-            allCharacterEntities.push_back(timpy.getEntity());
-
-            for (auto it = tempRobors.begin(); it != tempRobors.end(); ++it) {
-                eRobots.push_back(*it);
-                robors.emplace_back(&(*it),roborXVelocity);
-                allCharacterEntities.emplace_back(&(*it));
+            for(auto it = enemySpawns.begin(); it != enemySpawns.end(); ++it) {
+                allSpawns.push_back(&*it);
+            }
+            for(auto it = playerSpawns.begin(); it != playerSpawns.end(); ++it) {
+                allSpawns.push_back(&*it);
             }
 
-            for (auto it = tempRobortos.begin(); it != tempRobortos.end(); ++it) {
-                eRobortos.push_back(*it);
-                robortos.emplace_back(&(*it),roborXVelocity);
-                allCharacterEntities.emplace_back(&(*it));
+            for(auto it = ePlatforms.begin(); it != ePlatforms.end(); ++it) {
+                platforms.push_back(&*it);
             }
 
-            bool waveStarted = false;
-            Uint32 startWaveLoad = SDL_GetTicks();
+            timpy.getEntity()->forceSpawn();
 
-            checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
+            while(state.started && !quit) {
+                inWave = true;
+                waveNumber++;
 
-            while(inWave && !quit) {
-                Uint64 start = SDL_GetPerformanceCounter();
+                std::list<Entity> tempRobors = getWaveEnemyEntities(waveNumber,1, &enemySpawns);
+                std::list<Entity> eRobots;
+                std::list<Robor> robors;
 
-                //Controls Loop
-                while(SDL_PollEvent(&e) != 0) {
-                    if( e.type == SDL_QUIT ) {
-                        quit = true;
-                    } else if( e.type == SDL_KEYDOWN ) {
-                        if(e.key.keysym.sym == SDLK_1) {
-                            state.developerMode = !state.developerMode;
-                        }
-                        if(e.key.keysym.sym == SDLK_2 && state.developerMode) {
-                            waveNumber = 30;
-                            waveOverride = true;
-                        }
-                        if(e.key.keysym.sym == SDLK_3 && state.developerMode) {
-                            moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
-                            timpy.getEntity()->forceSpawn();
-                        }
-                        if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
-                           pauseEnemy = !pauseEnemy;
-                        } else if(e.key.keysym.sym == SDLK_5) {
-                            int finalX;
-                            int finalY;
-                            robortos.begin()->pathFind(9,3, finalX, finalY,state);
-                            SDL_Log("Weights: %i,%i", finalX, finalY);
-                        } else if(e.key.keysym.sym == SDLK_6) {
-                            if (Mix_Playing(3)) {
-                                SDL_Log("Sound playing");
+                std::list<Entity> tempRobortos = getWaveEnemyEntities(waveNumber,2, &enemySpawns);
+                std::list<Entity> eRobortos;
+                std::list<Roborto> robortos;
+
+                std::list<Entity*> allCharacterEntities;
+
+                allCharacterEntities.push_back(timpy.getEntity());
+
+                for (auto it = tempRobors.begin(); it != tempRobors.end(); ++it) {
+                    eRobots.push_back(*it);
+                    robors.emplace_back(&(*it),roborXVelocity);
+                    allCharacterEntities.emplace_back(&(*it));
+                }
+
+                for (auto it = tempRobortos.begin(); it != tempRobortos.end(); ++it) {
+                    eRobortos.push_back(*it);
+                    robortos.emplace_back(&(*it),roborXVelocity);
+                    allCharacterEntities.emplace_back(&(*it));
+                }
+
+                bool waveStarted = false;
+                Uint32 startWaveLoad = SDL_GetTicks();
+
+                checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
+
+                while(state.started && inWave && !quit) {
+                    Uint64 start = SDL_GetPerformanceCounter();
+
+                    //Controls Loop
+                    while(SDL_PollEvent(&e) != 0) {
+                        if( e.type == SDL_QUIT ) {
+                            quit = true;
+                        } else if( e.type == SDL_KEYDOWN ) {
+                            if(e.key.keysym.sym == SDLK_1) {
+                                state.developerMode = !state.developerMode;
                             }
-                        }
-                        if(e.key.keysym.sym == SDLK_d) {
-                            timpy.getEntity()->setXVelocity(timpyXVelocity);
-                            rightMovement = true;
-                        }
-                        if(e.key.keysym.sym == SDLK_a) {
-                            timpy.getEntity()->setXVelocity(-timpyXVelocity);
-                            leftMovement = true;
-                        }
-                        if(e.key.keysym.sym == SDLK_l) {
-                            timpy.setDirection(true);
-                        }
-                        if(e.key.keysym.sym == SDLK_j) {
-                            timpy.setDirection(false);
-                        }
-                        if(e.key.keysym.sym == SDLK_w) {
-                            timpy.changeWeapon();
-                        }
-                        if(e.key.keysym.sym == SDLK_SPACE && waveStarted) {
-                            if(shootingReset) {
-                                timpy.shoot(&eBullets,&bullets,bulletSpeed);
-                                shootingReset = false;
+                            if(e.key.keysym.sym == SDLK_2 && state.developerMode) {
+                                waveNumber = 30;
+                                waveOverride = true;
                             }
-                        } else if(e.key.keysym.sym == SDLK_e) {
-                            if(timpy.useAbility()) {
+                            if(e.key.keysym.sym == SDLK_3 && state.developerMode) {
                                 moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                                 timpy.getEntity()->forceSpawn();
                             }
-                        }
-                    } else if(e.type == SDL_KEYUP) {
-                        if(e.key.keysym.sym == SDLK_d)
-                            rightMovement = false;
-                        if(e.key.keysym.sym == SDLK_a)
-                            leftMovement = false;
-                        if(!leftMovement && !rightMovement) {
-                            timpy.getEntity()->setXVelocity(0);
-                        } else if (leftMovement) {
-                            timpy.getEntity()->setXVelocity(-timpyXVelocity);
-                        } else {
-                            timpy.getEntity()->setXVelocity(timpyXVelocity);
-                        }
-
-                        if(e.key.keysym.sym == SDLK_SPACE) {
-                            shootingReset = true;
-                        }
-                    } else if( e.type == SDL_JOYAXISMOTION) {
-                        if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
-                            if(shootingReset) {
-                                timpy.shoot(&eBullets,&bullets,bulletSpeed);
-                                shootingReset = false;
+                            if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
+                                pauseEnemy = !pauseEnemy;
+                            } else if(e.key.keysym.sym == SDLK_5) {
+                                int finalX;
+                                int finalY;
+                                robortos.begin()->pathFind(9,3, finalX, finalY,state);
+                                SDL_Log("Weights: %i,%i", finalX, finalY);
+                            } else if(e.key.keysym.sym == SDLK_6) {
+                                if (Mix_Playing(3)) {
+                                    SDL_Log("Sound playing");
+                                }
+                            } else if(e.key.keysym.sym == SDLK_ESCAPE) {
+                                state.started = false;
                             }
-                        } else {
-                            shootingReset = true;
-                        }
+                            if(e.key.keysym.sym == SDLK_d) {
+                                timpy.getEntity()->setXVelocity(timpyXVelocity);
+                                rightMovement = true;
+                            }
+                            if(e.key.keysym.sym == SDLK_a) {
+                                timpy.getEntity()->setXVelocity(-timpyXVelocity);
+                                leftMovement = true;
+                            }
+                            if(e.key.keysym.sym == SDLK_l) {
+                                timpy.setDirection(true);
+                            }
+                            if(e.key.keysym.sym == SDLK_j) {
+                                timpy.setDirection(false);
+                            }
+                            if(e.key.keysym.sym == SDLK_w) {
+                                timpy.changeWeapon();
+                            }
+                            if(e.key.keysym.sym == SDLK_SPACE && waveStarted) {
+                                if(shootingReset) {
+                                    timpy.shoot(&eBullets,&bullets,bulletSpeed);
+                                    shootingReset = false;
+                                }
+                            } else if(e.key.keysym.sym == SDLK_e) {
+                                if(timpy.useAbility()) {
+                                    moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
+                                    timpy.getEntity()->forceSpawn();
+                                }
+                            }
+                        } else if(e.type == SDL_KEYUP) {
+                            if(e.key.keysym.sym == SDLK_d)
+                                rightMovement = false;
+                            if(e.key.keysym.sym == SDLK_a)
+                                leftMovement = false;
+                            if(!leftMovement && !rightMovement) {
+                                timpy.getEntity()->setXVelocity(0);
+                            } else if (leftMovement) {
+                                timpy.getEntity()->setXVelocity(-timpyXVelocity);
+                            } else {
+                                timpy.getEntity()->setXVelocity(timpyXVelocity);
+                            }
 
-                        if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX) > JOYSTICK_DEAD_ZONE) {
-                            timpy.setDirection(true);
-                        } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX) < -JOYSTICK_DEAD_ZONE) {
-                            timpy.setDirection(false);
-                        }
+                            if(e.key.keysym.sym == SDLK_SPACE) {
+                                shootingReset = true;
+                            }
+                        } else if( e.type == SDL_JOYAXISMOTION) {
+                            if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
+                                if(shootingReset) {
+                                    timpy.shoot(&eBullets,&bullets,bulletSpeed);
+                                    shootingReset = false;
+                                }
+                            } else {
+                                shootingReset = true;
+                            }
 
-                        if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
-                            timpy.getEntity()->setXVelocity(timpyXVelocity);
-                        } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) < -JOYSTICK_DEAD_ZONE) {
-                            timpy.getEntity()->setXVelocity(-timpyXVelocity);
-                        } else {
-                            timpy.getEntity()->setXVelocity(0);
-                        }
-                    } else if(e.type == SDL_JOYDEVICEADDED ) {
-                         loadController();
-                    } else if (e.type == SDL_JOYDEVICEREMOVED) {
-                        controller = nullptr;
-                    } else if( e.type == SDL_JOYBUTTONDOWN ) {
-                        if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-                            timpy.changeWeapon();
-                        } else  if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
-                            if(timpy.useAbility()) {
-                                moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
-                                timpy.getEntity()->forceSpawn();
+                            if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX) > JOYSTICK_DEAD_ZONE) {
+                                timpy.setDirection(true);
+                            } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX) < -JOYSTICK_DEAD_ZONE) {
+                                timpy.setDirection(false);
+                            }
+
+                            if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
+                                timpy.getEntity()->setXVelocity(timpyXVelocity);
+                            } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) < -JOYSTICK_DEAD_ZONE) {
+                                timpy.getEntity()->setXVelocity(-timpyXVelocity);
+                            } else {
+                                timpy.getEntity()->setXVelocity(0);
+                            }
+                        } else if(e.type == SDL_JOYDEVICEADDED ) {
+                            loadController();
+                        } else if (e.type == SDL_JOYDEVICEREMOVED) {
+                            controller = nullptr;
+                        } else if( e.type == SDL_JOYBUTTONDOWN ) {
+                            if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
+                                timpy.changeWeapon();
+                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
+                                if(timpy.useAbility()) {
+                                    moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
+                                    timpy.getEntity()->forceSpawn();
+                                }
+                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START) == 1) {
+                                state.started = false;
                             }
                         }
                     }
-                }
 
-                Uint32 current = SDL_GetTicks();
-                float dt = (current - lastUpdate) / 1000.0f;
-                lastUpdate = current;
+                    Uint32 current = SDL_GetTicks();
+                    float dt = (current - lastUpdate) / 1000.0f;
+                    lastUpdate = current;
 
-                if((current-startWaveLoad)/1000.0f > 1) {
-                    waveStarted = true;
-                }
-                updateTimeToShoot(scale(timpy.reload(dt,revolverReloadSpeed)));
-                updateTimeToAbility(scale(timpy.charge(dt,abilityChargeSpeed)));
-                if (timpy.wasJustReloaded()) {
-                    pistolReload.play();
-                }
+                    if((current-startWaveLoad)/1000.0f > 1) {
+                        waveStarted = true;
+                    }
+                    updateTimeToShoot(scale(timpy.reload(dt,revolverReloadSpeed)));
+                    updateTimeToAbility(scale(timpy.charge(dt,abilityChargeSpeed)));
+                    if (timpy.wasJustReloaded()) {
+                        pistolReload.play();
+                    }
 
-                SDL_RenderClear(gameRenderer);
+                    SDL_RenderClear(gameRenderer);
 
-                if(state.developerMode) {
-                    for(auto spawn : allSpawns) {
-                        if(!spawn->getOccupied()) {
-                            SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
-                        } else {
-                            SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
+                    if(state.developerMode) {
+                        for(auto spawn : allSpawns) {
+                            if(!spawn->getOccupied()) {
+                                SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
+                            } else {
+                                SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
+                            }
+                            SDL_RenderDrawRect(gameRenderer, &spawn->getRect());
                         }
-                        SDL_RenderDrawRect(gameRenderer, &spawn->getRect());
-                    }
-                } else {
-                    for(auto spawn : allSpawns) {
-                        spawn->render(gameRenderer);
-                    }
-                }
-
-                bool robotAlive = false;
-                bool playerAlive = true;
-
-                //Render/Move Bullets
-                for (auto it = bullets.begin(); it != bullets.end();) {
-                    if(it->move(dt, platforms, state.developerMode)) {
-                        eBullets.erase(it->getIterator());
-                        it = bullets.erase(it);
                     } else {
-                        it->render();
-                        ++it;
-                    }
-                }
-
-                //Render/Move/Collision Enemies
-                bool playerDamaged = false;
-                SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
-                for (auto it = robors.begin(); it != robors.end();++it) {
-                    bool firstLoop = false;
-                    if(!it->getEntity()->isSpawned()) {
-                        it->getEntity()->spawn();
-                        firstLoop = true;
-                    }
-                    if(it->alive && it->getEntity()->isSpawned()) {
-                        if(!firstLoop && waveStarted && !pauseEnemy) {
-                            it->move(dt, platforms,state.camY,state.levelHeight);
+                        for(auto spawn : allSpawns) {
+                            spawn->render(gameRenderer);
                         }
-                        it->render();
-                        if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
-                            it->alive = false;
-                            timpy.increaseCombo(comboToGetShield);
-                            explosion.play();
+                    }
+
+                    bool robotAlive = false;
+                    bool playerAlive = true;
+
+                    //Render/Move Bullets
+                    for (auto it = bullets.begin(); it != bullets.end();) {
+                        if(it->move(dt, platforms, state.developerMode)) {
+                            eBullets.erase(it->getIterator());
+                            it = bullets.erase(it);
                         } else {
+                            it->render();
+                            ++it;
+                        }
+                    }
+
+                    //Render/Move/Collision Enemies
+                    bool playerDamaged = false;
+                    SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
+                    for (auto it = robors.begin(); it != robors.end();++it) {
+                        bool firstLoop = false;
+                        if(!it->getEntity()->isSpawned()) {
+                            it->getEntity()->spawn();
+                            firstLoop = true;
+                        }
+                        if(it->alive && it->getEntity()->isSpawned()) {
+                            if(!firstLoop && waveStarted && !pauseEnemy) {
+                                it->move(dt, platforms,state.camY,state.levelHeight);
+                            }
+                            it->render();
+                            if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
+                                it->alive = false;
+                                timpy.increaseCombo(comboToGetShield);
+                                explosion.play();
+                            } else {
+                                if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
+                                    if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y) {
+                                        timpy.getEntity()->setYVelocity(-1800);
+                                        timpy.increaseCombo(comboToGetShield);
+                                        explosion.play();
+                                    } else {
+                                        if(timpy.damage()) {
+                                            playerAlive = false;
+                                            waveNumber = 0;
+                                            timpy.zeroCombo();
+                                            updateInGameText(timpy.getCombo(),waveNumber);
+                                        }
+                                        playerDamaged = true;
+                                    }
+                                    it->alive = false;
+                                }
+                            }
+                            for(auto bit = bullets.begin(); bit != bullets.end();) {
+                                if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
+                                    eBullets.erase(bit->getIterator());
+                                    bit = bullets.erase(bit);
+                                    timpy.increaseCombo(comboToGetShield);
+                                    it->alive = false;
+                                    explosion.play();
+                                } else {
+                                    ++bit;
+                                }
+                            }
+                            updateInGameText(timpy.getCombo(),waveNumber);
+                            if(state.developerMode) {
+                                SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
+                            }
+                        }
+                        if(it->alive) {
+                            robotAlive = true;
+                        }
+                    }
+
+                    for (auto it = robortos.begin(); it != robortos.end();++it) {
+                        bool firstLoop = false;
+                        if(!it->getEntity()->isSpawned()) {
+                            it->getEntity()->spawn();
+                            firstLoop = true;
+                        }
+                        if(it->alive && it->getEntity()->isSpawned()) {
+                            if(!firstLoop && waveStarted && !pauseEnemy) {
+                                it->move(dt, platforms,state);
+                            }
+                            it->render();
                             if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
                                 if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y) {
                                     timpy.getEntity()->setYVelocity(-1800);
-                                    timpy.increaseCombo(comboToGetShield);
                                     explosion.play();
                                 } else {
                                     if(timpy.damage()) {
@@ -394,142 +471,95 @@ int main( int argc, char* args[] ) {
                                 }
                                 it->alive = false;
                             }
-                        }
-                        for(auto bit = bullets.begin(); bit != bullets.end();) {
-                            if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
-                                eBullets.erase(bit->getIterator());
-                                bit = bullets.erase(bit);
-                                timpy.increaseCombo(comboToGetShield);
-                                it->alive = false;
-                                explosion.play();
-                            } else {
-                                ++bit;
-                            }
-                        }
-                        updateInGameText(timpy.getCombo(),waveNumber);
-                        if(state.developerMode) {
-                            SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
-                        }
-                    }
-                    if(it->alive) {
-                        robotAlive = true;
-                    }
-                }
-
-                for (auto it = robortos.begin(); it != robortos.end();++it) {
-                    bool firstLoop = false;
-                    if(!it->getEntity()->isSpawned()) {
-                        it->getEntity()->spawn();
-                        firstLoop = true;
-                    }
-                    if(it->alive && it->getEntity()->isSpawned()) {
-                        if(!firstLoop && waveStarted && !pauseEnemy) {
-                            it->move(dt, platforms,state);
-                        }
-                        it->render();
-                        if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
-                            if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y) {
-                                timpy.getEntity()->setYVelocity(-1800);
-                                explosion.play();
-                            } else {
-                                if(timpy.damage()) {
-                                    playerAlive = false;
-                                    waveNumber = 0;
-                                    timpy.zeroCombo();
-                                    updateInGameText(timpy.getCombo(),waveNumber);
+                            for(auto bit = bullets.begin(); bit != bullets.end();) {
+                                if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
+                                    eBullets.erase(bit->getIterator());
+                                    bit = bullets.erase(bit);
+                                    timpy.increaseCombo(comboToGetShield);
+                                    it->alive = false;
+                                    explosion.play();
+                                } else {
+                                    ++bit;
                                 }
-                                playerDamaged = true;
                             }
-                            it->alive = false;
-                        }
-                        for(auto bit = bullets.begin(); bit != bullets.end();) {
-                            if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
-                                eBullets.erase(bit->getIterator());
-                                bit = bullets.erase(bit);
-                                timpy.increaseCombo(comboToGetShield);
-                                it->alive = false;
-                                explosion.play();
-                            } else {
-                                ++bit;
+                            updateInGameText(timpy.getCombo(),waveNumber);
+                            if(state.developerMode) {
+                                SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                             }
                         }
+                        if(it->alive) {
+                            robotAlive = true;
+                        }
+                    }
+
+                    if(playerDamaged) {
+                        timpy.zeroCombo();
                         updateInGameText(timpy.getCombo(),waveNumber);
+                        timpy.charge(abilityChargeSpeed,abilityChargeSpeed);
+                        moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
+                        timpy.getEntity()->forceSpawn();
+                    }
+
+                    if(!playerAlive || waveOverride) {
+                        inWave = false;
+                        waveOverride = false;
+                    } else {
+                        inWave = robotAlive;
+                    }
+
+                    if(timpy.getEntity()->isSpawned()) {
+                        if(waveStarted) {
+
+                            //TODO: Check if moveCamera will over shoot and then set it to max.
+                            if(timpy.getEntity()->getRect().y >= scale(195) && state.camY > -1*(scale(state.levelHeight)-WINDOW_HEIGHT)) {
+                                int movmentDistance = timpy.move(dt, platforms,state.camY);
+                                if(movmentDistance < 0) {
+                                    moveCamera(0,movmentDistance,allCharacterEntities,platforms,allSpawns);
+                                }
+                            } else {
+                                timpy.move(dt, platforms,state.camY);
+                                if(timpy.getEntity()->getRect().y > WINDOW_HEIGHT) {
+                                    moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
+                                    timpy.getEntity()->forceSpawn();
+                                } else if (state.camY < -1*(scale(state.levelHeight)-WINDOW_HEIGHT)) {
+                                    moveCamera(0,-1*(state.camY+scale(state.levelHeight)-WINDOW_HEIGHT),allCharacterEntities,platforms,allSpawns);
+                                }
+                            }
+                        }
+                        timpy.render();
+                        state.playerX = timpy.getEntity()->getRect().x;
+                        state.playerTileX = state.playerX/TILE_SIZE_SCALED+1;
+                        state.playerTileY = (timpy.getEntity()->getRect().y/TILE_SIZE_SCALED);
+
                         if(state.developerMode) {
-                            SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
+                            SDL_Rect playerTile = {(state.playerTileX-1)*TILE_SIZE_SCALED, state.playerTileY*TILE_SIZE_SCALED,TILE_SIZE_SCALED,TILE_SIZE_SCALED};
+                            SDL_SetRenderDrawColor(gameRenderer, 225, 225, 0, 255);
+                            SDL_RenderDrawRect(gameRenderer, &playerTile);
                         }
                     }
-                    if(it->alive) {
-                        robotAlive = true;
-                    }
-                }
 
-                if(playerDamaged) {
-                    timpy.zeroCombo();
-                    updateInGameText(timpy.getCombo(),waveNumber);
-                    timpy.charge(abilityChargeSpeed,abilityChargeSpeed);
-                    moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
-                    timpy.getEntity()->forceSpawn();
-                }
-
-                if(!playerAlive || waveOverride) {
-                    inWave = false;
-                    waveOverride = false;
-                } else {
-                    inWave = robotAlive;
-                }
-
-                if(timpy.getEntity()->isSpawned()) {
-                    if(waveStarted) {
-
-                        //TODO: Check if moveCamera will over shoot and then set it to max.
-                        if(timpy.getEntity()->getRect().y >= scale(195) && state.camY > -1*(scale(state.levelHeight)-WINDOW_HEIGHT)) {
-                            int movmentDistance = timpy.move(dt, platforms,state.camY);
-                            if(movmentDistance < 0) {
-                                moveCamera(0,movmentDistance,allCharacterEntities,platforms,allSpawns);
-                            }
-                        } else {
-                            timpy.move(dt, platforms,state.camY);
-                            if(timpy.getEntity()->getRect().y > WINDOW_HEIGHT) {
-                                moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
-                                timpy.getEntity()->forceSpawn();
-                            } else if (state.camY < -1*(scale(state.levelHeight)-WINDOW_HEIGHT)) {
-                                moveCamera(0,-1*(state.camY+scale(state.levelHeight)-WINDOW_HEIGHT),allCharacterEntities,platforms,allSpawns);
-                            }
-                         }
-                    }
-                    timpy.render();
-                    state.playerX = timpy.getEntity()->getRect().x;
-                    state.playerTileX = state.playerX/TILE_SIZE_SCALED+1;
-                    state.playerTileY = (timpy.getEntity()->getRect().y/TILE_SIZE_SCALED);
-
+                    SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
                     if(state.developerMode) {
-                        SDL_Rect playerTile = {(state.playerTileX-1)*TILE_SIZE_SCALED, state.playerTileY*TILE_SIZE_SCALED,TILE_SIZE_SCALED,TILE_SIZE_SCALED};
-                        SDL_SetRenderDrawColor(gameRenderer, 225, 225, 0, 255);
-                        SDL_RenderDrawRect(gameRenderer, &playerTile);
+                        SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
+                        SDL_RenderDrawRect(gameRenderer, timpy.getWheelRect());
                     }
+
+                    checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
+
+                    renderPlatforms(platforms);
+
+                    renderInGameText(state.developerMode, lastFPS, waveStarted);
+
+                    renderPlayerUI(&timpy);
+
+                    SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
+                    SDL_RenderPresent(gameRenderer);
+
+                    Uint64 end = SDL_GetPerformanceCounter();
+
+                    float elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
+                    lastFPS = (1.0f / elapsed);
                 }
-
-                SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
-                if(state.developerMode) {
-                    SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
-                    SDL_RenderDrawRect(gameRenderer, timpy.getWheelRect());
-                }
-
-                checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
-
-                renderPlatforms(platforms);
-
-                renderInGameText(state.developerMode, lastFPS, waveStarted);
-
-                renderPlayerUI(&timpy);
-
-                SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
-                SDL_RenderPresent(gameRenderer);
-
-                Uint64 end = SDL_GetPerformanceCounter();
-
-                float elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
-                lastFPS = (1.0f / elapsed);
             }
         }
 

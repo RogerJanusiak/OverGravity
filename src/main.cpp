@@ -1,12 +1,14 @@
-#include <cmath>
-#include <fstream>
-#include <list>
+#include "../includes/Animations.h"
+
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
+#include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <list>
 #include <sstream>
 #include <vector>
-#include <SDL_mixer.h>
-#include <filesystem>
 
 #include "../includes/Bullet.h"
 #include "../includes/Robor.h"
@@ -62,6 +64,8 @@ int main( int argc, char* args[] ) {
         Sound pistolReload("resources/sounds/pistolReload.wav", 0,-1);
         Sound explosion("resources/sounds/explosion.wav", 0,-1);
         Sound song("resources/sounds/song.wav", -1,0);
+
+        std::list<Explosion> explosions;
 
         song.play();
 
@@ -407,6 +411,7 @@ int main( int argc, char* args[] ) {
                             it->render();
                             if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
                                 it->alive = false;
+                                explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                 timpy.increaseCombo();
                                 explosion.play();
                             } else {
@@ -426,6 +431,7 @@ int main( int argc, char* args[] ) {
                                             playerDamaged = true;
                                         }
                                     it->alive = false;
+                                    explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                 }
                             }
                             for(auto bit = bullets.begin(); bit != bullets.end();) {
@@ -434,6 +440,7 @@ int main( int argc, char* args[] ) {
                                     bit = bullets.erase(bit);
                                     timpy.increaseCombo();
                                     it->alive = false;
+                                    explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                     explosion.play();
                                 } else {
                                     ++bit;
@@ -443,13 +450,14 @@ int main( int argc, char* args[] ) {
                             if(state.developerMode) {
                                 SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                             }
-                        }
-                        if(c4Exploded) {
-                            int c4x = timpy.getC4Entity()->getRect().x;
-                            int c4y = timpy.getC4Entity()->getRect().y;
-                            if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
-                                it->alive = false;
-                                timpy.increaseCombo();
+                            if(c4Exploded) {
+                                int c4x = timpy.getC4Entity()->getRect().x;
+                                int c4y = timpy.getC4Entity()->getRect().y;
+                                if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
+                                    it->alive = false;
+                                    explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
+                                    timpy.increaseCombo();
+                                }
                             }
                         }
                         if(it->alive) {
@@ -482,6 +490,7 @@ int main( int argc, char* args[] ) {
                                     playerDamaged = true;
                                 }
                                 it->alive = false;
+                                explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                             }
                             for(auto bit = bullets.begin(); bit != bullets.end();) {
                                 if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
@@ -489,6 +498,7 @@ int main( int argc, char* args[] ) {
                                     bit = bullets.erase(bit);
                                     timpy.increaseCombo();
                                     it->alive = false;
+                                    explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                     explosion.play();
                                 } else {
                                     ++bit;
@@ -498,19 +508,31 @@ int main( int argc, char* args[] ) {
                             if(state.developerMode) {
                                 SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                             }
-                        }
-                        if(c4Exploded) {
-                            int c4x = timpy.getC4Entity()->getRect().x;
-                            int c4y = timpy.getC4Entity()->getRect().y;
-                            if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
-                                it->alive = false;
-                                timpy.increaseCombo();
+                            if(c4Exploded) {
+                                int c4x = timpy.getC4Entity()->getRect().x;
+                                int c4y = timpy.getC4Entity()->getRect().y;
+                                if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
+                                    it->alive = false;
+                                    explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
+                                    timpy.increaseCombo();
+                                }
                             }
                         }
                         if(it->alive) {
                             robotAlive = true;
                         }
                     }
+
+                    for(auto it = explosions.begin();it != explosions.end();) {
+                        if(it->finished()) {
+                            it = explosions.erase(it);
+                        } else {
+                            it->render();
+                            it->advance();
+                            ++it;
+                        }
+                    }
+
 
                     c4Exploded = false;
 

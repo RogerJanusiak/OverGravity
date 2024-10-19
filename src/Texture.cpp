@@ -81,11 +81,6 @@ bool Texture::loadFromRenderedText(const std::string &textureText, const SDL_Col
 void Texture::render(const int x, const int y, const SDL_RendererFlip flip, const SDL_Rect *srcRect, const double angle, const SDL_Point *center) const {
     SDL_Rect dstRect = {x,y,mWidth,mHeight};
 
-    if(srcRect != nullptr) {
-        dstRect.w = srcRect->w;
-        dstRect.h = srcRect->h;
-    }
-
     SDL_RenderCopyEx( gameRenderer, mTexture, srcRect, &dstRect, angle, center, flip );
 }
 

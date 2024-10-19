@@ -38,23 +38,12 @@ std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<S
 void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
 void loadController();
 
-void log(int x) {
-    SDL_Log(std::to_string(x).c_str());
-}
-
 void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns);
-
-bool loadValuesFromCSV(std::string &filePath);
-
 
 bool pauseEnemy = false;
 
-int bulletSpeed = 1;
-int timpyXVelocity = 1;
-int roborXVelocity = 1;
-int comboToGetShield = 1;
-
 Player* timpyPointer = nullptr;
+const int timpyXVelocity = scale(350);
 
 State state;
 
@@ -209,13 +198,13 @@ int main( int argc, char* args[] ) {
 
                 for (auto it = tempRobors.begin(); it != tempRobors.end(); ++it) {
                     eRobots.push_back(*it);
-                    robors.emplace_back(&(*it),roborXVelocity);
+                    robors.emplace_back(&(*it));
                     allCharacterEntities.emplace_back(&(*it));
                 }
 
                 for (auto it = tempRobortos.begin(); it != tempRobortos.end(); ++it) {
                     eRobortos.push_back(*it);
-                    robortos.emplace_back(&(*it),roborXVelocity);
+                    robortos.emplace_back(&(*it));
                     allCharacterEntities.emplace_back(&(*it));
                 }
 
@@ -276,7 +265,7 @@ int main( int argc, char* args[] ) {
                             }
                             if(e.key.keysym.sym == SDLK_SPACE && waveStarted) {
                                 if(shootingReset) {
-                                    timpy.shoot(&eBullets,&bullets,bulletSpeed);
+                                    timpy.shoot(&eBullets,&bullets);
                                     shootingReset = false;
                                 }
                             } else if(e.key.keysym.sym == SDLK_e) {
@@ -304,7 +293,7 @@ int main( int argc, char* args[] ) {
                         } else if( e.type == SDL_JOYAXISMOTION) {
                             if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
                                 if(shootingReset) {
-                                    timpy.shoot(&eBullets,&bullets,bulletSpeed);
+                                    timpy.shoot(&eBullets,&bullets);
                                     shootingReset = false;
                                 }
                             } else {
@@ -402,13 +391,13 @@ int main( int argc, char* args[] ) {
                             it->render();
                             if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
                                 it->alive = false;
-                                timpy.increaseCombo(comboToGetShield);
+                                timpy.increaseCombo();
                                 explosion.play();
                             } else {
                                 if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
                                     if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y) {
                                         timpy.getEntity()->setYVelocity(-1800);
-                                        timpy.increaseCombo(comboToGetShield);
+                                        timpy.increaseCombo();
                                         explosion.play();
                                     } else {
                                         if(timpy.damage()) {
@@ -426,7 +415,7 @@ int main( int argc, char* args[] ) {
                                 if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
                                     eBullets.erase(bit->getIterator());
                                     bit = bullets.erase(bit);
-                                    timpy.increaseCombo(comboToGetShield);
+                                    timpy.increaseCombo();
                                     it->alive = false;
                                     explosion.play();
                                 } else {
@@ -473,7 +462,7 @@ int main( int argc, char* args[] ) {
                                 if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
                                     eBullets.erase(bit->getIterator());
                                     bit = bullets.erase(bit);
-                                    timpy.increaseCombo(comboToGetShield);
+                                    timpy.increaseCombo();
                                     it->alive = false;
                                     explosion.play();
                                 } else {
@@ -658,46 +647,6 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
     }
 }
 
-bool loadValuesFromCSV(std::string &filePath) {
-    std::ifstream file((filePath).c_str());
-    if (!file.is_open()) {
-        SDL_Log("Could not load values file!");
-        return false;
-    }
-    constexpr int MAX_ROWS = 5;
-    constexpr int MAX_COLS = 2;
-    std::string data[MAX_ROWS][MAX_COLS];
-    std::string line;
-    int row = 0;
-    // Store the CSV data from the CSV file to the 2D array
-    while (getline(file, line) && row < MAX_ROWS) {
-        std::stringstream ss(line);
-        std::string cell;
-        int col = 0;
-        while (getline(ss, cell, ',') && col < MAX_COLS) {
-            data[row][col] = cell;
-            col++;
-        }
-        row++;
-    }
-    file.close();
-    for (int i = 0; i < row; i++) {
-        if(std::stoi(data[i][0]) == 0) {
-            bulletSpeed = scale(std::stoi(data[i][1]));
-        }
-        if(std::stoi(data[i][0]) == 1) {
-            timpyXVelocity = scale(std::stoi(data[i][1]));
-        }
-        if(std::stoi(data[i][0]) == 2) {
-            roborXVelocity = scale(std::stoi(data[i][1]));
-        }
-        if(std::stoi(data[i][0]) == 4) {
-            comboToGetShield = std::stoi(data[i][1]);
-        }
-    }
-    return true;
-}
-
 void loadController() {
     controller = SDL_GameControllerOpen(SDL_NumJoysticks()-1);
     if(controller == nullptr) {
@@ -730,14 +679,6 @@ bool init() {
         }
 
         loadController();
-        char* basePath = SDL_GetBasePath();
-        std::string currentPath(basePath);
-        SDL_free(basePath);
-        std::string valuesPath = currentPath + "resources/values.csv";
-        if(!loadValuesFromCSV(valuesPath)) {
-            SDL_Log("Could not load values from value file!");
-            success = false;
-        }
 
         if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
             printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );

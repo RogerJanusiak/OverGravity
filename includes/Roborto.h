@@ -8,7 +8,7 @@
 
 class Roborto {
 public:
-    explicit Roborto(Entity* entity, int Vx);
+    explicit Roborto(Entity* entity);
 
     void move(float dt,const std::list<Platform*> &platforms, State& state);
     void render() const { roborEntity->render(); }
@@ -22,7 +22,7 @@ private:
     const int enemyWidth = scale(24);
     const int enemyHeight = scale(50);
 
-    int xVelocity;
+    const int xVelocity = scale(350);
 
     Entity* roborEntity;
 };

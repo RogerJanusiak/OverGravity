@@ -8,7 +8,7 @@
 class Robor {
 
 public:
-    explicit Robor(Entity* entity, int Vx);
+    explicit Robor(Entity* entity);
 
     void move(float dt,const std::list<Platform*> &platformsm, int levelY, int levelHeight) const;
     void render() const { roborEntity->render(); }
@@ -20,7 +20,7 @@ private:
     const int enemyWidth = scale(24);
     const int enemyHeight = scale(50);
 
-    int xVelocity;
+    const int xVelocity = scale(250);
 
     Entity* roborEntity;
 };

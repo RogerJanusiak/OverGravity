@@ -1,44 +1,32 @@
-# Understanding Config Files
+# Resources Directory
+Welcome to the resources directory! Most likley you know why you are here already or you are just curious. 
+For the most part this directory is used to store the important sounds and graphics in the game. However there are
+some ways that you can change how the game runs to give you more of a unique experience! Keep reading if you are
+interested in these options.
 
-There are two types of config files that you can adjust in the resources folder. 
-The first of which are the level files and the second are the constant values.
-This read me file is a guide to how those files are layed out and how you can edit
-them to change the behavior of the game without having to recompile the code.
+## Changing Sounds/Textures
+If you would like to change how the game looks and sounds you can replace any of the textures and sounds in those
+two folders. Just make sure that what you are replacing it with has the same name, file type, and aspect ratio.
 
-## Level Config
+## Creating Levels
+Are you bored with the default game levels? Then why not create one! Here are the rules that must be followed
+when creating a level.
 
-Under the levels folder you can find the level csv files. These files are setup so you
-can dynamically change the level you are designing. Here are the properties of the files:
+### File Type/Name
+When creating a level make sure that you are using a csv file and that the name is the same as one of the current
+levels. Your level will replace the current level in the game, so just select that button from the menu.
 
-Level Size: 800x450 (Scaled up from this for other resolutions)
+### Level Grid
+The levels in Over_Gravity are made using a grid/tile design. Each tile is 80px x 80px for 800x480 resolution.
+The levels are 12 tiles across and as many tiles deep as you want. 800/80 = 10 so why 12? Before the entities wrap
+around the screen they need a second to teleport. This means that if you have a platform on the edge of the screen
+make sure there is one off-screen. The first and last column is not shown.
 
-### Platforms
-Dimensions: (110,17) <br>
-File Layout: 0,x,y <br>
-Example: 0,100,40 (Platform at 100,40)
+### Tile Types
+Each spot in the csv can be filled in with one of the following options:
 
-### Player Spawn
-Dimensions: (50,60) <br>
-File Layout: 1,x,y <br>
-Example: 1,100,40 (Player Spawn at 100,40)
-
-### Enemy Spawn
-Dimensions: (50,50) <br>
-File Layout: 2,x,y <br>
-Example: 2,100,40 (Enemy Spawn at 100,40)
-
-## Values Config
-This config is setup to change the values of the game. There are two columns in this file.
-The first is what value you are changing and the second is the value. Use this table
-to know what to put in the first column:
-
-0 - int - Bullet Speed
-1 - int - Timpy X Velocity
-2 - int - Robor X Velocity
-3 - decimal - Revolver Reload Speed
-4 - int - Combo Required to Get Shield
-
-Example:
-
-Change bullet speed to 500: <br>
-1,500
+1. -1 : Empty Space
+2.  0 : Empty Platform
+3.  1 : Player spawn (Exactly 1 Per Level)
+4.  2 : Non-tracking enemy Spawn (1 required)
+5.  3 : All enemy spawn (1 required)

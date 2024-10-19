@@ -6,8 +6,7 @@
 #include "../includes/GlobalConstants.h"
 #include "../includes/Platform.h"
 
-Robor::Robor(Entity *entity, const int Vx) {
-    xVelocity = Vx;
+Robor::Robor(Entity *entity) {
     roborEntity = entity;
     roborEntity->setDimensions(enemyWidth,enemyHeight);
     roborEntity->getTexture()->setup(enemyWidth,enemyHeight,entity->getRenderer());

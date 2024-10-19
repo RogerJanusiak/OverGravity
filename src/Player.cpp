@@ -152,7 +152,7 @@ void Player::changeWeapon() {
     }
 }
 
-void Player::increaseCombo(int comboToGetShield) {
+void Player::increaseCombo() {
     combo++;
     if(combo == comboToGetShield && (playerShield == 0 || topLevelShieldHit)) {
         playerShield++;
@@ -162,16 +162,16 @@ void Player::increaseCombo(int comboToGetShield) {
     }
 }
 
-bool Player::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, int bulletSpeed) {
+bool Player::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets) {
     if(reloaded) {
         switch(currentWeapon) {
             case Weapon::lazerPistol: {
                 if(playerDirection) {
-                    eBullets->emplace_back(getEntity()->getRect().x+scale(30),getEntity()->getRect().y+scale(17),bulletSpeed,0,getEntity()->getRenderer());
+                    eBullets->emplace_back(getEntity()->getRect().x+scale(30),getEntity()->getRect().y+scale(17),Bullet::getSpeed(),0,getEntity()->getRenderer());
                     bullets->emplace_back(&eBullets->back(), BULLET_TYPE::lazer);
                     bullets->back().setIterator(--eBullets->end());
                 } else {
-                    eBullets->emplace_back(getEntity()->getRect().x,getEntity()->getRect().y+scale(17),-bulletSpeed,0,getEntity()->getRenderer());
+                    eBullets->emplace_back(getEntity()->getRect().x,getEntity()->getRect().y+scale(17),-Bullet::getSpeed(),0,getEntity()->getRenderer());
                     bullets->emplace_back(&eBullets->back(), BULLET_TYPE::lazer);
                     bullets->back().setIterator(--eBullets->end());
                 }
@@ -180,11 +180,11 @@ bool Player::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, int 
             }
             default: {
                 if(playerDirection) {
-                    eBullets->emplace_back(getEntity()->getRect().x+scale(60),getEntity()->getRect().y+scale(19),bulletSpeed,0,getEntity()->getRenderer());
+                    eBullets->emplace_back(getEntity()->getRect().x+scale(60),getEntity()->getRect().y+scale(19),Bullet::getSpeed(),0,getEntity()->getRenderer());
                     bullets->emplace_back(&eBullets->back(), BULLET_TYPE::normal);
                     bullets->back().setIterator(--eBullets->end());
                 } else {
-                    eBullets->emplace_back(getEntity()->getRect().x,getEntity()->getRect().y+scale(19),-bulletSpeed,0,getEntity()->getRenderer());
+                    eBullets->emplace_back(getEntity()->getRect().x,getEntity()->getRect().y+scale(19),-Bullet::getSpeed(),0,getEntity()->getRenderer());
                     bullets->emplace_back(&eBullets->back(), BULLET_TYPE::normal);
                     bullets->back().setIterator(--eBullets->end());
                 }

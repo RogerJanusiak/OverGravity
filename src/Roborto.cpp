@@ -1,7 +1,6 @@
 #include "../includes/Roborto.h"
 
-Roborto::Roborto(Entity *entity, const int Vx) {
-    xVelocity = Vx;
+Roborto::Roborto(Entity *entity) {
     roborEntity = entity;
     roborEntity->setDimensions(enemyWidth,enemyHeight);
     roborEntity->getTexture()->setup(enemyWidth,enemyHeight,entity->getRenderer());

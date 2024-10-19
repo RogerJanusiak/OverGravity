@@ -40,11 +40,11 @@ public:
     void decreaseShield();
     int getShield() const { return playerShield; }
 
-    void increaseCombo(int comboToGetShield);
+    void increaseCombo();
     void zeroCombo() { combo = 0;}
     int getCombo() const { return combo; }
 
-    bool shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, int bulletSpeed);
+    bool shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets);
     int reload(float dt);
     bool wasJustReloaded();
 
@@ -94,6 +94,7 @@ private:
     double weaponReloadSpeed = revolverReloadSpeed;
 
     const double abilityReloadSpeed = 15;
+    const int comboToGetShield = 10;
 
     float timeSinceShot;
     float timeSinceAbilty;

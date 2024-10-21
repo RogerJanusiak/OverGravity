@@ -9,14 +9,7 @@
 #include "Entity.h"
 #include "Sound.h"
 #include "Spawn.h"
-
-enum class Weapon {
-    revolver,
-    knife,
-    lazerPistol,
-    machineGun,
-    c4
-};
+#include "Weapon.h"
 
 enum Ability {
     bounce,
@@ -31,14 +24,15 @@ public:
 
     int move(float dt,const std::list<Platform*> &platforms, int camY);
     void render() const;
-    void changeWeapon();
 
     const SDL_Rect &getWeaponRect() const { return weaponRect; }
 
     void setDirection (bool direction);
+    bool getDirection() const { return playerDirection; }
 
     Entity* getEntity() const { return playerEntity; }
-    Weapon getWeapon() const { return currentWeapon; }
+    Weapon* getWeapon() { return currentWeapon; }
+    void setWeapon(Weapon* weapon) { currentWeapon = weapon; }
 
     bool damage();
     int getHP() const { return playerHealth; }
@@ -51,9 +45,7 @@ public:
     void zeroCombo() { combo = 0;}
     int getCombo() const { return combo; }
 
-    bool shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets);
-    int reload(float dt);
-    bool wasJustReloaded();
+
 
     int charge(float dt);
     Ability useAbility();
@@ -86,7 +78,7 @@ private:
     Texture playerTextureRight;
     Texture playerTextureLeft;
 
-    Weapon currentWeapon;
+    Weapon* currentWeapon = nullptr;
     Ability currentAbility = Ability::bounce;
 
     int playerHealth = 2;
@@ -95,15 +87,8 @@ private:
     int combo = 0;
     bool topLevelShieldHit = false;
 
-    bool reloaded = true;
-    bool justReloaded = false;
-
     bool charged = true;
     bool justCharged = false;
-
-    const double revolverReloadSpeed = 0.75;
-    const double lazerPistolReloadSpeed = 0.5;
-    double weaponReloadSpeed = revolverReloadSpeed;
 
     const double abilityReloadSpeed = 15;
     const int comboToGetShield = 10;
@@ -112,13 +97,6 @@ private:
     float timeSinceAbilty;
 
     SDL_Rect weaponRect;
-    Texture knifeTextureRight;
-    Texture knifeTextureLeft;
-
-    Texture revolverTextureRight;
-    Texture revolverTextureLeft;
-
-    Texture lazerPistolTexture;
 
     //C4 Ability Variables
     Entity c4Entity;
@@ -126,7 +104,6 @@ private:
     Texture detinatorTexture;
     bool c4Placed = false;
 
-    Sound gunshot;
     Sound damageSound;
 };
 

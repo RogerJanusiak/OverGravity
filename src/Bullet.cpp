@@ -2,10 +2,10 @@
 
 Bullet::Bullet(Entity* tempEntity, BULLET_TYPE type) : entity(tempEntity), type(type) {
     switch(type) {
-        case BULLET_TYPE::lazer: {
+        case BULLET_TYPE::laser: {
             entity->setDimensions(lazerWidth,lazerHeight);
             entity->getTexture()->setup(lazerWidth,lazerHeight,entity->getRenderer());
-            if(!entity->getTexture()->loadFromFile("lazer.png")) {
+            if(!entity->getTexture()->loadFromFile("laser.png")) {
                 SDL_Log("Could not load bullet texture!");
             }
         } break;
@@ -32,7 +32,7 @@ bool Bullet::move(float dt, const std::list<Platform*> &platforms, bool develope
         } else if(platformStatus == 1) {
             platformStatus = 2;
         }
-    } else if(type == BULLET_TYPE::lazer) {
+    } else if(type == BULLET_TYPE::laser) {
         entity->setPosition(entity->getRect().x + entity->getXVelocity()*dt,entity->getRect().y);
     }
 

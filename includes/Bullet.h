@@ -6,7 +6,7 @@
 
 enum BULLET_TYPE {
     normal,
-    lazer,
+    laser,
 };
 
 class Bullet {
@@ -17,8 +17,6 @@ public:
 
     void render();
     bool move(float dt, const std::list<Platform*> &platforms, bool developerMode);
-
-    static int getSpeed() { return bulletSpeed; }
 
     Entity* getEntity() const { return entity; }
 
@@ -32,8 +30,6 @@ private:
 
     const int lazerWidth = scale(32);
     const int lazerHeight = scale(4);
-
-    static constexpr int bulletSpeed = 1000*SCALE_FACTOR;
 
     int platformStatus = 0;
 

@@ -98,7 +98,9 @@ if(APPLE)
             src/Roborto.cpp
             includes/Roborto.h
             src/Animations.cpp
-            src/Animations.h)
+            includes/Animations.h
+            src/Weapon.cpp
+            includes/Weapon.h)
 
     Message("")
     Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )

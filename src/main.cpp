@@ -145,7 +145,11 @@ int main( int argc, char* args[] ) {
             Entity eTimpy = Entity(&playerSpawns,gameRenderer);
             Player timpy = Player(&eTimpy);
             timpyPointer = &timpy;
-            state.player = &timpy;
+
+            Weapon revolver(Weapon_Type::revolver,gameRenderer);
+            Weapon knife(Weapon_Type::knife,gameRenderer);
+            Weapon laserPistol(Weapon_Type::laserPistol,gameRenderer);
+            timpy.setWeapon(&revolver);
 
             bool leftMovement = false;
             bool rightMovement = false;
@@ -267,11 +271,17 @@ int main( int argc, char* args[] ) {
                                 timpy.setDirection(false);
                             }
                             if(e.key.keysym.sym == SDLK_w) {
-                                timpy.changeWeapon();
+                                if(timpy.getWeapon()->getType() == Weapon_Type::revolver) {
+                                    timpy.setWeapon(&knife);
+                                } else if(timpy.getWeapon()->getType() == Weapon_Type::knife) {
+                                    timpy.setWeapon(&laserPistol);
+                                } else {
+                                    timpy.setWeapon(&revolver);
+                                }
                             }
                             if(e.key.keysym.sym == SDLK_SPACE && waveStarted) {
                                 if(shootingReset) {
-                                    timpy.shoot(&eBullets,&bullets);
+                                    timpy.getWeapon()->shoot(&eBullets,&bullets,state,timpy.getDirection(),timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y);
                                     shootingReset = false;
                                 }
                             } else if(e.key.keysym.sym == SDLK_e) {
@@ -309,7 +319,7 @@ int main( int argc, char* args[] ) {
                         } else if( e.type == SDL_JOYAXISMOTION) {
                             if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
                                 if(shootingReset) {
-                                    timpy.shoot(&eBullets,&bullets);
+                                    timpy.getWeapon()->shoot(&eBullets,&bullets,state,timpy.getDirection(),timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y);
                                     shootingReset = false;
                                 }
                             } else {
@@ -335,18 +345,30 @@ int main( int argc, char* args[] ) {
                             controller = nullptr;
                         } else if( e.type == SDL_JOYBUTTONDOWN ) {
                             if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-                                timpy.changeWeapon();
+                                if(timpy.getWeapon()->getType() == Weapon_Type::revolver) {
+                                    timpy.setWeapon(&knife);
+                                } else if(timpy.getWeapon()->getType() == Weapon_Type::knife) {
+                                    timpy.setWeapon(&laserPistol);
+                                } else {
+                                    timpy.setWeapon(&revolver);
+                                }
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
                                 switch(timpy.useAbility()) {
                                     case respawn: {
                                         moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                                         timpy.getEntity()->forceSpawn();
                                     } break;
+                                    case c4: {
+                                        c4Exploded = true;
+                                    } break;
                                     default:
                                         break;
                                 }
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START) == 1) {
                                 state.started = false;
+                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X) == 1) {
+                                timpy.changeAbility();
+                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                             }
                         }
                     }
@@ -358,9 +380,15 @@ int main( int argc, char* args[] ) {
                     if((current-startWaveLoad)/1000.0f > 1) {
                         waveStarted = true;
                     }
-                    updateTimeToShoot(scale(timpy.reload(dt)));
+
+                    if(timpy.getWeapon()->isReloadable()) {
+                        updateTimeToShoot(scale(timpy.getWeapon()->reload(dt)));
+                    } else {
+                        updateTimeToShoot(scale(75));
+                    }
+
                     updateTimeToAbility(scale(timpy.charge(dt)));
-                    if (timpy.wasJustReloaded()) {
+                    if (timpy.getWeapon()->wasJustReloaded()) {
                         pistolReload.play();
                     }
 
@@ -409,7 +437,8 @@ int main( int argc, char* args[] ) {
                                 it->move(dt, platforms,state.camY,state.levelHeight);
                             }
                             it->render();
-                            if(timpy.getWeapon() == Weapon::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
+                            //TODO: Add back in knife support
+                            if(Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
                                 it->alive = false;
                                 explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                 timpy.increaseCombo();

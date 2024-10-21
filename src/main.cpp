@@ -278,6 +278,8 @@ int main( int argc, char* args[] ) {
                                 } else {
                                     timpy.setWeapon(&revolver);
                                 }
+                            } else if(e.key.keysym.sym == SDLK_r) {
+                                timpy.getWeapon()->forceReload();
                             }
                             if(e.key.keysym.sym == SDLK_SPACE && waveStarted) {
                                 if(shootingReset) {
@@ -437,8 +439,7 @@ int main( int argc, char* args[] ) {
                                 it->move(dt, platforms,state.camY,state.levelHeight);
                             }
                             it->render();
-                            //TODO: Add back in knife support
-                            if(Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
+                            if(timpy.getWeapon()->getType() == Weapon_Type::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
                                 it->alive = false;
                                 explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                 timpy.increaseCombo();

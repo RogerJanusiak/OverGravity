@@ -35,7 +35,11 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer) {
       bulletSpeed = scale(1200);
       bulletType = laser;
 
-      reloadSpeed = 0.5;
+      clipSize = 10;
+      totalClips = 5;
+
+      reloadSpeed = 3;
+      timeSinceShot = reloadSpeed;
     } break;
   default: {
     texture.setup(scale(42),scale(21),renderer);
@@ -52,7 +56,10 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer) {
     bulletRelY = scale(19);
     bulletSpeed = scale(1000);
 
-    reloadSpeed = 0.75;
+    clipSize = 6;
+
+    reloadSpeed = 2;
+    timeSinceShot = reloadSpeed;
   } break;
   }
 
@@ -72,6 +79,7 @@ int Weapon::reload(float dt) {
   if (timeSinceShot >= reloadSpeed) {
       timeSinceShot = 0;
       reloaded = true;
+      bulletsInClip = clipSize;
       justReloaded = true;
       return 75;
   }
@@ -80,6 +88,13 @@ int Weapon::reload(float dt) {
       return 75*timeSinceShot*(1/reloadSpeed)-2;
   }
   return 75;
+}
+
+void Weapon::forceReload() {
+
+  reloaded = false;
+  bulletsInClip = 0;
+
 }
 
 bool Weapon::wasJustReloaded() {
@@ -102,7 +117,17 @@ void Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, cons
     bullets->emplace_back(&eBullets->back(), bulletType);
     bullets->back().setIterator(--eBullets->end());
 
-    reloaded = false;
-
+    bulletsInClip--;
+    if(bulletsInClip == 0) {
+      reloaded = false;
+    }
   }
+}
+
+void Weapon::reset() {
+  timeSinceShot = reloadSpeed;
+  reloaded = true;
+  justReloaded = false;
+  clipsLeft = totalClips;
+  bulletsInClip = clipSize;
 }

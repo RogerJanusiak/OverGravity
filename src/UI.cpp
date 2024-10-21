@@ -108,7 +108,6 @@ void renderStartScreen(State& state) {
 
 }
 
-
 SDL_Rect timeToShootBack;
 SDL_Rect timeToShoot;
 
@@ -117,24 +116,25 @@ SDL_Rect timeToAbility;
 
 void initPlayerUI() {
     timeToShootBack.x = WINDOW_WIDTH-scale(90);
-    timeToShootBack.y = WINDOW_HEIGHT-scale(25);
+    timeToShootBack.y = WINDOW_HEIGHT-scale(50);
     timeToShootBack.w = scale(75);
     timeToShootBack.h = scale(15);
 
     timeToShoot.x = WINDOW_WIDTH-scale(90);
-    timeToShoot.y = WINDOW_HEIGHT-scale(25);
+    timeToShoot.y = WINDOW_HEIGHT-scale(50);
     timeToShoot.w = scale(75);
     timeToShoot.h = scale(15);
 
     timeToAbilityBack.x = WINDOW_WIDTH-scale(90);
-    timeToAbilityBack.y = WINDOW_HEIGHT-scale(45);
+    timeToAbilityBack.y = WINDOW_HEIGHT-scale(75);
     timeToAbilityBack.w = scale(75);
     timeToAbilityBack.h = scale(15);
 
     timeToAbility.x = WINDOW_WIDTH-scale(90);
-    timeToAbility.y = WINDOW_HEIGHT-scale(45);
+    timeToAbility.y = WINDOW_HEIGHT-scale(75);
     timeToAbility.w = scale(75);
     timeToAbility.h = scale(15);
+
 }
 
 void updateTimeToShoot(const double width) {
@@ -146,6 +146,7 @@ void updateTimeToAbility(const double width) {
 }
 
 void renderPlayerUI(Player* player) {
+    int bulletsInClip = player->getWeapon()->getBulletsInClip();
     SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
     SDL_RenderFillRect(renderer,&timeToShootBack);
 
@@ -195,6 +196,19 @@ void renderPlayerUI(Player* player) {
             break;
     }
 
+    for(int i = 0; i < player->getWeapon()->getClipSize(); i++) {
+        if(bulletsInClip>i) {
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        } else {
+            SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+        }
+        SDL_Rect tempRect;
+        tempRect.x = WINDOW_WIDTH-scale(30)-scale(20*i);
+        tempRect.y = WINDOW_HEIGHT-scale(25);
+        tempRect.w = scale(15);
+        tempRect.h = scale(15);
+        SDL_RenderFillRect(renderer,&tempRect);
+    }
 }
 
 void mouseClick(State& state) {

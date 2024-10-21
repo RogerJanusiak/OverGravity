@@ -367,4 +367,74 @@ void UI_Button::render() {
     textTexture.render(x+(width-textTexture.getWidth())/2,y+(height-textTexture.getHeight())/2);
 }
 
+SDL_Rect selection1;
+SDL_Rect selection2;
+Texture selectionTexture;
+
+Weapon* weapon1;
+Weapon* weapon2;
+Ability ability1;
+Ability ability2;
+
+void initSelectionUI() {
+    int spacing = scale(25);
+    int width = scale(200);
+
+    selection1.x = (WINDOW_WIDTH - width*2 - spacing)/2;
+    selection1.y = (WINDOW_HEIGHT - width)/2;
+    selection1.w = width;
+    selection1.h = width;
+
+    selection2.x = (WINDOW_WIDTH - width*2 - spacing)/2 + width + spacing;
+    selection2.y = (WINDOW_HEIGHT - width)/2;
+    selection2.w = width;
+    selection2.h = width;
+
+    selectionTexture.setup(renderer);
+    selectionTexture.loadFromRenderedText("Select new weapon or upgrade: ", white, title);
+}
+
+void renderSelectionUI() {
+    selectionTexture.render(selection1.x/2-scale(16), selection1.y/2);
+    SDL_SetRenderDrawColor(renderer,50,50,50,50);
+    SDL_RenderFillRect(renderer,&selection1);
+    SDL_RenderFillRect(renderer,&selection2);
+
+    int width = 64;
+    if(weapon1 != nullptr) {
+        int w = weapon1->getTexture().getWidth()*2;
+        int h = weapon1->getTexture().getHeight()*2;
+        weapon1->getTexture().setup(w,h,renderer);
+        weapon1->getTexture().render(selection1.x+selection1.w/2-w/2,selection1.y+selection1.h/2-h/2);
+        weapon1->getTexture().setup(w/2,h/2,renderer);
+    }
+    if(weapon2 != nullptr) {
+        int w = weapon2->getTexture().getWidth()*2;
+        int h = weapon2->getTexture().getHeight()*2;
+        weapon2->getTexture().setup(w,h,renderer);
+        weapon2->getTexture().render(selection2.x+selection2.w/2-w/2,selection2.y+selection2.h/2-h/2);
+        weapon2->getTexture().setup(w/2,h/2,renderer);
+    }
+
+}
+
+void updateChoices(Weapon *_weapon1, Weapon *_weapon2, Ability _ability1, Ability _ability2) {
+    weapon1 = _weapon1;
+    weapon2 = _weapon2;
+    ability1 = _ability1;
+    ability2 = _ability2;
+}
+
+int selectionMouseEvent() {
+    int x, y;
+    SDL_GetMouseState( &x, &y );
+    if(x >= selection1.x && x <= selection1.x+selection1.w && y >= selection1.y && y <= selection1.y+selection1.h) {
+        return 1;
+    }
+    if(x >= selection2.x && x <= selection2.x+selection2.w && y >= selection2.y && y <= selection2.y+selection2.h) {
+        return 2;
+    }
+    return 0;
+}
+
 

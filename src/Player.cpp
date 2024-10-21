@@ -8,7 +8,9 @@
 #include "../includes/GlobalConstants.h"
 #include "../includes/Platform.h"
 
-Player::Player(Entity* entity) : playerEntity(entity) {
+Player::Player(Entity* entity, Weapon* primaryWeapon) : playerEntity(entity), primaryWeapon(primaryWeapon) {
+
+    currentWeapon = primaryWeapon;
 
     damageSound.init("resources/sounds/playerDamage.wav",0,-1);
 
@@ -198,3 +200,12 @@ bool Player::damage() {
     return false;
 }
 
+void Player::changeWeapon() {
+
+    if(currentWeapon == primaryWeapon && secondaryWeapon != nullptr) {
+        currentWeapon = secondaryWeapon;
+    } else if(currentWeapon == secondaryWeapon) {
+        currentWeapon = primaryWeapon;
+    }
+
+}

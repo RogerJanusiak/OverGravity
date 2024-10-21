@@ -23,6 +23,7 @@ public:
   void render(int playerX, int playerY, bool playerDirection) const;
 
   [[nodiscard]] Weapon_Type getType() const { return type; }
+  Texture& getTexture() { return texture; }
 
   int reload(float dt);
   void forceReload();

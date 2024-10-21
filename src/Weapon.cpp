@@ -106,7 +106,7 @@ bool Weapon::wasJustReloaded() {
 }
 
 void Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, const State &state, bool direction, int playerX, int playerY) {
-  if(reloaded && !state.c4Placed) {
+  if(reloaded && !state.c4Placed && type != knife) {
     fireSound.play();
 
     if(direction) {

@@ -20,7 +20,7 @@ enum Ability {
 
 class Player {
 public:
-    Player(Entity* entity);
+    Player(Entity* entity, Weapon* primaryWeapon);
 
     int move(float dt,const std::list<Platform*> &platforms, int camY);
     void render() const;
@@ -31,8 +31,10 @@ public:
     bool getDirection() const { return playerDirection; }
 
     Entity* getEntity() const { return playerEntity; }
+
     Weapon* getWeapon() { return currentWeapon; }
-    void setWeapon(Weapon* weapon) { currentWeapon = weapon; }
+    void setSecondaryWeapon(Weapon* secWeapon) { secondaryWeapon = secWeapon; currentWeapon = primaryWeapon; }
+    void changeWeapon();
 
     bool damage();
     int getHP() const { return playerHealth; }
@@ -44,8 +46,6 @@ public:
     void increaseCombo();
     void zeroCombo() { combo = 0;}
     int getCombo() const { return combo; }
-
-
 
     int charge(float dt);
     Ability useAbility();
@@ -79,6 +79,9 @@ private:
     Texture playerTextureLeft;
 
     Weapon* currentWeapon = nullptr;
+    Weapon* primaryWeapon = nullptr;
+    Weapon* secondaryWeapon = nullptr;
+
     Ability currentAbility = Ability::bounce;
 
     int playerHealth = 2;

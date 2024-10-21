@@ -6,6 +6,8 @@ struct State {
         bool mainMenu = true;
         bool levelSelect = false;
 
+        bool upgradeScreen = false;
+
     //Load Status
         bool started = false ;
         bool developerMode = false;

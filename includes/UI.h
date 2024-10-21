@@ -14,10 +14,15 @@ void renderStartScreen(State& state);
 void UI_init(SDL_Renderer* renderer);
 void UI_close();
 
+void initSelectionUI();
+void updateChoices(Weapon* _weapon1, Weapon* _weapon2, Ability _ability1, Ability _ability2);
+void renderSelectionUI();
+
 void initPlayerUI();
 void updateTimeToShoot(double width);
 void updateTimeToAbility(double width);
 void renderPlayerUI(Player* player);
+int selectionMouseEvent();
 
 void mouseMove(State& state);
 void mouseClick(State& state);

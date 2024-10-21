@@ -60,6 +60,7 @@ int main( int argc, char* args[] ) {
 
         UI_init(gameRenderer);
         initStartScreen();
+        initSelectionUI();
 
         Sound pistolReload("resources/sounds/pistolReload.wav", 0,-1);
         Sound explosion("resources/sounds/explosion.wav", 0,-1);
@@ -142,14 +143,13 @@ int main( int argc, char* args[] ) {
             std::list<Entity> eBullets;
             std::list<Bullet> bullets;
 
-            Entity eTimpy = Entity(&playerSpawns,gameRenderer);
-            Player timpy = Player(&eTimpy);
-            timpyPointer = &timpy;
-
             Weapon revolver(Weapon_Type::revolver,gameRenderer);
             Weapon knife(Weapon_Type::knife,gameRenderer);
             Weapon laserPistol(Weapon_Type::laserPistol,gameRenderer);
-            timpy.setWeapon(&revolver);
+
+            Entity eTimpy = Entity(&playerSpawns,gameRenderer);
+            Player timpy = Player(&eTimpy,&revolver);
+            timpyPointer = &timpy;
 
             bool leftMovement = false;
             bool rightMovement = false;
@@ -191,6 +191,9 @@ int main( int argc, char* args[] ) {
             timpy.getEntity()->forceSpawn();
 
             while(state.started && !quit) {
+                if(waveNumber == 0) {
+                    timpy.setSecondaryWeapon(nullptr);
+                }
                 inWave = true;
                 waveNumber++;
 
@@ -222,6 +225,100 @@ int main( int argc, char* args[] ) {
                 Uint32 startWaveLoad = SDL_GetTicks();
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
+
+                int choice1 = rand() % 2;
+                int choice2Seed = rand() % 2;
+                int choice2;
+                while(choice2Seed == choice1) {
+                    choice2Seed = rand() % 2;
+                }
+                choice2 = choice2Seed;
+
+                Weapon* weapon1 = nullptr;
+                Weapon* weapon2 = nullptr;
+                Ability ability1 = none;
+                Ability ability2 = none;
+
+                switch(choice1) {
+                    case 0:
+                        weapon1 = &knife;
+                        break;
+                    case 1:
+                        weapon1 = &laserPistol;
+                        break;
+                    case 2:
+                        ability1 = bounce;
+                        break;
+                    case 3:
+                        ability1 = respawn;
+                        break;
+                    case 4:
+                        ability1 = c4;
+                        break;
+                    default:
+                        break;
+                }
+
+                switch(choice2) {
+                case 0:
+                    weapon2 = &knife;
+                    break;
+                case 1:
+                    weapon2 = &laserPistol;
+                    break;
+                case 2:
+                    ability2 = bounce;
+                    break;
+                case 3:
+                    ability2 = respawn;
+                    break;
+                case 4:
+                    ability2 = c4;
+                    break;
+                default:
+                    break;
+                }
+
+                updateChoices(weapon1, weapon2, ability1, ability2);
+
+                state.upgradeScreen = true;
+                while((waveNumber-1) % 5 == 0 && state.upgradeScreen && !quit && waveNumber-1 != 0) {
+                    //TODO: Add controller support
+                    while(SDL_PollEvent(&e) != 0) {
+                        if( e.type == SDL_QUIT ) {
+                            quit = true;
+                        } else if(e.type == SDL_MOUSEBUTTONDOWN) {
+                          switch (selectionMouseEvent()) {
+                            case 1: {
+                                if(weapon1 == nullptr) {
+                                    //TODO: Add abilities
+                                } else {
+                                    timpy.setSecondaryWeapon(weapon1);
+                                    state.upgradeScreen = false;
+                                }
+                            } break;
+                            case 2: {
+                                if(weapon2 == nullptr) {
+                                    //TODO: Add abilities
+                                } else {
+                                    timpy.setSecondaryWeapon(weapon2);
+                                    state.upgradeScreen = false;
+                                }
+                            } break;
+                            default: break;
+                            }
+                        }
+                    }
+
+                    SDL_RenderClear(gameRenderer);
+
+                    renderSelectionUI();
+
+                    SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
+                    SDL_RenderPresent(gameRenderer);
+
+                }
+                state.upgradeScreen = false;
 
                 while(state.started && inWave && !quit) {
                     Uint64 start = SDL_GetPerformanceCounter();
@@ -271,13 +368,7 @@ int main( int argc, char* args[] ) {
                                 timpy.setDirection(false);
                             }
                             if(e.key.keysym.sym == SDLK_w) {
-                                if(timpy.getWeapon()->getType() == Weapon_Type::revolver) {
-                                    timpy.setWeapon(&knife);
-                                } else if(timpy.getWeapon()->getType() == Weapon_Type::knife) {
-                                    timpy.setWeapon(&laserPistol);
-                                } else {
-                                    timpy.setWeapon(&revolver);
-                                }
+                                timpy.changeWeapon();
                             } else if(e.key.keysym.sym == SDLK_r) {
                                 timpy.getWeapon()->forceReload();
                             }
@@ -347,13 +438,7 @@ int main( int argc, char* args[] ) {
                             controller = nullptr;
                         } else if( e.type == SDL_JOYBUTTONDOWN ) {
                             if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-                                if(timpy.getWeapon()->getType() == Weapon_Type::revolver) {
-                                    timpy.setWeapon(&knife);
-                                } else if(timpy.getWeapon()->getType() == Weapon_Type::knife) {
-                                    timpy.setWeapon(&laserPistol);
-                                } else {
-                                    timpy.setWeapon(&revolver);
-                                }
+                                timpy.changeWeapon();
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
                                 switch(timpy.useAbility()) {
                                     case respawn: {

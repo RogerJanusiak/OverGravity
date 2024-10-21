@@ -54,7 +54,7 @@ bool Texture::loadFromRenderedText(const std::string &textureText, const SDL_Col
     free();
 
     //Render text surface
-    SDL_Surface* textSurface = TTF_RenderText_Solid( font, textureText.c_str(), textColor );
+    SDL_Surface* textSurface = TTF_RenderText_Blended( font, textureText.c_str(), textColor );
     if( textSurface == nullptr ) {
         SDL_Log( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
     }

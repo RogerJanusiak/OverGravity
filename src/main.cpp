@@ -91,7 +91,10 @@ int main( int argc, char* args[] ) {
                     if( e.type == SDL_QUIT ) {
                         quit = true;
                     } else if( e.type == SDL_KEYDOWN ) {
-
+                        if(e.key.keysym.sym == SDLK_ESCAPE && state.levelSelect) {
+                            state.levelSelect = false;
+                            state.mainMenu = true;
+                        }
                     } else if( e.type == SDL_JOYBUTTONDOWN ) {
                         if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
                             controllerEvent(state,controllerMenuControl::select);
@@ -104,6 +107,7 @@ int main( int argc, char* args[] ) {
                     } else if (e.type == SDL_JOYDEVICEREMOVED) {
                         controllerEvent(state,controllerMenuControl::disconnect);
                         controller = nullptr;
+                        state.controller = false;
                     } else  if( e.type == SDL_MOUSEMOTION) {
                         mouseMove(state);
                     } else if(e.type == SDL_MOUSEBUTTONDOWN) {
@@ -194,6 +198,7 @@ int main( int argc, char* args[] ) {
 
                 if(waveNumber == 0) {
                     timpy.setSecondaryWeapon(nullptr);
+                    timpy.setAbility(none);
                 }
                 inWave = true;
                 waveNumber++;
@@ -277,14 +282,19 @@ int main( int argc, char* args[] ) {
                     break;
                 }
 
-                updateChoices(weapon1, weapon2, ability1, ability2);
+                updateChoices(state, weapon1, weapon2, ability1, ability2);
 
                 state.upgradeScreen = true;
                 while((waveNumber-1) % 5 == 0 && state.upgradeScreen && !quit && waveNumber-1 != 0) {
                     //TODO: Add controller support
+                    //TODO: Make weapons and abilities have limited use.
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             quit = true;
+                        } else if(e.type == SDL_KEYDOWN) {
+                            if(e.key.keysym.sym == SDLK_ESCAPE) {
+                                state.upgradeScreen = false;
+                            }
                         } else if(e.type == SDL_MOUSEBUTTONDOWN) {
                             shootingReset = true;
                           switch (selectionMouseClick()) {
@@ -312,16 +322,63 @@ int main( int argc, char* args[] ) {
                                 }
                                 state.upgradeScreen = false;
                             } break;
+                              case 0: {
+                                  state.upgradeScreen = false;
+                              } break;
                             default: break;
                             }
                         } else if(e.type == SDL_MOUSEMOTION) {
-                            selectionMouseMove();
+                            selectionMouseMove(state);
+                        } else if( e.type == SDL_JOYAXISMOTION) {
+                            if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
+                                controllerEvent(state,controllerMenuControl::right);
+                            } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) < -JOYSTICK_DEAD_ZONE) {
+                                controllerEvent(state,controllerMenuControl::left);
+                            } else if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
+                                controllerEvent(state,controllerMenuControl::down);
+                            } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) < -JOYSTICK_DEAD_ZONE) {
+                                controllerEvent(state,controllerMenuControl::up);
+                            }
+                        } else if( e.type == SDL_JOYBUTTONDOWN ) {
+                            if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
+                                switch (selectionControllerClick()) {
+                                case 1: {
+                                    if(weapon1 == nullptr) {
+                                        if(ability1 != none) {
+                                            timpy.setAbility(ability1);
+                                            updateInGameText(timpy.getCombo(),waveNumber,ability1);
+                                        }
+                                    } else {
+                                        weapon1->reset();
+                                        timpy.setSecondaryWeapon(weapon1);
+                                    }
+                                    state.upgradeScreen = false;
+                                } break;
+                                case 2: {
+                                    if(weapon2 == nullptr) {
+                                        if(ability2 != none) {
+                                            timpy.setAbility(ability2);
+                                            updateInGameText(timpy.getCombo(),waveNumber,ability2);
+                                        }
+                                    } else {
+                                        weapon2->reset();
+                                        timpy.setSecondaryWeapon(weapon2);
+                                    }
+                                    state.upgradeScreen = false;
+                                } break;
+                                default:
+                                    state.upgradeScreen = false;
+                                    break;
+                                }
+                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
+                                state.upgradeScreen = false;
+                            }
                         }
                     }
 
                     SDL_RenderClear(gameRenderer);
 
-                    renderSelectionUI();
+                    renderSelectionUI(timpy.getSecondaryWeapon(), timpy.getAbility());
 
                     SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
                     SDL_RenderPresent(gameRenderer);
@@ -830,9 +887,10 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
 void loadController() {
     controller = SDL_GameControllerOpen(SDL_NumJoysticks()-1);
     if(controller == nullptr) {
-        SDL_Log( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
+        state.controller = false;
     } else {
         SDL_GameControllerAddMappingsFromFile("resources/mapping.txt");
+        state.controller = true;
     }
 }
 

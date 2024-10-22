@@ -5,7 +5,6 @@ struct State {
     //Menu Status
         bool mainMenu = true;
         bool levelSelect = false;
-
         bool upgradeScreen = false;
 
     //Load Status
@@ -18,6 +17,9 @@ struct State {
         int level = 0;
         int levelHeight = 0;
         std::vector<std::vector<int>> levelMap;
+
+    //Control State
+        bool controller = false;
 
     //Player Status
         int playerTileX = 0;

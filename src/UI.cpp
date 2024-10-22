@@ -239,30 +239,40 @@ void mouseMove(State& state) {
     SDL_GetMouseState( &x, &y );
     if(arcadeModeButton.mouseEvent(x,y) && state.mainMenu) {
         arcadeModeButton.select();
-    } else {
-        arcadeModeButton.deselect();
-    }
-    if(storyModeButton.mouseEvent(x,y) && state.mainMenu) {
-        storyModeButton.select();
-    } else {
         storyModeButton.deselect();
-    }
-    if(settingsButton.mouseEvent(x,y) && state.mainMenu) {
-        settingsButton.select();
-    } else {
         settingsButton.deselect();
+    } else if(storyModeButton.mouseEvent(x,y) && state.mainMenu) {
+        storyModeButton.select();
+        arcadeModeButton.deselect();
+        settingsButton.deselect();
+    } else if(settingsButton.mouseEvent(x,y) && state.mainMenu) {
+        settingsButton.select();
+        arcadeModeButton.deselect();
+        storyModeButton.deselect();
+    } else {
+        if(!state.controller) {
+            arcadeModeButton.deselect();
+            storyModeButton.deselect();
+            settingsButton.deselect();
+        }
     }
     if(level1.mouseEvent(x,y) && state.levelSelect) {
         level1.select();
-    } else {
-        level1.deselect();
-    }
-    if(level2.mouseEvent(x,y) && state.levelSelect) {
-        level2.select();
-    } else {
         level2.deselect();
+    } else if(level2.mouseEvent(x,y) && state.levelSelect) {
+        level2.select();
+        level1.deselect();
+    } else {
+        if(!state.controller) {
+            level1.deselect();
+            level2.deselect();
+        }
     }
 }
+
+bool selection1Selected = false;
+bool selection2Selected = false;
+UI_Button selectionNone;
 
 void controllerEvent(State& state, controllerMenuControl control) {
 
@@ -336,6 +346,22 @@ void controllerEvent(State& state, controllerMenuControl control) {
                     level1.select();
                 }
             }
+        } else if(state.upgradeScreen) {
+            if(control == controllerMenuControl::left && selection2Selected) {
+                selection2Selected = false;
+                selection1Selected = true;
+            } else if(control == controllerMenuControl::right && selection1Selected) {
+                selection2Selected = true;
+                selection1Selected = false;
+            } else if(control == controllerMenuControl::down) {
+                selection2Selected = false;
+                selection1Selected = false;
+                selectionNone.select();
+            } else if(control == controllerMenuControl::up && selectionNone.isSelected()) {
+                selection2Selected = false;
+                selection1Selected = true;
+                selectionNone.deselect();
+            }
         }
     }
 
@@ -371,6 +397,8 @@ void UI_Button::render() {
 }
 
 Texture selectionTexture;
+Texture currentSetupText;
+Texture currentAbilityText;
 
 Texture selectionBackground;
 Texture selectionBackgroundSelected;
@@ -396,6 +424,9 @@ void initSelectionUI() {
     selectionTexture.setup(renderer);
     selectionTexture.loadFromRenderedText("Select new weapon or upgrade: ", white, title);
 
+    currentSetupText.setup(renderer);
+    currentAbilityText.setup(renderer);
+
     selectionBackground.setup(selectWidth, selectWidth,renderer);
     selectionBackground.loadFromFile("upgrade-background.png");
 
@@ -417,14 +448,14 @@ void initSelectionUI() {
     c4SelectTexture.setup(selectWidth, selectWidth,renderer);
     c4SelectTexture.loadFromFile("upgrade-c4.png");
 
+    selectionNone.setup(WINDOW_WIDTH/2-selectionNone.getWidth()/2, selectY+scale(20)+selectWidth,"Keep Current Setup",renderer);
+
 }
 
-bool selection1Selected = false;
-bool selection2Selected = false;
-
-void renderSelectionUI() {
+void renderSelectionUI(Weapon* currentWeapon, Ability currentAbility) {
 
     selectionTexture.render(select1X/2,selectY/2);
+    selectionNone.render();
 
     if(selection1Selected) {
         selectionBackgroundSelected.render(select1X,selectY);
@@ -469,13 +500,40 @@ void renderSelectionUI() {
         }
     }
 
-}
+    if(currentWeapon != nullptr) {
+        if(currentWeapon->getType() == knife) {
+            currentSetupText.loadFromRenderedText("Current Weapon: Knife", white, counter);
+        } else if(currentWeapon->getType() == laserPistol) {
+            currentSetupText.loadFromRenderedText("Current Weapon: Laser Pistol", white, counter);
+        }
+    } else {
+        currentSetupText.loadFromRenderedText("Current Weapon: None", white, counter);
+    }
 
-void updateChoices(Weapon *_weapon1, Weapon *_weapon2, Ability _ability1, Ability _ability2) {
+    if(currentAbility == none) {
+        currentAbilityText.loadFromRenderedText("Current Ability: None", white, counter);
+    } else {
+        if(currentAbility == c4) {
+            currentAbilityText.loadFromRenderedText("Current Ability: C4", white, counter);
+        } else if(currentAbility == respawn) {
+            currentAbilityText.loadFromRenderedText("Current Ability: Teleport", white, counter);
+        } else if(currentAbility == bounce) {
+            currentAbilityText.loadFromRenderedText("Current Ability: Bounce", white, counter);
+        }
+    }
+    currentSetupText.render(scale(15),WINDOW_HEIGHT-scale(40));
+    currentAbilityText.render(scale(15),WINDOW_HEIGHT-scale(65));
+}
+//TODO: Make the button class more robust to be able to add in these buttons
+void updateChoices(State& state, Weapon *_weapon1, Weapon *_weapon2, Ability _ability1, Ability _ability2) {
     weapon1 = _weapon1;
     weapon2 = _weapon2;
     ability1 = _ability1;
     ability2 = _ability2;
+    if(state.controller) {
+        selection1Selected = true;
+        selection2Selected = false;
+    }
 }
 
 int selectionMouseClick() {
@@ -487,21 +545,47 @@ int selectionMouseClick() {
     if(x >= select2X && x <= select2X+selectWidth && y >= selectY && y <= selectY+selectWidth) {
         return 2;
     }
-    return 0;
+    if(selectionNone.mouseEvent(x,y)) {
+        selectionNone.deselect();
+        return 0;
+    }
+    return -1;
 }
 
-void selectionMouseMove() {
+void selectionMouseMove(State& state) {
     int x, y;
     SDL_GetMouseState( &x, &y );
     if(x >= select1X && x <= select1X+selectWidth && y >= selectY && y <= selectY+selectWidth) {
         selection1Selected = true;
         selection2Selected = false;
+        selectionNone.deselect();
     } else if(x >= select2X && x <= select2X+selectWidth && y >= selectY && y <= selectY+selectWidth) {
         selection2Selected = true;
         selection1Selected = false;
-    } else {
-        selection1Selected = false;
+        selectionNone.deselect();
+    } else if(selectionNone.mouseEvent(x,y)) {
         selection2Selected = false;
+        selection1Selected = false;
+        selectionNone.select();
+    } else {
+        if(!state.controller) {
+            selection1Selected = false;
+            selection2Selected = false;
+            selectionNone.deselect();
+        }
     }
 }
 
+int selectionControllerClick() {
+    if(selection1Selected) {
+        return 1;
+    }
+    if(selection2Selected) {
+        return 2;
+    }
+    if(selectionNone.isSelected()) {
+        selectionNone.deselect();
+        return 0;
+    }
+    return -1;
+}

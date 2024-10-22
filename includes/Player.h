@@ -36,6 +36,7 @@ public:
 
     Weapon* getWeapon() { return currentWeapon; }
     void setSecondaryWeapon(Weapon* secWeapon) { secondaryWeapon = secWeapon; currentWeapon = primaryWeapon; }
+    Weapon* getSecondaryWeapon() { return secondaryWeapon; }
     void changeWeapon();
 
     bool damage();

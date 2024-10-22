@@ -15,15 +15,16 @@ void UI_init(SDL_Renderer* renderer);
 void UI_close();
 
 void initSelectionUI();
-void updateChoices(Weapon* _weapon1, Weapon* _weapon2, Ability _ability1, Ability _ability2);
-void renderSelectionUI();
+void updateChoices(State& state, Weapon* _weapon1, Weapon* _weapon2, Ability _ability1, Ability _ability2);
+void renderSelectionUI(Weapon* currentWeapon, Ability currentAbility);
 
 void initPlayerUI();
 void updateTimeToShoot(double width);
 void updateTimeToAbility(double width);
 void renderPlayerUI(Player* player);
 int selectionMouseClick();
-void selectionMouseMove();
+void selectionMouseMove(State& state);
+int selectionControllerClick();
 
 void mouseMove(State& state);
 void mouseClick(State& state);
@@ -34,7 +35,9 @@ enum controllerMenuControl {
     up,
     down,
     select,
-    back
+    back,
+    left,
+    right,
 };
 
 void controllerEvent(State& state, controllerMenuControl control);

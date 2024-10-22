@@ -167,20 +167,6 @@ Ability Player::useAbility() {
   return none;
 }
 
-void Player::changeAbility() {
-    switch(currentAbility) {
-        case bounce:
-            currentAbility = respawn;
-            break;
-        case respawn:
-            currentAbility = c4;
-            break;
-        default:
-            currentAbility = Ability::bounce;
-            break;
-    }
-}
-
 bool Player::damage() {
     if(playerShield == 2) {
         playerShield--;

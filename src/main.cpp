@@ -224,11 +224,11 @@ int main( int argc, char* args[] ) {
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
-                int choice1 = rand() % 2;
-                int choice2Seed = rand() % 2;
+                int choice1 = rand() % 5;
+                int choice2Seed = rand() % 5;
                 int choice2;
                 while(choice2Seed == choice1) {
-                    choice2Seed = rand() % 2;
+                    choice2Seed = rand() % 5;
                 }
                 choice2 = choice2Seed;
 
@@ -280,7 +280,7 @@ int main( int argc, char* args[] ) {
                 updateChoices(weapon1, weapon2, ability1, ability2);
 
                 state.upgradeScreen = true;
-                while((waveNumber-1) % 1 == 0 && state.upgradeScreen && !quit && waveNumber-1 != 0) {
+                while((waveNumber-1) % 5 == 0 && state.upgradeScreen && !quit && waveNumber-1 != 0) {
                     //TODO: Add controller support
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
@@ -290,21 +290,27 @@ int main( int argc, char* args[] ) {
                           switch (selectionMouseClick()) {
                             case 1: {
                                 if(weapon1 == nullptr) {
-                                    //TODO: Add abilities
+                                    if(ability1 != none) {
+                                        timpy.setAbility(ability1);
+                                        updateInGameText(timpy.getCombo(),waveNumber,ability1);
+                                    }
                                 } else {
                                     weapon1->reset();
                                     timpy.setSecondaryWeapon(weapon1);
-                                    state.upgradeScreen = false;
                                 }
+                                state.upgradeScreen = false;
                             } break;
                             case 2: {
                                 if(weapon2 == nullptr) {
-                                    //TODO: Add abilities
+                                    if(ability2 != none) {
+                                        timpy.setAbility(ability2);
+                                        updateInGameText(timpy.getCombo(),waveNumber,ability2);
+                                    }
                                 } else {
                                     weapon2->reset();
                                     timpy.setSecondaryWeapon(weapon2);
-                                    state.upgradeScreen = false;
                                 }
+                                state.upgradeScreen = false;
                             } break;
                             default: break;
                             }
@@ -395,9 +401,6 @@ int main( int argc, char* args[] ) {
                                     default:
                                         break;
                                 }
-                            } else if(e.key.keysym.sym == SDLK_q) {
-                                timpy.changeAbility();
-                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                             }
                         } else if(e.type == SDL_KEYUP) {
                             if(e.key.keysym.sym == SDLK_d)
@@ -460,8 +463,7 @@ int main( int argc, char* args[] ) {
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START) == 1) {
                                 state.started = false;
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X) == 1) {
-                                timpy.changeAbility();
-                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
+                                timpy.getWeapon()->forceReload();
                             }
                         }
                     }

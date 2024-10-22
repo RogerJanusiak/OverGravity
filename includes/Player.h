@@ -11,6 +11,8 @@
 #include "Spawn.h"
 #include "Weapon.h"
 
+#include <exception>
+
 enum Ability {
     bounce,
     respawn,
@@ -50,7 +52,7 @@ public:
     int charge(float dt);
     Ability useAbility();
     Ability getAbility() { return currentAbility; }
-    void changeAbility();
+    void setAbility(Ability ability) { currentAbility = ability; }
 
     Entity* getC4Entity() { return &c4Entity; }
 
@@ -82,7 +84,7 @@ private:
     Weapon* primaryWeapon = nullptr;
     Weapon* secondaryWeapon = nullptr;
 
-    Ability currentAbility = Ability::bounce;
+    Ability currentAbility = Ability::none;
 
     int playerHealth = 2;
     int playerShield = 0;

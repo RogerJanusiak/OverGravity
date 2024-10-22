@@ -56,8 +56,11 @@ void updateInGameText(int playerCombo, int wave, Ability ability) {
         case respawn:
             abilityText.loadFromRenderedText("Ability: Respawn", white, counter);
             break;
-        default:
+        case c4:
             abilityText.loadFromRenderedText("Ability: C4", white, counter);
+            break;
+        default:
+            abilityText.loadFromRenderedText("Ability: None", white, counter);
     }
 
 }
@@ -373,6 +376,9 @@ Texture selectionBackground;
 Texture selectionBackgroundSelected;
 Texture laserPistolSelectTexture;
 Texture knifeSelectTexture;
+Texture bounceSelectTexture;
+Texture c4SelectTexture;
+Texture teleportSelectTexture;
 
 Weapon* weapon1;
 Weapon* weapon2;
@@ -402,6 +408,15 @@ void initSelectionUI() {
     knifeSelectTexture.setup(selectWidth, selectWidth,renderer);
     knifeSelectTexture.loadFromFile("upgrade-knife.png");
 
+    bounceSelectTexture.setup(selectWidth, selectWidth,renderer);
+    bounceSelectTexture.loadFromFile("upgrade-bounce.png");
+
+    teleportSelectTexture.setup(selectWidth, selectWidth,renderer);
+    teleportSelectTexture.loadFromFile("upgrade-teleport.png");
+
+    c4SelectTexture.setup(selectWidth, selectWidth,renderer);
+    c4SelectTexture.loadFromFile("upgrade-c4.png");
+
 }
 
 bool selection1Selected = false;
@@ -429,12 +444,28 @@ void renderSelectionUI() {
         } else if(weapon1->getType() == laserPistol) {
             laserPistolSelectTexture.render(select1X,selectY);
         }
+    } else {
+        if(ability1 == c4) {
+            c4SelectTexture.render(select1X,selectY);
+        } else if(ability1 == respawn) {
+            teleportSelectTexture.render(select1X,selectY);
+        } else if(ability1 == bounce) {
+            bounceSelectTexture.render(select1X,selectY);
+        }
     }
     if(weapon2 != nullptr) {
         if(weapon2->getType() == knife) {
             knifeSelectTexture.render(select2X,selectY);
         } else if(weapon2->getType() == laserPistol) {
             laserPistolSelectTexture.render(select2X,selectY);
+        }
+    } else {
+        if(ability2 == c4) {
+            c4SelectTexture.render(select2X,selectY);
+        } else if(ability2 == respawn) {
+            teleportSelectTexture.render(select2X,selectY);
+        } else if(ability2 == bounce) {
+            bounceSelectTexture.render(select2X,selectY);
         }
     }
 

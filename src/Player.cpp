@@ -69,7 +69,6 @@ Player::Player(Entity* entity, Weapon* primaryWeapon) : playerEntity(entity), pr
 
 }
 
-// TODO: Change all weapons to use flip, maybe timpy too.
 void Player::render() const {
     if(c4Placed) {
         c4Entity.render();

@@ -203,11 +203,11 @@ int main( int argc, char* args[] ) {
                 inWave = true;
                 waveNumber++;
 
-                std::list<Entity> tempRobors = getWaveEnemyEntities(waveNumber,1, &enemySpawns);
+                std::list<Entity> tempRobors = getWaveEnemyEntities(waveNumber,2, &enemySpawns);
                 std::list<Entity> eRobots;
                 std::list<Robor> robors;
 
-                std::list<Entity> tempRobortos = getWaveEnemyEntities(waveNumber,2, &enemySpawns);
+                std::list<Entity> tempRobortos = getWaveEnemyEntities(waveNumber,1, &enemySpawns);
                 std::list<Entity> eRobortos;
                 std::list<Roborto> robortos;
 
@@ -285,8 +285,7 @@ int main( int argc, char* args[] ) {
                 updateChoices(state, weapon1, weapon2, ability1, ability2);
 
                 state.upgradeScreen = true;
-                while((waveNumber-1) % 1 == 0 && state.upgradeScreen && !quit && waveNumber-1 != 0) {
-                    //TODO: Make weapons and abilities have limited use.
+                while((waveNumber-1) % 5 == 0 && state.upgradeScreen && !quit && waveNumber-1 != 0) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             quit = true;
@@ -410,10 +409,7 @@ int main( int argc, char* args[] ) {
                             if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
                                 pauseEnemy = !pauseEnemy;
                             } else if(e.key.keysym.sym == SDLK_5) {
-                                int finalX;
-                                int finalY;
-                                robortos.begin()->pathFind(9,3, finalX, finalY,state);
-                                SDL_Log("Weights: %i,%i", finalX, finalY);
+
                             } else if(e.key.keysym.sym == SDLK_6) {
                                 if (Mix_Playing(3)) {
                                     SDL_Log("Sound playing");
@@ -656,7 +652,7 @@ int main( int argc, char* args[] ) {
                             }
                             it->render();
                             if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
-                                if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y) {
+                                if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y && timpy.getAbility() == Ability::bounce) {
                                     timpy.getEntity()->setYVelocity(-1800);
                                     explosion.play();
                                 } else {
@@ -752,14 +748,16 @@ int main( int argc, char* args[] ) {
                         timpy.render();
                         state.playerX = timpy.getEntity()->getRect().x;
                         state.playerTileX = state.playerX/TILE_SIZE_SCALED+1;
-                        state.playerTileY = (timpy.getEntity()->getRect().y/TILE_SIZE_SCALED);
+                        state.playerTileY = (timpy.getEntity()->getRect().y-state.camY)/TILE_SIZE_SCALED;
 
                         if(state.developerMode) {
-                            SDL_Rect playerTile = {(state.playerTileX-1)*TILE_SIZE_SCALED, state.playerTileY*TILE_SIZE_SCALED,TILE_SIZE_SCALED,TILE_SIZE_SCALED};
+                            SDL_Rect playerTile = {(state.playerTileX-1)*TILE_SIZE_SCALED, state.playerTileY*TILE_SIZE_SCALED+state.camY,TILE_SIZE_SCALED,TILE_SIZE_SCALED};
                             SDL_SetRenderDrawColor(gameRenderer, 225, 225, 0, 255);
                             SDL_RenderDrawRect(gameRenderer, &playerTile);
                         }
                     }
+
+                    //TODO: When less than 5 enemies they always spawn on screen
 
                     SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
                     if(state.developerMode) {
@@ -860,6 +858,11 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
     }
     file.close();
     state.levelHeight = row*TILE_SIZE;
+
+    if(!state.levelMap.empty()) {
+        state.levelMap.clear();
+    }
+
     for (int i = 0; i < row; i++) {
         std::vector<int> mapRow;
         for(int j = 0; j < MAX_COLS; j++) {

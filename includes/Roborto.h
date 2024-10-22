@@ -14,7 +14,7 @@ public:
     void render() const { roborEntity->render(); }
     Entity* getEntity() const { return roborEntity; }
 
-    void pathFind(int x, int y, int& leftWeight, int& rightWeight, State state);
+    void pathFind(int x, int y, int& leftWeight, int& rightWeight, State state, bool firstCall);
 
     bool alive = true;
 
@@ -22,7 +22,7 @@ private:
     const int enemyWidth = scale(24);
     const int enemyHeight = scale(50);
 
-    const int xVelocity = scale(300);
+    const int xVelocity = scale(250);
 
     Entity* roborEntity;
 };

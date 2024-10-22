@@ -11,6 +11,7 @@ SDL_Color white = { 255, 255, 255 };
 SDL_Color gray = { 105, 105, 105 };
 TTF_Font *counter;
 TTF_Font *title;
+TTF_Font *small;
 
 Texture waveNumberText;
 Texture waveNumberTitle;
@@ -26,6 +27,7 @@ SDL_Renderer* renderer;
 
 void UI_init(SDL_Renderer* _renderer) {
     counter = TTF_OpenFont("resources/sans.ttf",scale(18));
+    small = TTF_OpenFont("resources/sans.ttf",scale(12));
     title = TTF_OpenFont("resources/sans.ttf",scale(34));
 
     renderer = _renderer;
@@ -42,6 +44,7 @@ void UI_init(SDL_Renderer* _renderer) {
 
 void UI_close() {
     TTF_CloseFont(counter);
+    TTF_CloseFont(small);
     TTF_CloseFont(title);
 }
 
@@ -117,6 +120,8 @@ SDL_Rect timeToShoot;
 SDL_Rect timeToAbilityBack;
 SDL_Rect timeToAbility;
 
+Texture ammoLeftText;
+
 void initPlayerUI() {
     timeToShootBack.x = WINDOW_WIDTH-scale(90);
     timeToShootBack.y = WINDOW_HEIGHT-scale(50);
@@ -137,6 +142,8 @@ void initPlayerUI() {
     timeToAbility.y = WINDOW_HEIGHT-scale(75);
     timeToAbility.w = scale(75);
     timeToAbility.h = scale(15);
+
+    ammoLeftText.setup(renderer);
 
 }
 
@@ -199,11 +206,15 @@ void renderPlayerUI(Player* player) {
             break;
     }
 
-    for(int i = 0; i < player->getWeapon()->getClipSize(); i++) {
-        if(bulletsInClip>i) {
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    for(int i = 0; i < player->getWeapon()->getClipSize()+1; i++) {
+        if(i == 0) {
+            SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
         } else {
-            SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+            if(bulletsInClip>i-1) {
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            } else {
+                SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+            }
         }
         SDL_Rect tempRect;
         tempRect.x = WINDOW_WIDTH-scale(30)-scale(20*i);
@@ -212,6 +223,42 @@ void renderPlayerUI(Player* player) {
         tempRect.h = scale(15);
         SDL_RenderFillRect(renderer,&tempRect);
     }
+
+    if(player->getWeapon()->getClipSize() != 0) {
+
+        if(player->getWeapon()->getType() == revolver) {
+            ammoLeftText.loadFromRenderedText("--",white,small);
+            ammoLeftText.render(WINDOW_WIDTH-scale(26),WINDOW_HEIGHT-scale(29));
+        } else {
+            int ammo = player->getWeapon()->getBulletsLeft();
+            ammo += player->getWeapon()->getClipSize()-bulletsInClip;
+            ammo -= player->getWeapon()->getClipSize();
+            ammoLeftText.loadFromRenderedText(std::to_string(ammo),white,small);
+            if(ammo < 10) {
+                ammoLeftText.render(WINDOW_WIDTH-scale(25),WINDOW_HEIGHT-scale(27));
+            } else {
+                ammoLeftText.render(WINDOW_WIDTH-scale(29),WINDOW_HEIGHT-scale(27));
+            }
+        }
+
+    }
+
+    if(player->getAbility() == c4) {
+        for(int i = 0; i < 3; i++) {
+            if(player->getC4Left()>i) {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            } else {
+                SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+            }
+            SDL_Rect tempRect;
+            tempRect.x = WINDOW_WIDTH-scale(30)-scale(20*i);
+            tempRect.y = WINDOW_HEIGHT-scale(75);
+            tempRect.w = scale(15);
+            tempRect.h = scale(15);
+            SDL_RenderFillRect(renderer,&tempRect);
+        }
+    }
+
 }
 
 void mouseClick(State& state) {
@@ -524,6 +571,7 @@ void renderSelectionUI(Weapon* currentWeapon, Ability currentAbility) {
     currentSetupText.render(scale(15),WINDOW_HEIGHT-scale(40));
     currentAbilityText.render(scale(15),WINDOW_HEIGHT-scale(65));
 }
+
 //TODO: Make the button class more robust to be able to add in these buttons
 void updateChoices(State& state, Weapon *_weapon1, Weapon *_weapon2, Ability _ability1, Ability _ability2) {
     weapon1 = _weapon1;

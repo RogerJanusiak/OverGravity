@@ -53,7 +53,8 @@ public:
     int charge(float dt);
     Ability useAbility();
     Ability getAbility() { return currentAbility; }
-    void setAbility(Ability ability) { currentAbility = ability; }
+    void setAbility(Ability ability) { currentAbility = ability; c4left = 3; }
+    int getC4Left() { return c4left; }
 
     Entity* getC4Entity() { return &c4Entity; }
 
@@ -109,6 +110,7 @@ private:
     Texture c4Texture;
     Texture detinatorTexture;
     bool c4Placed = false;
+    int c4left = 3;
 
     Sound damageSound;
 };

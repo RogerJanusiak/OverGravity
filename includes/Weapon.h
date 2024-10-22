@@ -33,6 +33,7 @@ public:
   void shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, const State &state, bool direction, int playerX, int playerY);
   [[nodiscard]] int getBulletsInClip() const { return bulletsInClip; }
   [[nodiscard]] int getClipSize() const { return clipSize; }
+  [[nodiscard]] int getBulletsLeft() const { return totalBulletsLeft; }
 
   void reset();
 
@@ -52,10 +53,10 @@ private:
   int bulletRelY = 0;
   int bulletSpeed = 0;
 
-  int totalClips = 0;
+  int totalBullets = 0;
   int clipSize = 0;
 
-  int clipsLeft = 0;
+  int totalBulletsLeft = 0;
   int bulletsInClip = 0;
 
   Texture texture;

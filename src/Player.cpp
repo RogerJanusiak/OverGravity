@@ -155,9 +155,10 @@ Ability Player::useAbility() {
         charged = false;
         return respawn;
     }
-    if (currentAbility == c4 && !c4Placed) {
+    if (currentAbility == c4 && !c4Placed && c4left > 0) {
         c4Entity.setPhysics(playerEntity->getRect().x,playerEntity->getRect().y+playerEntity->getRect().h - scale(32),0,0);
         c4Placed = true;
+        c4left--;
         return none;
     }
     if(currentAbility == c4 && c4Placed) {

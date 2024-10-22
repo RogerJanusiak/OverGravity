@@ -285,8 +285,7 @@ int main( int argc, char* args[] ) {
                 updateChoices(state, weapon1, weapon2, ability1, ability2);
 
                 state.upgradeScreen = true;
-                while((waveNumber-1) % 5 == 0 && state.upgradeScreen && !quit && waveNumber-1 != 0) {
-                    //TODO: Add controller support
+                while((waveNumber-1) % 1 == 0 && state.upgradeScreen && !quit && waveNumber-1 != 0) {
                     //TODO: Make weapons and abilities have limited use.
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {

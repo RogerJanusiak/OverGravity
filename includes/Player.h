@@ -94,7 +94,7 @@ private:
     bool justCharged = false;
 
     const double abilityReloadSpeed = 15;
-    const int comboToGetShield = 10;
+    const int comboToGetShield = 15;
 
     float timeSinceShot;
     float timeSinceAbilty;

@@ -151,9 +151,6 @@ int main( int argc, char* args[] ) {
             Player timpy = Player(&eTimpy,&revolver);
             timpyPointer = &timpy;
 
-            bool leftMovement = false;
-            bool rightMovement = false;
-
             bool waveOverride = false;
 
             bool shootingReset = true;
@@ -191,6 +188,10 @@ int main( int argc, char* args[] ) {
             timpy.getEntity()->forceSpawn();
 
             while(state.started && !quit) {
+
+                bool leftMovement = false;
+                bool rightMovement = false;
+
                 if(waveNumber == 0) {
                     timpy.setSecondaryWeapon(nullptr);
                 }
@@ -220,9 +221,6 @@ int main( int argc, char* args[] ) {
                     robortos.emplace_back(&(*it));
                     allCharacterEntities.emplace_back(&(*it));
                 }
-
-                bool waveStarted = false;
-                Uint32 startWaveLoad = SDL_GetTicks();
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
@@ -282,17 +280,19 @@ int main( int argc, char* args[] ) {
                 updateChoices(weapon1, weapon2, ability1, ability2);
 
                 state.upgradeScreen = true;
-                while((waveNumber-1) % 5 == 0 && state.upgradeScreen && !quit && waveNumber-1 != 0) {
+                while((waveNumber-1) % 1 == 0 && state.upgradeScreen && !quit && waveNumber-1 != 0) {
                     //TODO: Add controller support
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             quit = true;
                         } else if(e.type == SDL_MOUSEBUTTONDOWN) {
-                          switch (selectionMouseEvent()) {
+                            shootingReset = true;
+                          switch (selectionMouseClick()) {
                             case 1: {
                                 if(weapon1 == nullptr) {
                                     //TODO: Add abilities
                                 } else {
+                                    weapon1->reset();
                                     timpy.setSecondaryWeapon(weapon1);
                                     state.upgradeScreen = false;
                                 }
@@ -301,12 +301,15 @@ int main( int argc, char* args[] ) {
                                 if(weapon2 == nullptr) {
                                     //TODO: Add abilities
                                 } else {
+                                    weapon2->reset();
                                     timpy.setSecondaryWeapon(weapon2);
                                     state.upgradeScreen = false;
                                 }
                             } break;
                             default: break;
                             }
+                        } else if(e.type == SDL_MOUSEMOTION) {
+                            selectionMouseMove();
                         }
                     }
 
@@ -319,6 +322,9 @@ int main( int argc, char* args[] ) {
 
                 }
                 state.upgradeScreen = false;
+
+                bool waveStarted = false;
+                Uint32 startWaveLoad = SDL_GetTicks();
 
                 while(state.started && inWave && !quit) {
                     Uint64 start = SDL_GetPerformanceCounter();

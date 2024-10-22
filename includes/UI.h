@@ -22,7 +22,8 @@ void initPlayerUI();
 void updateTimeToShoot(double width);
 void updateTimeToAbility(double width);
 void renderPlayerUI(Player* player);
-int selectionMouseEvent();
+int selectionMouseClick();
+void selectionMouseMove();
 
 void mouseMove(State& state);
 void mouseClick(State& state);

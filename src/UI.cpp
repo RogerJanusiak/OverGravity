@@ -367,53 +367,75 @@ void UI_Button::render() {
     textTexture.render(x+(width-textTexture.getWidth())/2,y+(height-textTexture.getHeight())/2);
 }
 
-SDL_Rect selection1;
-SDL_Rect selection2;
 Texture selectionTexture;
+
+Texture selectionBackground;
+Texture selectionBackgroundSelected;
+Texture laserPistolSelectTexture;
+Texture knifeSelectTexture;
 
 Weapon* weapon1;
 Weapon* weapon2;
 Ability ability1;
 Ability ability2;
 
+int selectWidth = scale(200);
+int selectSpacing = scale(50);
+int selectY = (WINDOW_HEIGHT-selectWidth)/2;
+int select1X = WINDOW_WIDTH/2 - selectWidth - selectSpacing/2;
+int select2X = WINDOW_WIDTH/2 + selectSpacing/2;
+
 void initSelectionUI() {
-    int spacing = scale(25);
-    int width = scale(200);
-
-    selection1.x = (WINDOW_WIDTH - width*2 - spacing)/2;
-    selection1.y = (WINDOW_HEIGHT - width)/2;
-    selection1.w = width;
-    selection1.h = width;
-
-    selection2.x = (WINDOW_WIDTH - width*2 - spacing)/2 + width + spacing;
-    selection2.y = (WINDOW_HEIGHT - width)/2;
-    selection2.w = width;
-    selection2.h = width;
 
     selectionTexture.setup(renderer);
     selectionTexture.loadFromRenderedText("Select new weapon or upgrade: ", white, title);
+
+    selectionBackground.setup(selectWidth, selectWidth,renderer);
+    selectionBackground.loadFromFile("upgrade-background.png");
+
+    selectionBackgroundSelected.setup(selectWidth, selectWidth,renderer);
+    selectionBackgroundSelected.loadFromFile("upgrade-background-selected.png");
+
+    laserPistolSelectTexture.setup(selectWidth, selectWidth,renderer);
+    laserPistolSelectTexture.loadFromFile("upgrade-laserPistol.png");
+
+    knifeSelectTexture.setup(selectWidth, selectWidth,renderer);
+    knifeSelectTexture.loadFromFile("upgrade-knife.png");
+
 }
 
-void renderSelectionUI() {
-    selectionTexture.render(selection1.x/2-scale(16), selection1.y/2);
-    SDL_SetRenderDrawColor(renderer,50,50,50,50);
-    SDL_RenderFillRect(renderer,&selection1);
-    SDL_RenderFillRect(renderer,&selection2);
+bool selection1Selected = false;
+bool selection2Selected = false;
 
-    int width = 64;
+void renderSelectionUI() {
+
+    selectionTexture.render(select1X/2,selectY/2);
+
+    if(selection1Selected) {
+        selectionBackgroundSelected.render(select1X,selectY);
+    } else {
+        selectionBackground.render(select1X,selectY);
+    }
+
+    if(selection2Selected) {
+        selectionBackgroundSelected.render(select2X,selectY);
+    } else {
+        selectionBackground.render(select2X,selectY);
+    }
+
     if(weapon1 != nullptr) {
-        int w = weapon1->getTexture().getWidth()*2;
-        int h = weapon1->getTexture().getHeight()*2;
-        weapon1->getTexture().setup(w,h,renderer);
-        weapon1->getTexture().render(selection1.x+selection1.w/2-w/2,selection1.y+selection1.h/2-h/2);
-        weapon1->getTexture().setup(w/2,h/2,renderer);
+        if(weapon1->getType() == knife) {
+            knifeSelectTexture.render(select1X,selectY);
+        } else if(weapon1->getType() == laserPistol) {
+            laserPistolSelectTexture.render(select1X,selectY);
+        }
     }
     if(weapon2 != nullptr) {
-        int w = weapon2->getTexture().getWidth()*2;
-        int h = weapon2->getTexture().getHeight()*2;
-        weapon2->getTexture().setup(w,h,renderer);
-        weapon2->getTexture().render(selection2.x+selection2.w/2-w/2,selection2.y+selection2.h/2-h/2);
-        weapon2->getTexture().setup(w/2,h/2,renderer);
+        if(weapon2->getType() == knife) {
+            knifeSelectTexture.render(select2X,selectY);
+        } else if(weapon2->getType() == laserPistol) {
+            laserPistolSelectTexture.render(select2X,selectY);
+        }
     }
 
 }
@@ -425,16 +447,30 @@ void updateChoices(Weapon *_weapon1, Weapon *_weapon2, Ability _ability1, Abilit
     ability2 = _ability2;
 }
 
-int selectionMouseEvent() {
+int selectionMouseClick() {
     int x, y;
     SDL_GetMouseState( &x, &y );
-    if(x >= selection1.x && x <= selection1.x+selection1.w && y >= selection1.y && y <= selection1.y+selection1.h) {
+    if(x >= select1X && x <= select1X+selectWidth && y >= selectY && y <= selectY+selectWidth) {
         return 1;
     }
-    if(x >= selection2.x && x <= selection2.x+selection2.w && y >= selection2.y && y <= selection2.y+selection2.h) {
+    if(x >= select2X && x <= select2X+selectWidth && y >= selectY && y <= selectY+selectWidth) {
         return 2;
     }
     return 0;
 }
 
+void selectionMouseMove() {
+    int x, y;
+    SDL_GetMouseState( &x, &y );
+    if(x >= select1X && x <= select1X+selectWidth && y >= selectY && y <= selectY+selectWidth) {
+        selection1Selected = true;
+        selection2Selected = false;
+    } else if(x >= select2X && x <= select2X+selectWidth && y >= selectY && y <= selectY+selectWidth) {
+        selection2Selected = true;
+        selection1Selected = false;
+    } else {
+        selection1Selected = false;
+        selection2Selected = false;
+    }
+}
 

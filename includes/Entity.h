@@ -34,7 +34,7 @@ public:
     SDL_Renderer* getRenderer() const { return gameRender; }
 
     bool isSpawned() const { return spawned; }
-    void spawn();
+    void spawn(bool spawnOnScreen = false);
     void forceSpawn();
     void despawn() { spawned = false;justSpawned = true;entityRect.x = -1000,entityRect.y = -1000; }
 

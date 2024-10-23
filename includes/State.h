@@ -18,6 +18,9 @@ struct State {
         int levelHeight = 0;
         std::vector<std::vector<int>> levelMap;
 
+    //Wave Status
+        int enemiesAlive = 0;
+
     //Control State
         bool controller = false;
 

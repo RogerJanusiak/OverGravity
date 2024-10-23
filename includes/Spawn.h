@@ -19,7 +19,10 @@ public:
     void setPosition(int x, int y) { rect.x = x; rect.y = y; }
 
     void setOccupied(const bool occupy) { occupied = occupy; }
-    bool getOccupied() const { return occupied; }
+    [[nodiscard]] bool getOccupied() const { return occupied; }
+
+    void setOnScreen(const bool isOnScreen) { onScreen = isOnScreen; }
+    [[nodiscard]] bool isOnScreen() const { return onScreen; }
 
     int getSpawnType() const { return type; }
 
@@ -35,6 +38,7 @@ private:
 
     SDL_Rect rect;
     bool occupied = false;
+    bool onScreen = false;
     int type = 0;
 
 };

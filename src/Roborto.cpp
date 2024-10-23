@@ -57,7 +57,6 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
         } else {
             bool fallingRight = true;
             int numberTilesDownRight = 1;
-            //TODO: They are going off the left side of the screen.
             while(fallingRight) {
                 if(y+numberTilesDownRight < state.levelMap.size() && state.levelMap[y+numberTilesDownRight][openTileRight] == -1) {
                     numberTilesDownRight++;

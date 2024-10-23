@@ -40,6 +40,8 @@ std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<S
 void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
 void loadController();
 
+void checkIfSpawnsAreOnScreen(std::vector<Spawn>& enemySpawns);
+
 void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns);
 
 bool pauseEnemy = false;
@@ -573,10 +575,11 @@ int main( int argc, char* args[] ) {
                     //Render/Move/Collision Enemies
                     bool playerDamaged = false;
                     SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
+                    int enemiesAlive = 0;
                     for (auto it = robors.begin(); it != robors.end();++it) {
                         bool firstLoop = false;
                         if(!it->getEntity()->isSpawned()) {
-                            it->getEntity()->spawn();
+                            it->getEntity()->spawn(state.enemiesAlive <= 5);
                             firstLoop = true;
                         }
                         if(it->alive && it->getEntity()->isSpawned()) {
@@ -637,13 +640,14 @@ int main( int argc, char* args[] ) {
                         }
                         if(it->alive) {
                             robotAlive = true;
+                            enemiesAlive++;
                         }
                     }
 
                     for (auto it = robortos.begin(); it != robortos.end();++it) {
                         bool firstLoop = false;
                         if(!it->getEntity()->isSpawned()) {
-                            it->getEntity()->spawn();
+                            it->getEntity()->spawn(state.enemiesAlive <= 5);
                             firstLoop = true;
                         }
                         if(it->alive && it->getEntity()->isSpawned()) {
@@ -695,8 +699,11 @@ int main( int argc, char* args[] ) {
                         }
                         if(it->alive) {
                             robotAlive = true;
+                            enemiesAlive++;
                         }
                     }
+
+                    state.enemiesAlive = enemiesAlive;
 
                     for(auto it = explosions.begin();it != explosions.end();) {
                         if(it->finished()) {
@@ -757,13 +764,13 @@ int main( int argc, char* args[] ) {
                         }
                     }
 
-                    //TODO: When less than 5 enemies they always spawn on screen
-
                     SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
                     if(state.developerMode) {
                         SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
                         SDL_RenderDrawRect(gameRenderer, timpy.getWheelRect());
                     }
+
+                    checkIfSpawnsAreOnScreen(enemySpawns);
 
                     checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
@@ -787,6 +794,17 @@ int main( int argc, char* args[] ) {
     }
     close();
     return 0;
+}
+
+void checkIfSpawnsAreOnScreen(std::vector<Spawn>& enemySpawns) {
+    for (auto sit = enemySpawns.begin(); sit != enemySpawns.end(); ++sit) {
+        if(sit->getRect().x > 0 && sit->getRect().x < WINDOW_WIDTH
+            && sit->getRect().y >= 0 && sit->getRect().y+sit->getRect().h <= WINDOW_HEIGHT) {
+            sit->setOnScreen(true);
+        } else {
+            sit->setOnScreen(false);
+        }
+    }
 }
 
 void renderPlatforms(std::list<Platform*>& platforms) {
@@ -920,10 +938,10 @@ bool init() {
 
         loadController();
 
-        if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
+       /* if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
             printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
             success = false;
-        }
+        }*/
 
     }
 

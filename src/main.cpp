@@ -1,3 +1,5 @@
+#include <chrono>
+
 #include "../includes/Animations.h"
 
 #include <SDL.h>
@@ -19,6 +21,7 @@
 #include "../includes/State.h"
 
 #include <SDL_ttf.h>
+#include <thread>
 
 #include "../includes/Roborto.h"
 #include "../includes/Sound.h"
@@ -30,7 +33,7 @@ SDL_Renderer *gameRenderer = nullptr;
 std::string gameFilesPath;
 
 //Game Controller 1 handler
-SDL_GameController* controller;
+SDL_GameController* controller = nullptr;
 
 bool init();
 void close();
@@ -200,7 +203,7 @@ int main( int argc, char* args[] ) {
 
                 if(waveNumber == 0) {
                     timpy.setSecondaryWeapon(&laserPistol);
-                    timpy.setAbility(none);
+                    timpy.setAbility(bounce);
                 }
                 inWave = true;
                 waveNumber++;
@@ -474,7 +477,11 @@ int main( int argc, char* args[] ) {
                         } else if( e.type == SDL_JOYAXISMOTION) {
                             if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
                                 if(shootingReset) {
-                                    timpy.getWeapon()->shoot(&eBullets,&bullets,state,timpy.getDirection(),timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y);
+                                    if(timpy.getWeapon()->shoot(&eBullets,&bullets,state,timpy.getDirection(),timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y)) {
+                                        SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 150 );
+                                    } else {
+                                        SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 75 );
+                                    }
                                     shootingReset = false;
                                 }
                             } else {
@@ -535,7 +542,13 @@ int main( int argc, char* args[] ) {
                     }
 
                     updateTimeToAbility(scale(timpy.charge(dt)));
-                    timpy.getWeapon()->wasJustReloaded();
+                    if(timpy.getWeapon()->wasJustReloaded()) {
+                        SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 50 );
+                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                        SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 50 );
+                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                        SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 50 );
+                    }
 
                     SDL_RenderClear(gameRenderer);
 
@@ -715,6 +728,7 @@ int main( int argc, char* args[] ) {
                     c4Exploded = false;
 
                     if(playerDamaged) {
+                        SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
                         timpy.zeroCombo();
                         updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                         timpy.charge(dt);
@@ -722,6 +736,7 @@ int main( int argc, char* args[] ) {
                     }
 
                     if(!playerAlive || waveOverride) {
+                        SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
                         inWave = false;
                         waveOverride = false;
                     } else {
@@ -744,7 +759,7 @@ int main( int argc, char* args[] ) {
                         }
                     }
 
-                    if(timpy.getEntity()->getRect().y >= scale(195) && state.camY > -1*(scale(state.levelHeight)-WINDOW_HEIGHT) || timpy.getEntity()->getRect().y < 0) {
+                    if((timpy.getEntity()->getRect().y >= scale(195) && state.camY > -1*(scale(state.levelHeight)-WINDOW_HEIGHT)) || (timpy.getEntity()->getRect().y < 0 && state.camY < 0)) {
                         moveCamera(allCharacterEntities,platforms,allSpawns, dt);
                     }
 
@@ -803,6 +818,13 @@ void renderPlatforms(std::list<Platform*>& platforms) {
 
 void moveCamera(std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns, float dt) {
     int vector = (scale(195)-timpyPointer->getEntity()->getRect().y)*scale(2)*dt;
+
+    if(state.camY+vector > 0) {
+        vector = state.camY*-1;
+    } else if(state.camY+vector < -1*(scale(state.levelHeight)-WINDOW_HEIGHT)) {
+        vector = -1*(scale(state.levelHeight)-WINDOW_HEIGHT)-state.camY;
+    }
+
     state.camY += vector;
 
     for (auto entites : allCharacterEntities) {
@@ -909,7 +931,7 @@ void loadController() {
 bool init() {
     bool success = true;
 
-    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO ) < 0 ) {
+    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO ) < 0 ) {
         SDL_Log( "SDL could not initialize! SDL Error: %s\n", SDL_GetError() );
         success = false;
     } else if (TTF_Init() < 0) {

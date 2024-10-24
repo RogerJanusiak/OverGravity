@@ -118,7 +118,7 @@ bool Weapon::wasJustReloaded() {
   return false;
 }
 
-void Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, const State &state, bool direction, int playerX, int playerY) {
+bool Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, const State &state, bool direction, int playerX, int playerY) {
   if(reloaded && !state.c4Placed && type != knife && (totalBulletsLeft > 0 || type == revolver)) {
     fireSound.play();
 
@@ -137,9 +137,10 @@ void Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, cons
     if(bulletsInClip == 0) {
       reloaded = false;
     }
-  } else {
-    emptySound.play();
+    return true;
   }
+  emptySound.play();
+  return false;
 }
 
 void Weapon::reset() {

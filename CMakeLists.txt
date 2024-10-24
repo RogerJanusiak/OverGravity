@@ -25,7 +25,11 @@ add_executable(${PROJECT_NAME} src/Player.cpp
         includes/Sound.h
         src/Roborto.cpp
         src/Roborto.cpp
-        includes/Roborto.h)
+        includes/Roborto.h
+        src/Animations.cpp
+        includes/Animations.h
+        src/Weapon.cpp
+        includes/Weapon.h)
 
 # --- SDL2 SETUP ---
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMAKE/cmakepc )

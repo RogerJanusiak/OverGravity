@@ -202,8 +202,8 @@ int main( int argc, char* args[] ) {
                 bool rightMovement = false;
 
                 if(waveNumber == 0) {
-                    timpy.setSecondaryWeapon(&laserPistol);
-                    timpy.setAbility(bounce);
+                    timpy.setSecondaryWeapon(nullptr);
+                    timpy.setAbility(none);
                 }
                 inWave = true;
                 waveNumber++;
@@ -543,11 +543,7 @@ int main( int argc, char* args[] ) {
 
                     updateTimeToAbility(scale(timpy.charge(dt)));
                     if(timpy.getWeapon()->wasJustReloaded()) {
-                        SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 50 );
-                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                        SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 50 );
-                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                        SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 50 );
+                        SDL_GameControllerRumble( controller, 0xFFFF * 1 / 2, 0xFFFF * 1 / 2, 50 );
                     }
 
                     SDL_RenderClear(gameRenderer);
@@ -826,6 +822,8 @@ void moveCamera(std::list<Entity*>& allCharacterEntities, std::list<Platform*>& 
     }
 
     state.camY += vector;
+
+    timpyPointer->getC4Entity()->setPosition(timpyPointer->getC4Entity()->getRect().x, timpyPointer->getC4Entity()->getRect().y+vector);
 
     for (auto entites : allCharacterEntities) {
         entites->setPosition(entites->getRect().x,entites->getRect().y+vector);

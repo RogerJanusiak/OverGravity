@@ -14,6 +14,8 @@ struct State {
 
     //Level Status
         int camY = 0;
+        int camV = 0;
+        int camA = scale(2000);
         int level = 0;
         int levelHeight = 0;
         std::vector<std::vector<int>> levelMap;

@@ -115,7 +115,7 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
         bool allPlatforms = true;
         if(state.playerTileX != x-1 || state.playerTileX != x+1) {
             for(int i = 1; i < abs(state.playerTileX - x); i++) {
-                if(state.levelMap[y][x+(i*direction)] == -1) {
+                if(y < state.levelMap.size() && state.levelMap[y][x+(i*direction)] == -1) {
                     allPlatforms = false;
                 }
             }

@@ -64,7 +64,9 @@ bool Entity::move(float dt,const std::list<Platform*> &platforms, int* amountFal
 
     if(potentialPlatform == nullptr) {
         entityRect.y = nextYPosition;
-        yVelocity += ACCELERATION*dt;
+        if(yVelocity <= scale(550)) {
+            yVelocity += ACCELERATION*dt;
+        }
     } else {
         offPlatform = false;
         entityRect.y = potentialPlatform->getPlatformRect().y-entityRect.h;

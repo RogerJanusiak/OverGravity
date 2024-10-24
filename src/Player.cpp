@@ -109,6 +109,10 @@ int Player::move(float dt,const std::list<Platform*> &platforms,int camY) {
         playerEntity->setPosition(WINDOW_WIDTH, playerEntity->getRect().y);
     }
 
+    if(playerEntity->getRect().y > WINDOW_HEIGHT) {
+        playerEntity->forceSpawn();
+    }
+
     wheelRect.x = getEntity()->getRect().x+((getEntity()->getRect().w-20)/2);
     wheelRect.y = getEntity()->getRect().y+getEntity()->getRect().h-20;
 

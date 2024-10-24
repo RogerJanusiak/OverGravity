@@ -36,13 +36,13 @@ bool init();
 void close();
 void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& eRobots);
 void renderPlatforms(std::list<Platform*>& platforms);
-std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, std::vector<Spawn>* spawns);
+std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, int notDiv, std::vector<Spawn>* spawns);
 void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
 void loadController();
 
 void checkIfSpawnsAreOnScreen(std::vector<Spawn>& enemySpawns);
 
-void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns);
+void moveCamera(std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns, float dt);
 
 bool pauseEnemy = false;
 
@@ -205,11 +205,11 @@ int main( int argc, char* args[] ) {
                 inWave = true;
                 waveNumber++;
 
-                std::list<Entity> tempRobors = getWaveEnemyEntities(waveNumber,2, &enemySpawns);
+                std::list<Entity> tempRobors = getWaveEnemyEntities(waveNumber,1,3, &enemySpawns);
                 std::list<Entity> eRobots;
                 std::list<Robor> robors;
 
-                std::list<Entity> tempRobortos = getWaveEnemyEntities(waveNumber,1, &enemySpawns);
+                std::list<Entity> tempRobortos = getWaveEnemyEntities(waveNumber,3,-1, &enemySpawns);
                 std::list<Entity> eRobortos;
                 std::list<Roborto> robortos;
 
@@ -405,7 +405,6 @@ int main( int argc, char* args[] ) {
                                 waveOverride = true;
                             }
                             if(e.key.keysym.sym == SDLK_3 && state.developerMode) {
-                                moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                                 timpy.getEntity()->forceSpawn();
                             }
                             if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
@@ -446,7 +445,6 @@ int main( int argc, char* args[] ) {
                             } else if(e.key.keysym.sym == SDLK_e) {
                                 switch(timpy.useAbility()) {
                                     case respawn: {
-                                        moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                                         timpy.getEntity()->forceSpawn();
                                     } break;
                                     case c4: {
@@ -505,7 +503,6 @@ int main( int argc, char* args[] ) {
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
                                 switch(timpy.useAbility()) {
                                     case respawn: {
-                                        moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                                         timpy.getEntity()->forceSpawn();
                                     } break;
                                     case c4: {
@@ -722,7 +719,6 @@ int main( int argc, char* args[] ) {
                         timpy.zeroCombo();
                         updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                         timpy.charge(dt);
-                        moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
                         timpy.getEntity()->forceSpawn();
                     }
 
@@ -735,22 +731,7 @@ int main( int argc, char* args[] ) {
 
                     if(timpy.getEntity()->isSpawned()) {
                         if(waveStarted) {
-
-                            //TODO: Check if moveCamera will over shoot and then set it to max.
-                            if(timpy.getEntity()->getRect().y >= scale(195) && state.camY > -1*(scale(state.levelHeight)-WINDOW_HEIGHT)) {
-                                int movmentDistance = timpy.move(dt, platforms,state.camY);
-                                if(movmentDistance < 0) {
-                                    moveCamera(0,movmentDistance,allCharacterEntities,platforms,allSpawns);
-                                }
-                            } else {
-                                timpy.move(dt, platforms,state.camY);
-                                if(timpy.getEntity()->getRect().y > WINDOW_HEIGHT) {
-                                    moveCamera(0,-1*state.camY,allCharacterEntities,platforms,allSpawns);
-                                    timpy.getEntity()->forceSpawn();
-                                } else if (state.camY < -1*(scale(state.levelHeight)-WINDOW_HEIGHT)) {
-                                    moveCamera(0,-1*(state.camY+scale(state.levelHeight)-WINDOW_HEIGHT),allCharacterEntities,platforms,allSpawns);
-                                }
-                            }
+                            timpy.move(dt, platforms,state.camY);
                         }
                         timpy.render();
                         state.playerX = timpy.getEntity()->getRect().x;
@@ -762,6 +743,10 @@ int main( int argc, char* args[] ) {
                             SDL_SetRenderDrawColor(gameRenderer, 225, 225, 0, 255);
                             SDL_RenderDrawRect(gameRenderer, &playerTile);
                         }
+                    }
+
+                    if(timpy.getEntity()->getRect().y >= scale(195) && state.camY > -1*(scale(state.levelHeight)-WINDOW_HEIGHT) || timpy.getEntity()->getRect().y < 0) {
+                        moveCamera(allCharacterEntities,platforms,allSpawns, dt);
                     }
 
                     SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
@@ -817,18 +802,19 @@ void renderPlatforms(std::list<Platform*>& platforms) {
     }
 }
 
-void moveCamera(int x, int y, std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns) {
-    state.camY += y;
+void moveCamera(std::list<Entity*>& allCharacterEntities, std::list<Platform*>& platforms, std::vector<Spawn*>& allSpawns, float dt) {
+    int vector = (scale(195)-timpyPointer->getEntity()->getRect().y)*scale(2)*dt;
+    state.camY += vector;
 
     for (auto entites : allCharacterEntities) {
-        entites->setPosition(entites->getRect().x+x,entites->getRect().y+y);
+        entites->setPosition(entites->getRect().x,entites->getRect().y+vector);
     }
     timpyPointer->updateWheelRect();
     for (auto platform : platforms) {
-        platform->setPosition(platform->getPlatformRect().x+x,platform->getPlatformRect().y+y);
+        platform->setPosition(platform->getPlatformRect().x,platform->getPlatformRect().y+vector);
     }
     for(auto spawn : allSpawns) {
-        spawn->setPosition(spawn->getRect().x+x,spawn->getRect().y+y);
+        spawn->setPosition(spawn->getRect().x,spawn->getRect().y+vector);
     }
 }
 
@@ -843,12 +829,19 @@ void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& a
     }
 }
 
-std::list<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor, std::vector<Spawn>* spawns) {
+std::list<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor,int notDiv, std::vector<Spawn>* spawns) {
     std::list<Entity> entities;
     for(int i = 1; i <= waveNumber; i++) {
-        if(i % divisor == 0) {
-            entities.emplace_back(spawns,gameRenderer);
+        if(notDiv != -1) {
+            if(i % divisor == 0 && i % notDiv != 0) {
+                entities.emplace_back(spawns,gameRenderer);
+            }
+        } else {
+            if(i % divisor == 0) {
+                entities.emplace_back(spawns,gameRenderer);
+            }
         }
+
     }
     return entities;
 }
@@ -937,11 +930,10 @@ bool init() {
         }
 
         loadController();
-
-       /* if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
+        if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
             printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
             success = false;
-        }*/
+        }
 
     }
 

@@ -4,7 +4,6 @@
 
 Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer) {
   type = _type;
-  fireSound.init("resources/sounds/gunshot.wav",0,-1);
   renderer = _renderer;
   switch (type) {
     case knife: {
@@ -44,6 +43,9 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer) {
 
       reloadSpeed = 3;
       timeSinceShot = reloadSpeed;
+      fireSound.init("resources/sounds/laserPistol-shoot.wav",0,-1);
+      reloadSound.init("resources/sounds/laserPistol-reload.wav", 0,-1);
+      emptySound.init("resources/sounds/laserPistol-empty.wav", 0,-1);
     } break;
   default: {
     texture.setup(scale(42),scale(21),renderer);
@@ -64,6 +66,9 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer) {
 
     reloadSpeed = 2;
     timeSinceShot = reloadSpeed;
+    fireSound.init("resources/sounds/revolver-shoot.wav",0,-1);
+    reloadSound.init("resources/sounds/revolver-reload.wav", 0,-1);
+    emptySound.init("resources/sounds/revolver-empty.wav", 0,-1);
   } break;
   }
 
@@ -107,6 +112,7 @@ void Weapon::forceReload() {
 bool Weapon::wasJustReloaded() {
   if(justReloaded) {
     justReloaded = false;
+    reloadSound.play();
     return true;
   }
   return false;
@@ -131,6 +137,8 @@ void Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, cons
     if(bulletsInClip == 0) {
       reloaded = false;
     }
+  } else {
+    emptySound.play();
   }
 }
 

@@ -61,6 +61,8 @@ private:
 
   Texture texture;
   Sound fireSound;
+  Sound reloadSound;
+  Sound emptySound;
 
   double reloadSpeed = 0;
 

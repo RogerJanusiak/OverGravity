@@ -64,8 +64,8 @@ int main( int argc, char* args[] ) {
         initStartScreen();
         initSelectionUI();
 
-        Sound pistolReload("resources/sounds/pistolReload.wav", 0,-1);
-        Sound explosion("resources/sounds/explosion.wav", 0,-1);
+        Sound explosion("resources/sounds/shortExplosion.wav", 0,-1);
+        Sound mediumExplosion("resources/sounds/mediumExplosion.wav", 0,-1);
         Sound song("resources/sounds/song.wav", -1,0);
 
         std::list<Explosion> explosions;
@@ -199,7 +199,7 @@ int main( int argc, char* args[] ) {
                 bool rightMovement = false;
 
                 if(waveNumber == 0) {
-                    timpy.setSecondaryWeapon(nullptr);
+                    timpy.setSecondaryWeapon(&laserPistol);
                     timpy.setAbility(none);
                 }
                 inWave = true;
@@ -448,6 +448,7 @@ int main( int argc, char* args[] ) {
                                         timpy.getEntity()->forceSpawn();
                                     } break;
                                     case c4: {
+                                        mediumExplosion.play();
                                         c4Exploded = true;
                                     } break;
                                     default:
@@ -534,9 +535,7 @@ int main( int argc, char* args[] ) {
                     }
 
                     updateTimeToAbility(scale(timpy.charge(dt)));
-                    if (timpy.getWeapon()->wasJustReloaded()) {
-                        pistolReload.play();
-                    }
+                    timpy.getWeapon()->wasJustReloaded();
 
                     SDL_RenderClear(gameRenderer);
 
@@ -949,6 +948,8 @@ void close() {
 
     SDL_DestroyWindow(gameWindow);
     gameWindow = nullptr;
+
+    Mix_CloseAudio();
 
     Mix_Quit();
     IMG_Quit();

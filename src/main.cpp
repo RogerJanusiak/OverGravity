@@ -514,6 +514,7 @@ int main( int argc, char* args[] ) {
                                         timpy.getEntity()->forceSpawn();
                                     } break;
                                     case c4: {
+                                        mediumExplosion.play();
                                         c4Exploded = true;
                                     } break;
                                     default:

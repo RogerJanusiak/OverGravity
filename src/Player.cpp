@@ -22,25 +22,30 @@ Player::Player(Entity* entity, Weapon* primaryWeapon) : playerEntity(entity), pr
     weaponRect.w = scale(42);
     weaponRect.h = scale(10);
 
-    playerHealth1.x = scale(15);
-    playerHealth1.y = WINDOW_HEIGHT-scale(45);
-    playerHealth1.w = scale(30);
-    playerHealth1.h = scale(30);
+    playerHealth1.x = scale(10);
+    playerHealth1.y = WINDOW_HEIGHT-scale(30);
+    playerHealth1.w = scale(20);
+    playerHealth1.h = scale(20);
 
-    playerHealth2.x = scale(15);
-    playerHealth2.y = WINDOW_HEIGHT-scale(85);
-    playerHealth2.w = scale(30);
-    playerHealth2.h = scale(30);
+    playerHealth2.x = scale(10);
+    playerHealth2.y = WINDOW_HEIGHT-scale(60);
+    playerHealth2.w = scale(20);
+    playerHealth2.h = scale(20);
 
-    playerShield1.x = scale(15);
-    playerShield1.y = WINDOW_HEIGHT-scale(125);
-    playerShield1.w = scale(30);
-    playerShield1.h = scale(30);
+    playerHealth3.x = scale(10);
+    playerHealth3.y = WINDOW_HEIGHT-scale(90);
+    playerHealth3.w = scale(20);
+    playerHealth3.h = scale(20);
 
-    playerShield2.x = scale(15);
-    playerShield2.y = WINDOW_HEIGHT-scale(165);
-    playerShield2.w = scale(30);
-    playerShield2.h = scale(30);
+    playerShield1.x = scale(10);
+    playerShield1.y = WINDOW_HEIGHT-scale(120);
+    playerShield1.w = scale(20);
+    playerShield1.h = scale(20);
+
+    playerShield2.x = scale(10);
+    playerShield2.y = WINDOW_HEIGHT-scale(150);
+    playerShield2.w = scale(20);
+    playerShield2.h = scale(20);
 
     playerEntity->setDimensions(playerWidth,playerHeight);
     playerTextureLeft.setup(playerWidth,playerHeight,playerEntity->getRenderer());
@@ -178,10 +183,12 @@ bool Player::damage() {
     } else if(playerShield == 1) {
         playerShield--;
     } else {
-        if(playerHealth == 2) {
+        if(playerHealth == 3) {
+            playerHealth--;
+        } else if(playerHealth == 2) {
             playerHealth--;
         } else if (playerHealth == 1) {
-            playerHealth = 2;
+            playerHealth = 3;
             combo = 0;
             c4Placed = false;
             return true;

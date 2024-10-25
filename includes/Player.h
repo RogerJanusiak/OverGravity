@@ -66,6 +66,7 @@ public:
 
     SDL_Rect playerHealth1;
     SDL_Rect playerHealth2;
+    SDL_Rect playerHealth3;
     SDL_Rect playerShield1;
     SDL_Rect playerShield2;
 
@@ -88,7 +89,7 @@ private:
 
     Ability currentAbility = Ability::none;
 
-    int playerHealth = 2;
+    int playerHealth = 3;
     int playerShield = 0;
 
     int combo = 0;

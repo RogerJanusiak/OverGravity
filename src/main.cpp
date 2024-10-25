@@ -345,7 +345,7 @@ int main( int argc, char* args[] ) {
                 updateChoices(state, weapon1, weapon2, ability1, ability2);
 
                 state.upgradeScreen = true;
-                while((waveNumber-1) % 1 == 0 && state.upgradeScreen && !state.quit && waveNumber-1 != 0) {
+                while((waveNumber-1) % 5 == 0 && state.upgradeScreen && !state.quit && waveNumber-1 != 0) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
@@ -555,7 +555,7 @@ int main( int argc, char* args[] ) {
                         } else if (e.type == SDL_JOYDEVICEREMOVED) {
                             controller = nullptr;
                         } else if( e.type == SDL_JOYBUTTONDOWN ) {
-                            if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
+                            if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y) == 1) {
                                 timpy.changeWeapon();
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
                                 switch(timpy.useAbility()) {

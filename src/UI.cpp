@@ -72,6 +72,8 @@ UI_Button resumeGameButton;
 UI_Button quitToMenuGameButton;
 UI_Button quitToDesktopGameButton;
 
+UI_Button quitToDesktopMainButton;
+
 UI_Button selectionNone;
 Texture gamePausedText;
 
@@ -143,11 +145,13 @@ void initStartScreen() {
     arcadeModeButton.setup((WINDOW_WIDTH-arcadeModeButton.getWidth())/2,scale(215),"Arcade Mode", renderer);
     storyModeButton.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(280),"Story Mode", renderer);
     settingsButton.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(345),"Settings", renderer);
+    quitToDesktopMainButton.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(410),"Quit To Desktop", renderer);
     level1.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(215),"Level 1", renderer);
     level2.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(280),"Level 2", renderer);
     arcadeModeButton.linkButtons(nullptr,&storyModeButton,nullptr,nullptr);
     storyModeButton.linkButtons(&arcadeModeButton,&settingsButton,nullptr,nullptr);
-    settingsButton.linkButtons(&storyModeButton,nullptr,nullptr,nullptr);
+    settingsButton.linkButtons(&storyModeButton,&quitToDesktopMainButton,nullptr,nullptr);
+    quitToDesktopMainButton.linkButtons(&settingsButton,nullptr,nullptr,nullptr);
     level1.linkButtons(nullptr,&level2,nullptr,nullptr);
     level2.linkButtons(&level1,nullptr,nullptr,nullptr);
 }
@@ -158,6 +162,7 @@ void renderStartScreen(State& state) {
         arcadeModeButton.render();
         storyModeButton.render();
         settingsButton.render();
+        quitToDesktopMainButton.render();
     } else if(state.levelSelect) {
         level1.render();
         level2.render();
@@ -203,7 +208,6 @@ void renderPlayerUI(Player* player) {
     SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
     SDL_RenderFillRect(renderer,&timeToShootBack);
 
-
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer,&timeToShoot);
 
@@ -234,16 +238,25 @@ void renderPlayerUI(Player* player) {
     }
 
     switch(player->getHP()) {
+        case 3: {
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            SDL_RenderFillRect(renderer,&player->playerHealth1);
+            SDL_RenderFillRect(renderer,&player->playerHealth2);
+            SDL_RenderFillRect(renderer,&player->playerHealth3);
+        } break;
         case 2: {
                 SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
                 SDL_RenderFillRect(renderer,&player->playerHealth1);
                 SDL_RenderFillRect(renderer,&player->playerHealth2);
+                SDL_SetRenderDrawColor(renderer, 170, 104, 95, 255);
+                SDL_RenderFillRect(renderer,&player->playerHealth3);
         } break;
         case 1: {
                 SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
                 SDL_RenderFillRect(renderer,&player->playerHealth1);
                 SDL_SetRenderDrawColor(renderer, 170, 104, 95, 255);
                 SDL_RenderFillRect(renderer,&player->playerHealth2);
+                SDL_RenderFillRect(renderer,&player->playerHealth3);
         } break;
         default:
             break;
@@ -318,6 +331,8 @@ void mouseMove(State& state) {
         tempButton = &storyModeButton;
     } else if(settingsButton.mouseEvent(x,y) && state.mainMenu) {
         tempButton = &settingsButton;
+    } else if(quitToDesktopMainButton.mouseEvent(x,y) && state.mainMenu) {
+        tempButton = &quitToDesktopMainButton;
     }
     if(level1.mouseEvent(x,y) && state.levelSelect) {
         tempButton = &level1;
@@ -338,8 +353,13 @@ void mouseMove(State& state) {
     } else if(selectionNone.mouseEvent(x,y) && state.upgradeScreen) {
         tempButton = &selectionNone;
     }
-    if(tempButton != nullptr) {
+    if(currentButton != nullptr && !state.controller) {
         currentButton->deselect();
+    }
+    if(tempButton != nullptr) {
+        if(currentButton != nullptr) {
+            currentButton->deselect();
+        }
         currentButton = tempButton;
         currentButton->select();
     }
@@ -524,6 +544,8 @@ void selectAction(State& state) {
             state.mainMenu = false;
             state.levelSelect = true;
             currentButton = &level1;
+        } else if(quitToDesktopMainButton.isSelected()) {
+            state.quit = true;
         }
         if(currentButton != nullptr) {
             currentButton->select();

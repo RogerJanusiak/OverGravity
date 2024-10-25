@@ -183,6 +183,7 @@ bool Player::damage() {
         } else if (playerHealth == 1) {
             playerHealth = 2;
             combo = 0;
+            c4Placed = false;
             return true;
         }
     }

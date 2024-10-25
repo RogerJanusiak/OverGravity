@@ -8,7 +8,6 @@
 #include "Spawn.h"
 #include "Texture.h"
 
-
 class Entity {
 
 public:

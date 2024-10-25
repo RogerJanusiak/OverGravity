@@ -2,10 +2,15 @@
 #define STATE_H
 
 struct State {
+    //Game State
+        bool quit = false;
+        bool paused = false;
+
     //Menu Status
         bool mainMenu = true;
         bool levelSelect = false;
         bool upgradeScreen = false;
+        bool controllerStickReset = true;
 
     //Load Status
         bool started = false ;

@@ -19,11 +19,61 @@ Texture comboNumberText;
 Texture abilityText;
 Texture fpsText;
 
+UI_Button* currentButton = nullptr;
+
 Texture logoTexture;
 
 Texture startGameText;
 
 SDL_Renderer* renderer;
+
+Texture selectionTexture;
+Texture currentSetupText;
+Texture currentAbilityText;
+
+Texture laserPistolSelectTexture;
+Texture knifeSelectTexture;
+Texture bounceSelectTexture;
+Texture c4SelectTexture;
+Texture teleportSelectTexture;
+
+Weapon* weapon1;
+Weapon* weapon2;
+Ability ability1;
+Ability ability2;
+
+int selectWidth = scale(200);
+int selectSpacing = scale(50);
+int selectY = (WINDOW_HEIGHT-selectWidth)/2;
+int select1X = WINDOW_WIDTH/2 - selectWidth - selectSpacing/2;
+int select2X = WINDOW_WIDTH/2 + selectSpacing/2;
+
+UI_Button arcadeModeButton;
+UI_Button storyModeButton;
+UI_Button settingsButton;
+
+UI_Button level1;
+UI_Button level2;
+
+UI_Button selection1;
+UI_Button selection2;
+
+Sound buttonClick;
+
+SDL_Rect timeToShootBack;
+SDL_Rect timeToShoot;
+
+SDL_Rect timeToAbilityBack;
+SDL_Rect timeToAbility;
+
+Texture ammoLeftText;
+
+UI_Button resumeGameButton;
+UI_Button quitToMenuGameButton;
+UI_Button quitToDesktopGameButton;
+
+UI_Button selectionNone;
+Texture gamePausedText;
 
 void UI_init(SDL_Renderer* _renderer) {
     counter = TTF_OpenFont("resources/sans.ttf",scale(18));
@@ -40,6 +90,11 @@ void UI_init(SDL_Renderer* _renderer) {
 
     startGameText.setup(renderer);
     initPlayerUI();
+
+    initStartScreen();
+    initSelectionUI();
+    initPauseScreen();
+
 }
 
 void UI_close() {
@@ -81,15 +136,6 @@ void renderInGameText(bool developerMode, float lastFPS,bool waveStarted) {
     }
 }
 
-UI_Button arcadeModeButton;
-UI_Button storyModeButton;
-UI_Button settingsButton;
-
-UI_Button level1;
-UI_Button level2;
-
-Sound buttonClick;
-
 void initStartScreen() {
     buttonClick.init("resources/sounds/buttonClick.wav", 0,-1);
     logoTexture.setup(scale(454),scale(92),renderer);
@@ -99,6 +145,11 @@ void initStartScreen() {
     settingsButton.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(345),"Settings", renderer);
     level1.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(215),"Level 1", renderer);
     level2.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(280),"Level 2", renderer);
+    arcadeModeButton.linkButtons(nullptr,&storyModeButton,nullptr,nullptr);
+    storyModeButton.linkButtons(&arcadeModeButton,&settingsButton,nullptr,nullptr);
+    settingsButton.linkButtons(&storyModeButton,nullptr,nullptr,nullptr);
+    level1.linkButtons(nullptr,&level2,nullptr,nullptr);
+    level2.linkButtons(&level1,nullptr,nullptr,nullptr);
 }
 
 void renderStartScreen(State& state) {
@@ -113,14 +164,6 @@ void renderStartScreen(State& state) {
     }
 
 }
-
-SDL_Rect timeToShootBack;
-SDL_Rect timeToShoot;
-
-SDL_Rect timeToAbilityBack;
-SDL_Rect timeToAbility;
-
-Texture ammoLeftText;
 
 void initPlayerUI() {
     timeToShootBack.x = WINDOW_WIDTH-scale(90);
@@ -262,209 +305,45 @@ void renderPlayerUI(Player* player) {
 }
 
 void mouseClick(State& state) {
-    int x, y;
-    SDL_GetMouseState( &x, &y );
-    if(arcadeModeButton.mouseEvent(x,y) && state.mainMenu) {
-        state.mainMenu = false;
-        state.levelSelect = true;
-        buttonClick.play();
-    } else if(level1.mouseEvent(x,y) && state.levelSelect) {
-        state.level = 1;
-        state.levelSelect = false;
-        state.started = true;
-        buttonClick.play();
-    } else if(level2.mouseEvent(x,y) && state.levelSelect) {
-        state.level = 2;
-        state.levelSelect = false;
-        state.started = true;
-        buttonClick.play();
-    }
+    selectAction(state);
 }
 
 void mouseMove(State& state) {
     int x, y;
     SDL_GetMouseState( &x, &y );
+    UI_Button* tempButton = nullptr;
     if(arcadeModeButton.mouseEvent(x,y) && state.mainMenu) {
-        arcadeModeButton.select();
-        storyModeButton.deselect();
-        settingsButton.deselect();
+        tempButton = &arcadeModeButton;
     } else if(storyModeButton.mouseEvent(x,y) && state.mainMenu) {
-        storyModeButton.select();
-        arcadeModeButton.deselect();
-        settingsButton.deselect();
+        tempButton = &storyModeButton;
     } else if(settingsButton.mouseEvent(x,y) && state.mainMenu) {
-        settingsButton.select();
-        arcadeModeButton.deselect();
-        storyModeButton.deselect();
-    } else {
-        if(!state.controller) {
-            arcadeModeButton.deselect();
-            storyModeButton.deselect();
-            settingsButton.deselect();
-        }
+        tempButton = &settingsButton;
     }
     if(level1.mouseEvent(x,y) && state.levelSelect) {
-        level1.select();
-        level2.deselect();
+        tempButton = &level1;
     } else if(level2.mouseEvent(x,y) && state.levelSelect) {
-        level2.select();
-        level1.deselect();
-    } else {
-        if(!state.controller) {
-            level1.deselect();
-            level2.deselect();
-        }
+        tempButton = &level2;
+    }
+    if(resumeGameButton.mouseEvent(x,y) && state.paused) {
+        tempButton = &resumeGameButton;
+    } else if(quitToMenuGameButton.mouseEvent(x,y) && state.paused) {
+        tempButton = &quitToMenuGameButton;
+    } else if(quitToDesktopGameButton.mouseEvent(x,y) && state.paused) {
+        tempButton = &quitToDesktopGameButton;
+    }
+    if(selection1.mouseEvent(x,y) && state.upgradeScreen) {
+        tempButton = &selection1;
+    } else if(selection2.mouseEvent(x,y) && state.upgradeScreen) {
+        tempButton = &selection2;
+    } else if(selectionNone.mouseEvent(x,y) && state.upgradeScreen) {
+        tempButton = &selectionNone;
+    }
+    if(tempButton != nullptr) {
+        currentButton->deselect();
+        currentButton = tempButton;
+        currentButton->select();
     }
 }
-
-bool selection1Selected = false;
-bool selection2Selected = false;
-UI_Button selectionNone;
-
-void controllerEvent(State& state, controllerMenuControl control) {
-
-    if(control == controllerMenuControl::connect && state.mainMenu) {
-        arcadeModeButton.select();
-    } else if(control == controllerMenuControl::connect && state.levelSelect) {
-        level1.select();
-    } else if(control == controllerMenuControl::disconnect) {
-        arcadeModeButton.deselect();
-        storyModeButton.deselect();
-        settingsButton.deselect();
-        level1.deselect();
-        level2.deselect();
-    } else if(control == controllerMenuControl::select) {
-        if(arcadeModeButton.isSelected() && state.mainMenu) {
-            arcadeModeButton.deselect();
-            state.mainMenu = false;
-            state.levelSelect = true;
-            level1.select();
-            buttonClick.play();
-        } else if(level1.isSelected() && state.levelSelect) {
-            level1.deselect();
-            state.levelSelect = false;
-            state.started = true;
-            state.level = 1;
-            buttonClick.play();
-        } else if(level2.isSelected() && state.levelSelect) {
-            level2.deselect();
-            state.levelSelect = false;
-            state.started = true;
-            state.level = 2;
-            buttonClick.play();
-        }
-    } else if(control == controllerMenuControl::back) {
-        if(state.levelSelect) {
-            level1.deselect();
-            level2.deselect();
-            arcadeModeButton.select();
-            state.levelSelect = false;
-            state.mainMenu = true;
-            buttonClick.play();
-        }
-    } else {
-        if(state.mainMenu) {
-            if(control == controllerMenuControl::down) {
-                if(arcadeModeButton.isSelected()) {
-                    arcadeModeButton.deselect();
-                    storyModeButton.select();
-                } else if(storyModeButton.isSelected()) {
-                    storyModeButton.deselect();
-                    settingsButton.select();
-                }
-            } else if(control == controllerMenuControl::up) {
-                if(storyModeButton.isSelected()) {
-                    storyModeButton.deselect();
-                    arcadeModeButton.select();
-                } else if(settingsButton.isSelected()) {
-                    settingsButton.deselect();
-                    storyModeButton.select();
-                }
-            }
-        } else if(state.levelSelect) {
-            if(control == controllerMenuControl::down) {
-                if(level1.isSelected()) {
-                    level1.deselect();
-                    level2.select();
-                }
-            } else if(control == controllerMenuControl::up) {
-                if(level2.isSelected()) {
-                    level2.deselect();
-                    level1.select();
-                }
-            }
-        } else if(state.upgradeScreen) {
-            if(control == controllerMenuControl::left && selection2Selected) {
-                selection2Selected = false;
-                selection1Selected = true;
-            } else if(control == controllerMenuControl::right && selection1Selected) {
-                selection2Selected = true;
-                selection1Selected = false;
-            } else if(control == controllerMenuControl::down) {
-                selection2Selected = false;
-                selection1Selected = false;
-                selectionNone.select();
-            } else if(control == controllerMenuControl::up && selectionNone.isSelected()) {
-                selection2Selected = false;
-                selection1Selected = true;
-                selectionNone.deselect();
-            }
-        }
-    }
-
-}
-
-void UI_Button::setup(const int _x, const int _y, std::string text, SDL_Renderer* renderer) {
-    x = _x;
-    y = _y;
-    texture.setup(width,height,renderer);
-    texture.loadFromFile("button.png");
-
-    hoverTexture.setup(width,height,renderer);
-    hoverTexture.loadFromFile("button1.png");
-
-    textTexture.setup(0,0,renderer);
-    textTexture.loadFromRenderedText(text, white, counter);
-}
-
-bool UI_Button::mouseEvent(const int mouseX, const int mouseY) const {
-    if(mouseX >= x && mouseX <= x+width && mouseY >= y && mouseY <= y+height) {
-        return true;
-    }
-    return false;
-}
-
-void UI_Button::render() {
-    if(selected) {
-        hoverTexture.render(x,y);
-    } else {
-        texture.render(x,y);
-    }
-    textTexture.render(x+(width-textTexture.getWidth())/2,y+(height-textTexture.getHeight())/2);
-}
-
-Texture selectionTexture;
-Texture currentSetupText;
-Texture currentAbilityText;
-
-Texture selectionBackground;
-Texture selectionBackgroundSelected;
-Texture laserPistolSelectTexture;
-Texture knifeSelectTexture;
-Texture bounceSelectTexture;
-Texture c4SelectTexture;
-Texture teleportSelectTexture;
-
-Weapon* weapon1;
-Weapon* weapon2;
-Ability ability1;
-Ability ability2;
-
-int selectWidth = scale(200);
-int selectSpacing = scale(50);
-int selectY = (WINDOW_HEIGHT-selectWidth)/2;
-int select1X = WINDOW_WIDTH/2 - selectWidth - selectSpacing/2;
-int select2X = WINDOW_WIDTH/2 + selectSpacing/2;
 
 void initSelectionUI() {
 
@@ -474,11 +353,12 @@ void initSelectionUI() {
     currentSetupText.setup(renderer);
     currentAbilityText.setup(renderer);
 
-    selectionBackground.setup(selectWidth, selectWidth,renderer);
-    selectionBackground.loadFromFile("upgrade-background.png");
+    selection1.setup(select1X,selectY," ", renderer,1);
+    selection2.setup(select2X,selectY," ", renderer,1);
 
-    selectionBackgroundSelected.setup(selectWidth, selectWidth,renderer);
-    selectionBackgroundSelected.loadFromFile("upgrade-background-selected.png");
+    selection1.linkButtons(nullptr,&selectionNone,nullptr,&selection2);
+    selection2.linkButtons(nullptr,&selectionNone,&selection1,nullptr);
+    selectionNone.linkButtons(&selection1,nullptr,nullptr,nullptr);
 
     laserPistolSelectTexture.setup(selectWidth, selectWidth,renderer);
     laserPistolSelectTexture.loadFromFile("upgrade-laserPistol.png");
@@ -504,17 +384,8 @@ void renderSelectionUI(Weapon* currentWeapon, Ability currentAbility) {
     selectionTexture.render(select1X/2,selectY/2);
     selectionNone.render();
 
-    if(selection1Selected) {
-        selectionBackgroundSelected.render(select1X,selectY);
-    } else {
-        selectionBackground.render(select1X,selectY);
-    }
-
-    if(selection2Selected) {
-        selectionBackgroundSelected.render(select2X,selectY);
-    } else {
-        selectionBackground.render(select2X,selectY);
-    }
+    selection1.render();
+    selection2.render();
 
     if(weapon1 != nullptr) {
         if(weapon1->getType() == knife) {
@@ -572,25 +443,25 @@ void renderSelectionUI(Weapon* currentWeapon, Ability currentAbility) {
     currentAbilityText.render(scale(15),WINDOW_HEIGHT-scale(65));
 }
 
-//TODO: Make the button class more robust to be able to add in these buttons
 void updateChoices(State& state, Weapon *_weapon1, Weapon *_weapon2, Ability _ability1, Ability _ability2) {
     weapon1 = _weapon1;
     weapon2 = _weapon2;
     ability1 = _ability1;
     ability2 = _ability2;
     if(state.controller) {
-        selection1Selected = true;
-        selection2Selected = false;
+        currentButton = &selection1;
+        selection1.select();
+        selection2.deselect();
     }
 }
 
 int selectionMouseClick() {
     int x, y;
     SDL_GetMouseState( &x, &y );
-    if(x >= select1X && x <= select1X+selectWidth && y >= selectY && y <= selectY+selectWidth) {
+    if(selection1.isSelected()) {
         return 1;
     }
-    if(x >= select2X && x <= select2X+selectWidth && y >= selectY && y <= selectY+selectWidth) {
+    if(selection2.isSelected()) {
         return 2;
     }
     if(selectionNone.mouseEvent(x,y)) {
@@ -600,35 +471,11 @@ int selectionMouseClick() {
     return -1;
 }
 
-void selectionMouseMove(State& state) {
-    int x, y;
-    SDL_GetMouseState( &x, &y );
-    if(x >= select1X && x <= select1X+selectWidth && y >= selectY && y <= selectY+selectWidth) {
-        selection1Selected = true;
-        selection2Selected = false;
-        selectionNone.deselect();
-    } else if(x >= select2X && x <= select2X+selectWidth && y >= selectY && y <= selectY+selectWidth) {
-        selection2Selected = true;
-        selection1Selected = false;
-        selectionNone.deselect();
-    } else if(selectionNone.mouseEvent(x,y)) {
-        selection2Selected = false;
-        selection1Selected = false;
-        selectionNone.select();
-    } else {
-        if(!state.controller) {
-            selection1Selected = false;
-            selection2Selected = false;
-            selectionNone.deselect();
-        }
-    }
-}
-
 int selectionControllerClick() {
-    if(selection1Selected) {
+    if(selection1.isSelected()) {
         return 1;
     }
-    if(selection2Selected) {
+    if(selection2.isSelected()) {
         return 2;
     }
     if(selectionNone.isSelected()) {
@@ -637,3 +484,162 @@ int selectionControllerClick() {
     }
     return -1;
 }
+
+void controllerEvent(State& state, controllerMenuControl control) {
+
+        if(control == connect) {
+            if(state.mainMenu) {
+                arcadeModeButton.select();
+                currentButton = &arcadeModeButton;
+            } else if(state.levelSelect) {
+                level1.select();
+                currentButton = &level1;
+            } else if(state.paused) {
+                resumeGameButton.select();
+                currentButton = &resumeGameButton;
+            }
+        } else if(control == disconnect) {
+                currentButton->deselect();
+                currentButton = nullptr;
+        } else if(control == select) {
+            selectAction(state);
+        } else {
+            if(currentButton != nullptr) {
+                UI_Button* tempButton = currentButton->move(control);
+                if(tempButton != nullptr) {
+                    currentButton->deselect();
+                    currentButton = tempButton;
+                    currentButton->select();
+                }
+            } else {
+                SDL_Log("No button selection!");
+            }
+        }
+
+}
+
+void selectAction(State& state) {
+    if(state.mainMenu) {
+        if(arcadeModeButton.isSelected()) {
+            state.mainMenu = false;
+            state.levelSelect = true;
+            currentButton = &level1;
+        }
+        if(currentButton != nullptr) {
+            currentButton->select();
+        }
+    } else if(state.levelSelect) {
+        state.levelSelect = false;
+        state.started = true;
+        if(level1.isSelected()) {
+            state.level = 1;
+        } else if(level2.isSelected()) {
+            state.level = 2;
+        }
+        if(currentButton != nullptr) {
+            currentButton->deselect();
+            currentButton = nullptr;
+        }
+    } else if(state.paused) {
+        state.paused = false;
+        if(resumeGameButton.isSelected()) {
+            currentButton->deselect();
+            currentButton = nullptr;
+        } else if(quitToMenuGameButton.isSelected()) {
+            state.started = false;
+            state.mainMenu = true;
+            currentButton->deselect();
+            currentButton = &arcadeModeButton;
+            currentButton->select();
+        } else if(quitToDesktopGameButton.isSelected()) {
+            state.quit = true;
+        }
+    }
+    buttonClick.play();
+}
+
+void initPauseScreen() {
+    gamePausedText.setup(renderer);
+    gamePausedText.loadFromRenderedText("Game Paused", white, title);
+
+    resumeGameButton.setup((WINDOW_WIDTH-arcadeModeButton.getWidth())/2,scale(215),"Resume Game",renderer);
+    quitToMenuGameButton.setup((WINDOW_WIDTH-arcadeModeButton.getWidth())/2,scale(280),"Quit to Main Menu",renderer);
+    quitToDesktopGameButton.setup((WINDOW_WIDTH-arcadeModeButton.getWidth())/2,scale(345),"Quit to Desktop",renderer);
+    resumeGameButton.linkButtons(nullptr,&quitToMenuGameButton,nullptr,nullptr);
+    quitToMenuGameButton.linkButtons(&resumeGameButton,&quitToDesktopGameButton,nullptr,nullptr);
+    quitToDesktopGameButton.linkButtons(&quitToMenuGameButton,nullptr,nullptr,nullptr);
+}
+
+void renderPauseScreen() {
+    gamePausedText.render((WINDOW_WIDTH-gamePausedText.getWidth())/2,scale(100));
+    resumeGameButton.render();
+    quitToMenuGameButton.render();
+    quitToDesktopGameButton.render();
+}
+
+// UI_Button Class Member Functions
+
+void UI_Button::setup(const int _x, const int _y, std::string text, SDL_Renderer* renderer, int _type) {
+    x = _x;
+    y = _y;
+    type = _type;
+    if(type == 0) {
+        texture.setup(width,height,renderer);
+        texture.loadFromFile("button.png");
+
+        hoverTexture.setup(width,height,renderer);
+        hoverTexture.loadFromFile("button1.png");
+    } else if(type == 1) {
+        texture.setup(sWidth,sHeight,renderer);
+        texture.loadFromFile("upgrade-background.png");
+
+        hoverTexture.setup(sWidth,sHeight,renderer);
+        hoverTexture.loadFromFile("upgrade-background-selected.png");
+    }
+
+    textTexture.setup(0,0,renderer);
+    textTexture.loadFromRenderedText(text, white, counter);
+}
+
+bool UI_Button::mouseEvent(const int mouseX, const int mouseY) const {
+    int w;
+    int h;
+    if(type == 0) {
+        w  = width;
+        h = height;
+    } else if(type == 1) {
+        w = sWidth;
+        h = sHeight;
+    }
+    if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
+        return true;
+    }
+    return false;
+}
+
+void UI_Button::render() {
+    if(selected) {
+        hoverTexture.render(x,y);
+    } else {
+        texture.render(x,y);
+    }
+    if(type == 0) {
+        textTexture.render(x+(width-textTexture.getWidth())/2,y+(height-textTexture.getHeight())/2);
+    }
+}
+
+UI_Button* UI_Button::move(const controllerMenuControl action) const {
+    switch(action) {
+    case up:
+        return buttonAbove;
+    case down:
+        return buttonBelow;
+    case left:
+        return buttonLeft;
+    case right:
+        return buttonRight;
+    default:
+        return nullptr;
+    }
+}
+

@@ -37,7 +37,7 @@ SDL_GameController* controller = nullptr;
 
 bool init();
 void close();
-void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& eRobots);
+void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& allCharacterEntities);
 void renderPlatforms(std::list<Platform*>& platforms);
 std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, int notDiv, std::vector<Spawn>* spawns);
 void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
@@ -54,18 +54,118 @@ const int timpyXVelocity = scale(350);
 
 State state;
 
+void startScreen() {
+    SDL_RenderClear(gameRenderer);
+
+    SDL_Event e;
+
+    while(SDL_PollEvent(&e) != 0) {
+        if( e.type == SDL_QUIT ) {
+            state.quit = true;
+        } else if( e.type == SDL_KEYDOWN ) {
+            if(e.key.keysym.sym == SDLK_ESCAPE && state.levelSelect) {
+                state.levelSelect = false;
+                state.mainMenu = true;
+            }
+        } else if( e.type == SDL_JOYBUTTONDOWN ) {
+            if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
+                controllerEvent(state,controllerMenuControl::select);
+            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
+                controllerEvent(state,controllerMenuControl::back);
+            }
+        } else if(e.type == SDL_JOYDEVICEADDED ) {
+            controllerEvent(state,controllerMenuControl::connect);
+            loadController();
+        } else if (e.type == SDL_JOYDEVICEREMOVED) {
+            controllerEvent(state,controllerMenuControl::disconnect);
+            controller = nullptr;
+            state.controller = false;
+        } else  if( e.type == SDL_MOUSEMOTION) {
+            mouseMove(state);
+        } else if(e.type == SDL_MOUSEBUTTONDOWN) {
+            mouseClick(state);
+        } else if( e.type == SDL_JOYAXISMOTION) {
+            if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
+                if(state.controllerStickReset) {
+                    controllerEvent(state,controllerMenuControl::down);
+                    state.controllerStickReset = false;
+                }
+            } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) < -JOYSTICK_DEAD_ZONE) {
+                if(state.controllerStickReset) {
+                    controllerEvent(state,controllerMenuControl::up);
+                    state.controllerStickReset = false;
+                }
+            } else {
+                state.controllerStickReset = true;
+            }
+        }
+    }
+
+    renderStartScreen(state);
+    SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
+    SDL_RenderPresent(gameRenderer);
+}
+
+void pauseScreen() {
+    SDL_RenderClear(gameRenderer);
+
+    SDL_Event e;
+
+    while(SDL_PollEvent(&e) != 0) {
+        if( e.type == SDL_QUIT ) {
+            state.quit = true;
+        } else if( e.type == SDL_KEYDOWN ) {
+            if(e.key.keysym.sym == SDLK_ESCAPE) {
+                state.paused = false;
+            }
+        } else if( e.type == SDL_JOYBUTTONDOWN ) {
+            if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
+                controllerEvent(state,select);
+            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
+                state.paused = false;
+            }
+        } else if(e.type == SDL_JOYDEVICEADDED ) {
+            controllerEvent(state,connect);
+            loadController();
+        } else if (e.type == SDL_JOYDEVICEREMOVED) {
+            controllerEvent(state,disconnect);
+            controller = nullptr;
+            state.controller = false;
+        } else  if( e.type == SDL_MOUSEMOTION) {
+            mouseMove(state);
+        } else if(e.type == SDL_MOUSEBUTTONDOWN) {
+            mouseClick(state);
+        } else if( e.type == SDL_JOYAXISMOTION) {
+            if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
+                if(state.controllerStickReset) {
+                    controllerEvent(state,controllerMenuControl::down);
+                    state.controllerStickReset = false;
+                }
+            } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) < -JOYSTICK_DEAD_ZONE) {
+                if(state.controllerStickReset) {
+                    controllerEvent(state,controllerMenuControl::up);
+                    state.controllerStickReset = false;
+                }
+            } else {
+                state.controllerStickReset = true;
+            }
+        }
+    }
+
+    renderPauseScreen();
+    SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
+    SDL_RenderPresent(gameRenderer);
+}
+
 int main( int argc, char* args[] ) {
     if(!init()) {
         SDL_Log("Initialization failed!\n");
     } else {
-        bool quit = false;
 
         SDL_Event e;
         Uint32 lastUpdate = SDL_GetTicks();
 
         UI_init(gameRenderer);
-        initStartScreen();
-        initSelectionUI();
 
         Sound explosion("resources/sounds/shortExplosion.wav", 0,-1);
         Sound mediumExplosion("resources/sounds/mediumExplosion.wav", 0,-1);
@@ -79,64 +179,16 @@ int main( int argc, char* args[] ) {
             controllerEvent(state,controllerMenuControl::connect);
         }
 
-        bool controllerStickReset = true;
-
         //Game Loop
-        while(!quit) {
+        while(!state.quit) {
 
             state.mainMenu = true;
             if(controller != nullptr) {
                 controllerEvent(state,controllerMenuControl::connect);
             }
 
-            while(!state.started && !quit) {
-                SDL_RenderClear(gameRenderer);
-
-                while(SDL_PollEvent(&e) != 0) {
-                    if( e.type == SDL_QUIT ) {
-                        quit = true;
-                    } else if( e.type == SDL_KEYDOWN ) {
-                        if(e.key.keysym.sym == SDLK_ESCAPE && state.levelSelect) {
-                            state.levelSelect = false;
-                            state.mainMenu = true;
-                        }
-                    } else if( e.type == SDL_JOYBUTTONDOWN ) {
-                        if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-                            controllerEvent(state,controllerMenuControl::select);
-                        } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
-                            controllerEvent(state,controllerMenuControl::back);
-                        }
-                    } else if(e.type == SDL_JOYDEVICEADDED ) {
-                        controllerEvent(state,controllerMenuControl::connect);
-                        loadController();
-                    } else if (e.type == SDL_JOYDEVICEREMOVED) {
-                        controllerEvent(state,controllerMenuControl::disconnect);
-                        controller = nullptr;
-                        state.controller = false;
-                    } else  if( e.type == SDL_MOUSEMOTION) {
-                        mouseMove(state);
-                    } else if(e.type == SDL_MOUSEBUTTONDOWN) {
-                        mouseClick(state);
-                    } else if( e.type == SDL_JOYAXISMOTION) {
-                        if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
-                            if(controllerStickReset) {
-                                controllerEvent(state,controllerMenuControl::down);
-                                controllerStickReset = false;
-                            }
-                        } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) < -JOYSTICK_DEAD_ZONE) {
-                            if(controllerStickReset) {
-                                controllerEvent(state,controllerMenuControl::up);
-                                controllerStickReset = false;
-                            }
-                        } else {
-                            controllerStickReset = true;
-                        }
-                    }
-                }
-
-                renderStartScreen(state);
-                SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
-                SDL_RenderPresent(gameRenderer);
+            while(!state.started && !state.quit) {
+                startScreen();
             }
 
             std::list<Platform> ePlatforms;
@@ -159,6 +211,9 @@ int main( int argc, char* args[] ) {
             Entity eTimpy = Entity(&playerSpawns,gameRenderer);
             Player timpy = Player(&eTimpy,&revolver);
             timpyPointer = &timpy;
+
+            state.camY = 0;
+            state.camV = 0;
 
             bool waveOverride = false;
 
@@ -196,7 +251,7 @@ int main( int argc, char* args[] ) {
 
             timpy.getEntity()->forceSpawn();
 
-            while(state.started && !quit) {
+            while(state.started && !state.quit) {
 
                 bool leftMovement = false;
                 bool rightMovement = false;
@@ -290,10 +345,10 @@ int main( int argc, char* args[] ) {
                 updateChoices(state, weapon1, weapon2, ability1, ability2);
 
                 state.upgradeScreen = true;
-                while((waveNumber-1) % 5 == 0 && state.upgradeScreen && !quit && waveNumber-1 != 0) {
+                while((waveNumber-1) % 1 == 0 && state.upgradeScreen && !state.quit && waveNumber-1 != 0) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
-                            quit = true;
+                            state.quit = true;
                         } else if(e.type == SDL_KEYDOWN) {
                             if(e.key.keysym.sym == SDLK_ESCAPE) {
                                 state.upgradeScreen = false;
@@ -331,16 +386,16 @@ int main( int argc, char* args[] ) {
                             default: break;
                             }
                         } else if(e.type == SDL_MOUSEMOTION) {
-                            selectionMouseMove(state);
+                            mouseMove(state);
                         } else if( e.type == SDL_JOYAXISMOTION) {
                             if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,controllerMenuControl::right);
+                                controllerEvent(state,right);
                             } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) < -JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,controllerMenuControl::left);
+                                controllerEvent(state,left);
                             } else if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,controllerMenuControl::down);
+                                controllerEvent(state,down);
                             } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) < -JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,controllerMenuControl::up);
+                                controllerEvent(state,up);
                             }
                         } else if( e.type == SDL_JOYBUTTONDOWN ) {
                             if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
@@ -392,13 +447,13 @@ int main( int argc, char* args[] ) {
                 bool waveStarted = false;
                 Uint32 startWaveLoad = SDL_GetTicks();
 
-                while(state.started && inWave && !quit) {
+                while(state.started && inWave && !state.quit) {
                     Uint64 start = SDL_GetPerformanceCounter();
 
                     //Controls Loop
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
-                            quit = true;
+                            state.quit = true;
                         } else if( e.type == SDL_KEYDOWN ) {
                             if(e.key.keysym.sym == SDLK_1) {
                                 state.developerMode = !state.developerMode;
@@ -412,14 +467,8 @@ int main( int argc, char* args[] ) {
                             }
                             if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
                                 pauseEnemy = !pauseEnemy;
-                            } else if(e.key.keysym.sym == SDLK_5) {
-
-                            } else if(e.key.keysym.sym == SDLK_6) {
-                                if (Mix_Playing(3)) {
-                                    SDL_Log("Sound playing");
-                                }
                             } else if(e.key.keysym.sym == SDLK_ESCAPE) {
-                                state.started = false;
+                                state.paused = true;
                             }
                             if(e.key.keysym.sym == SDLK_d) {
                                 timpy.getEntity()->setXVelocity(timpyXVelocity);
@@ -521,7 +570,7 @@ int main( int argc, char* args[] ) {
                                         break;
                                 }
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START) == 1) {
-                                state.started = false;
+                                state.paused = true;
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X) == 1) {
                                 timpy.getWeapon()->forceReload();
                             }
@@ -783,6 +832,17 @@ int main( int argc, char* args[] ) {
 
                     float elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
                     lastFPS = (1.0f / elapsed);
+
+                    if(controller != nullptr && state.paused) {
+                        controllerEvent(state,controllerMenuControl::connect);
+                    }
+
+                    while(state.paused && !state.quit && state.started) {
+                        pauseScreen();
+                        Uint32 current = SDL_GetTicks();
+                        lastUpdate = current;
+                    }
+
                 }
             }
         }

@@ -1,7 +1,3 @@
-//
-// Created by roger on 9/30/2024.
-//
-
 #include "../includes/Entity.h"
 
 #include "../includes/Robor.h"

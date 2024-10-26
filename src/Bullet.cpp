@@ -1,6 +1,6 @@
 #include "../includes/Bullet.h"
 
-Bullet::Bullet(Entity* tempEntity, BULLET_TYPE type) : entity(tempEntity), type(type) {
+Bullet::Bullet(Entity* tempEntity, BULLET_TYPE type, int durability, int strength, int damage) : entity(tempEntity), type(type), durability(durability), strength(strength), damage(damage) {
     switch(type) {
         case BULLET_TYPE::laser: {
             entity->setDimensions(lazerWidth,lazerHeight);
@@ -27,7 +27,10 @@ bool Bullet::move(float dt, const std::list<Platform*> &platforms, bool develope
             if(platformStatus == 0) {
                 platformStatus = 1;
             } else if(platformStatus == 2) {
-                return true;
+                if(durability == 1) {
+                    return true;
+                }
+                platformStatus = 1;
             }
         } else if(platformStatus == 1) {
             platformStatus = 2;

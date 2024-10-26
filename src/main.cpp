@@ -204,9 +204,9 @@ int main( int argc, char* args[] ) {
             std::list<Entity> eBullets;
             std::list<Bullet> bullets;
 
-            Weapon revolver(Weapon_Type::revolver,gameRenderer);
-            Weapon knife(Weapon_Type::knife,gameRenderer);
-            Weapon laserPistol(Weapon_Type::laserPistol,gameRenderer);
+            Weapon revolver(Weapon_Type::revolver,gameRenderer, state);
+            Weapon knife(Weapon_Type::knife,gameRenderer, state);
+            Weapon laserPistol(Weapon_Type::laserPistol,gameRenderer, state);
 
             Entity eTimpy = Entity(&playerSpawns,gameRenderer);
             Player timpy = Player(&eTimpy,&revolver);
@@ -378,6 +378,15 @@ int main( int argc, char* args[] ) {
                     default:
                         timpy.setSecondaryWeapon(nullptr);
                 }
+                if(Weapon* weapon = timpy.getPrimaryWeapon(); weapon != nullptr) {
+                    weapon->upgrade(state);
+                    weapon->reset();
+                }
+                if(Weapon* weapon = timpy.getSecondaryWeapon(); weapon != nullptr) {
+                    weapon->upgrade(state);
+                    weapon->reset();
+                }
+
                 state.menu = notInMenu;
 
                 bool waveStarted = false;
@@ -606,8 +615,12 @@ int main( int argc, char* args[] ) {
                             }
                             for(auto bit = bullets.begin(); bit != bullets.end();) {
                                 if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
-                                    eBullets.erase(bit->getIterator());
-                                    bit = bullets.erase(bit);
+                                    if(bit->decreaseStrength()) {
+                                        eBullets.erase(bit->getIterator());
+                                        bit = bullets.erase(bit);
+                                    } else {
+                                        ++bit;
+                                    }
                                     timpy.increaseCombo();
                                     it->alive = false;
                                     explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
@@ -665,8 +678,12 @@ int main( int argc, char* args[] ) {
                             }
                             for(auto bit = bullets.begin(); bit != bullets.end();) {
                                 if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
-                                    eBullets.erase(bit->getIterator());
-                                    bit = bullets.erase(bit);
+                                    if(bit->decreaseStrength()) {
+                                        eBullets.erase(bit->getIterator());
+                                        bit = bullets.erase(bit);
+                                    } else {
+                                        ++bit;
+                                    }
                                     timpy.increaseCombo();
                                     it->alive = false;
                                     explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);

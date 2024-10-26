@@ -13,12 +13,14 @@ class Bullet {
 
 public:
 
-    explicit Bullet(Entity* tempEntity, BULLET_TYPE type);
+    Bullet(Entity* tempEntity, BULLET_TYPE type, int durability, int strength, int damage);
 
     void render();
     bool move(float dt, const std::list<Platform*> &platforms, bool developerMode);
 
     Entity* getEntity() const { return entity; }
+
+    [[nodiscard]] bool decreaseStrength() { strength--; return strength == 0; }
 
     void setIterator(const std::list<Entity>::iterator it) { iterator = it; }
     std::list<Entity>::iterator getIterator() const { return iterator; }
@@ -30,6 +32,10 @@ private:
 
     const int lazerWidth = scale(32);
     const int lazerHeight = scale(4);
+
+    int durability;
+    int damage = 0; //TODO: Add this with the damage system
+    int strength;
 
     int platformStatus = 0;
 

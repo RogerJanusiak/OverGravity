@@ -2,9 +2,10 @@
 #include "../includes/GlobalConstants.h"
 #include "../includes/State.h"
 
-Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer) {
+Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer, State &state) {
   type = _type;
   renderer = _renderer;
+  upgrade(state);
   switch (type) {
     case knife: {
       texture.setup(scale(42),scale(21),renderer);
@@ -37,8 +38,7 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer) {
       bulletSpeed = scale(1200);
       bulletType = laser;
 
-      clipSize = 10;
-      totalBullets = 50;
+      totalBullets = 0;
       totalBulletsLeft = totalBullets;
 
       reloadSpeed = 3;
@@ -62,10 +62,6 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer) {
     bulletRelY = scale(19);
     bulletSpeed = scale(1000);
 
-    clipSize = 6;
-
-    reloadSpeed = 2;
-    timeSinceShot = reloadSpeed;
     fireSound.init("resources/sounds/revolver-shoot.wav",0,-1);
     reloadSound.init("resources/sounds/revolver-reload.wav", 0,-1);
     emptySound.init("resources/sounds/revolver-empty.wav", 0,-1);
@@ -127,7 +123,7 @@ bool Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, cons
     } else {
       eBullets->emplace_back(playerX+bulletRelXLeft,playerY+bulletRelY,-bulletSpeed,0,renderer);
     }
-    bullets->emplace_back(&eBullets->back(), bulletType);
+    bullets->emplace_back(&eBullets->back(), bulletType, bulletDurability, bulletStrength, bulletDamage);
     bullets->back().setIterator(--eBullets->end());
 
     bulletsInClip--;
@@ -141,6 +137,50 @@ bool Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, cons
   }
   emptySound.play();
   return false;
+}
+
+void Weapon::upgrade(const State& state) {
+    if(type == revolver) {
+        switch(state.currentRevolverLevel) {
+            case 1: {
+              clipSize = 4;
+              reloadSpeed = 3;
+              bulletDurability = 1;
+              bulletStrength = 1;
+              bulletDamage = 1;
+            } break;
+            case 2: {
+              clipSize = 5;
+              reloadSpeed = 3;
+              bulletDurability = 1;
+              bulletStrength = 1;
+              bulletDamage = 1;
+            } break;
+            case 3: {
+              clipSize = 6;
+              reloadSpeed = 2;
+              bulletDurability = 2;
+              bulletStrength = 1;
+              bulletDamage = 1;
+            } break;
+            case 4: {
+              clipSize = 7;
+              reloadSpeed = 2;
+              bulletDurability = 2;
+              bulletStrength = 1;
+              bulletDamage = 2;
+            } break;
+            case 5: {
+              clipSize = 8;
+              reloadSpeed = 1;
+              bulletDurability = 2;
+              bulletStrength = 1;
+              bulletDamage = 2;
+            } break;
+            default:
+                break;
+        }
+    }
 }
 
 void Weapon::reset() {

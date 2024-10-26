@@ -49,10 +49,12 @@ struct State {
         //TODO: Reset on new game
         //TODO: Can't shoot right after upgrade screen
         bool c4Placed;
-        int numberOfWeapons = 3;
+        int numberOfWeapons = 5;
         int currentRevolverLevel = 1;
-        int currentLaserPistolLevel = 0;
+        int currentRifleLevel = 0;
+        int currentShotgunLevel = 0;
         int currentKnifeLevel = 0;
+        int currentLaserPistolLevel = 0;
         int weapon1 = 0;
         int weapon2 = -1;
 

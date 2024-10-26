@@ -9,9 +9,10 @@
 
 enum Weapon_Type {
   revolver,
+  rifle,
+  shotgun,
   knife,
   laserPistol,
-  machineGun,
 };
 
 class Weapon {

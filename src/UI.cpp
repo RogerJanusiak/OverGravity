@@ -160,10 +160,16 @@ void selectWeapon(State& state, int attr1, int attr2) {
    int weaponLevel;
     switch(attr1) {
         case 1:
-            weaponLevel = state.currentLaserPistolLevel;
+            weaponLevel = state.currentRifleLevel;
             break;
         case 2:
+            weaponLevel = state.currentShotgunLevel;
+            break;
+        case 3:
             weaponLevel = state.currentKnifeLevel;
+            break;
+        case 4:
+            weaponLevel = state.currentLaserPistolLevel;
             break;
         default:
             weaponLevel = state.currentRevolverLevel;
@@ -194,13 +200,23 @@ void selectWeapon(State& state, int attr1, int attr2) {
 void upgradeWeapon(State& state, int attr1, int attr2) {
     switch(attr1) {
         case 1: {
-            if(attr2 == state.currentLaserPistolLevel) {
-                state.currentLaserPistolLevel++;
+            if(attr2 == state.currentRifleLevel) {
+                state.currentRifleLevel++;
             }
         } break;
         case 2: {
+            if(attr2 == state.currentShotgunLevel) {
+                state.currentShotgunLevel++;
+            }
+        } break;
+        case 3: {
             if(attr2 == state.currentKnifeLevel) {
                 state.currentKnifeLevel++;
+            }
+        } break;
+        case 4: {
+            if(attr2 == state.currentLaserPistolLevel) {
+                state.currentLaserPistolLevel++;
             }
         } break;
         default: {
@@ -259,9 +275,13 @@ void initUpgradeMenu(State& state) {
             if(i == 0) {
                 path = "upgrade-menu/upgrade-revolver.png";
             } else if(i == 1) {
-                path = "upgrade-menu/upgrade-laser-pistol.png";
+                path = "upgrade-menu/upgrade-rifle.png";
             } else if(i == 2) {
+                path = "upgrade-menu/upgrade-shotgun.png";
+            } else if(i == 3) {
                 path = "upgrade-menu/upgrade-knife.png";
+            } else if(i == 4) {
+                path = "upgrade-menu/upgrade-laser-pistol.png";
             }
             upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path,-1,-1,-1,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
         }
@@ -284,20 +304,32 @@ void loadUpgradeMenu(State& state) {
         (*upgradeMenu.getButtons())[7 + i].enable();
         (*upgradeMenu.getButtons())[13 + i].enable();
         (*upgradeMenu.getButtons())[19 + i].enable();
+        (*upgradeMenu.getButtons())[25 + i].enable();
+        (*upgradeMenu.getButtons())[31 + i].enable();
         if(i>state.currentRevolverLevel) {
             (*upgradeMenu.getButtons())[7 + i].disable();
         } else if(i != state.currentRevolverLevel) {
             (*upgradeMenu.getButtons())[7 + i].activate();
         }
-        if(i>state.currentLaserPistolLevel) {
+        if(i>state.currentRifleLevel) {
             (*upgradeMenu.getButtons())[13 + i].disable();
-        } else if(i != state.currentLaserPistolLevel) {
+        } else if(i != state.currentRifleLevel) {
             (*upgradeMenu.getButtons())[13 + i].activate();
         }
-        if(i>state.currentKnifeLevel) {
+        if(i>state.currentShotgunLevel) {
             (*upgradeMenu.getButtons())[19 + i].disable();
-        } else if(i != state.currentKnifeLevel) {
+        } else if(i != state.currentShotgunLevel) {
             (*upgradeMenu.getButtons())[19 + i].activate();
+        }
+        if(i>state.currentKnifeLevel) {
+            (*upgradeMenu.getButtons())[25 + i].disable();
+        } else if(i != state.currentKnifeLevel) {
+            (*upgradeMenu.getButtons())[25 + i].activate();
+        }
+        if(i>state.currentLaserPistolLevel) {
+            (*upgradeMenu.getButtons())[31 + i].disable();
+        } else if(i != state.currentLaserPistolLevel) {
+            (*upgradeMenu.getButtons())[31 + i].activate();
         }
     }
 

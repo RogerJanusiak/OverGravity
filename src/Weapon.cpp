@@ -7,66 +7,106 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer, State &state) {
   renderer = _renderer;
   upgrade(state);
   switch (type) {
-    case knife: {
-      texture.setup(scale(42),scale(21),renderer);
-      if(!texture.loadFromFile("knife.png")) {
-        SDL_Log("Could not load knife texture!");
-      }
+      default: {
+        texture.setup(scale(42),scale(21),renderer);
+        if(!texture.loadFromFile("Revolver.png")) {
+          SDL_Log("Could not load revolver texture!");
+        }
 
-      relXRight = scale(40);
-      relXLeft = -scale(27);
-      relY = scale(15);
+        relXRight = scale(40);
+        relXLeft = -scale(27);
+        relY = scale(15);
 
-      totalBullets = 0;
-      totalBulletsLeft = 0;
+        bulletRelXRight = scale(19);
+        bulletRelXLeft = 0;
+        bulletRelY = scale(19);
+        bulletSpeed = scale(1000);
 
-      reloadable = false;
-    } break;
-    case laserPistol: {
-      texture.setup(scale(42),scale(21),renderer);
-      if(!texture.loadFromFile("laserPistol.png")) {
-        SDL_Log("Could not load laserPistol texture!");
-      }
+        fireSound.init("resources/sounds/revolver-shoot.wav",0,-1);
+        reloadSound.init("resources/sounds/revolver-reload.wav", 0,-1);
+        emptySound.init("resources/sounds/revolver-empty.wav", 0,-1);
+      } break;
+      case rifle: {
+        texture.setup(scale(32*2),scale(12*2),renderer);
+        if(!texture.loadFromFile("rifle.png")) {
+          SDL_Log("Could not load revolver texture!");
+        }
 
-      relXRight = scale(30);
-      relXLeft = -scale(22);
-      relY = scale(12);
+        relXRight = scale(20);
+        relXLeft = -scale(30);
+        relY = scale(15);
 
-      bulletRelXRight = scale(30);
-      bulletRelXLeft = 0;
-      bulletRelY = scale(17);
-      bulletSpeed = scale(1200);
-      bulletType = laser;
+        bulletRelXRight = scale(19);
+        bulletRelXLeft = 0;
+        bulletRelY = scale(19);
+        bulletSpeed = scale(1000);
 
-      totalBullets = 0;
-      totalBulletsLeft = totalBullets;
+        //TODO: Add unique sounds
+        fireSound.init("resources/sounds/revolver-shoot.wav",0,-1);
+        reloadSound.init("resources/sounds/revolver-reload.wav", 0,-1);
+        emptySound.init("resources/sounds/revolver-empty.wav", 0,-1);
+      }break;
+      case shotgun: {
+        texture.setup(scale(28*1.5),scale(9*1.5),renderer);
+        if(!texture.loadFromFile("shotgun.png")) {
+          SDL_Log("Could not load revolver texture!");
+        }
 
-      reloadSpeed = 3;
-      timeSinceShot = reloadSpeed;
-      fireSound.init("resources/sounds/laserPistol-shoot.wav",0,-1);
-      reloadSound.init("resources/sounds/laserPistol-reload.wav", 0,-1);
-      emptySound.init("resources/sounds/laserPistol-empty.wav", 0,-1);
-    } break;
-  default: {
-    texture.setup(scale(42),scale(21),renderer);
-    if(!texture.loadFromFile("Revolver.png")) {
-      SDL_Log("Could not load revolver texture!");
+        relXRight = scale(28);
+        relXLeft = -scale(26);
+        relY = scale(18);
+
+        bulletRelXRight = scale(19);
+        bulletRelXLeft = 0;
+        bulletRelY = scale(19);
+        bulletSpeed = scale(1000);
+
+        //TODO: Add unique sounds
+        fireSound.init("resources/sounds/revolver-shoot.wav",0,-1);
+        reloadSound.init("resources/sounds/revolver-reload.wav", 0,-1);
+        emptySound.init("resources/sounds/revolver-empty.wav", 0,-1);
+      }break;
+      case knife: {
+        texture.setup(scale(42),scale(21),renderer);
+        if(!texture.loadFromFile("knife.png")) {
+          SDL_Log("Could not load knife texture!");
+        }
+
+        relXRight = scale(40);
+        relXLeft = -scale(27);
+        relY = scale(15);
+
+        totalBullets = 0;
+        totalBulletsLeft = 0;
+
+        reloadable = false;
+      } break;
+      case laserPistol: {
+        texture.setup(scale(42),scale(21),renderer);
+        if(!texture.loadFromFile("laserPistol.png")) {
+          SDL_Log("Could not load laserPistol texture!");
+        }
+
+        relXRight = scale(30);
+        relXLeft = -scale(22);
+        relY = scale(12);
+
+        bulletRelXRight = scale(30);
+        bulletRelXLeft = 0;
+        bulletRelY = scale(17);
+        bulletSpeed = scale(1200);
+        bulletType = laser;
+
+        totalBullets = 0;
+        totalBulletsLeft = totalBullets;
+
+        reloadSpeed = 3;
+        timeSinceShot = reloadSpeed;
+        fireSound.init("resources/sounds/laserPistol-shoot.wav",0,-1);
+        reloadSound.init("resources/sounds/laserPistol-reload.wav", 0,-1);
+        emptySound.init("resources/sounds/laserPistol-empty.wav", 0,-1);
+      } break;
     }
-
-    relXRight = scale(40);
-    relXLeft = -scale(27);
-    relY = scale(15);
-
-    bulletRelXRight = scale(19);
-    bulletRelXLeft = 0;
-    bulletRelY = scale(19);
-    bulletSpeed = scale(1000);
-
-    fireSound.init("resources/sounds/revolver-shoot.wav",0,-1);
-    reloadSound.init("resources/sounds/revolver-reload.wav", 0,-1);
-    emptySound.init("resources/sounds/revolver-empty.wav", 0,-1);
-  } break;
-  }
 
 }
 

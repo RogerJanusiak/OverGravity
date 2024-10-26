@@ -205,6 +205,8 @@ int main( int argc, char* args[] ) {
             std::list<Bullet> bullets;
 
             Weapon revolver(Weapon_Type::revolver,gameRenderer, state);
+            Weapon rifle(Weapon_Type::rifle,gameRenderer, state);
+            Weapon shotgun(Weapon_Type::shotgun,gameRenderer, state);
             Weapon knife(Weapon_Type::knife,gameRenderer, state);
             Weapon laserPistol(Weapon_Type::laserPistol,gameRenderer, state);
 
@@ -357,10 +359,16 @@ int main( int argc, char* args[] ) {
                         timpy.setPrimaryWeapon(&revolver);
                         break;
                     case 1:
-                        timpy.setPrimaryWeapon(&laserPistol);
+                        timpy.setPrimaryWeapon(&rifle);
                         break;
                     case 2:
+                        timpy.setPrimaryWeapon(&shotgun);
+                        break;
+                    case 3:
                         timpy.setPrimaryWeapon(&knife);
+                        break;
+                    case 4:
+                        timpy.setPrimaryWeapon(&laserPistol);
                         break;
                     default:
                         timpy.setPrimaryWeapon(nullptr);
@@ -370,10 +378,16 @@ int main( int argc, char* args[] ) {
                         timpy.setSecondaryWeapon(&revolver);
                         break;
                     case 1:
-                        timpy.setSecondaryWeapon(&laserPistol);
+                        timpy.setSecondaryWeapon(&rifle);
                         break;
                     case 2:
+                        timpy.setSecondaryWeapon(&shotgun);
+                        break;
+                    case 3:
                         timpy.setSecondaryWeapon(&knife);
+                        break;
+                    case 4:
+                        timpy.setSecondaryWeapon(&laserPistol);
                         break;
                     default:
                         timpy.setSecondaryWeapon(nullptr);

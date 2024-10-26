@@ -1,15 +1,23 @@
 #ifndef STATE_H
 #define STATE_H
 
+#include <vector>
+
+enum Menu {
+    head,
+    level,
+    settings,
+    pause,
+    upgrade,
+    notInMenu,
+};
+
 struct State {
     //Game State
         bool quit = false;
-        bool paused = false;
 
     //Menu Status
-        bool mainMenu = true;
-        bool levelSelect = false;
-        bool upgradeScreen = false;
+        Menu menu = head;
         bool controllerStickReset = true;
 
     //Load Status
@@ -37,7 +45,16 @@ struct State {
         int playerX = 0;
 
     //Weapon Status
+
+        //TODO: Reset on new game
+        //TODO: Can't shoot right after upgrade screen
         bool c4Placed;
+        int numberOfWeapons = 3;
+        int currentRevolverLevel = 1;
+        int currentLaserPistolLevel = 0;
+        int currentKnifeLevel = 0;
+        int weapon1 = 0;
+        int weapon2 = -1;
 
 };
 

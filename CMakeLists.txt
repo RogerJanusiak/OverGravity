@@ -104,7 +104,9 @@ if(APPLE)
             src/Animations.cpp
             includes/Animations.h
             src/Weapon.cpp
-            includes/Weapon.h)
+            includes/Weapon.h
+            src/Menu.cpp
+            includes/Menu.h)
 
     Message("")
     Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )

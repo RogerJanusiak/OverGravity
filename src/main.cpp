@@ -52,6 +52,8 @@ bool pauseEnemy = false;
 Player* timpyPointer = nullptr;
 const int timpyXVelocity = scale(350);
 
+SDL_Rect fullScreenRect = {0,0,WINDOW_WIDTH,WINDOW_HEIGHT};
+
 State state;
 
 void startScreen() {
@@ -63,36 +65,35 @@ void startScreen() {
         if( e.type == SDL_QUIT ) {
             state.quit = true;
         } else if( e.type == SDL_KEYDOWN ) {
-            if(e.key.keysym.sym == SDLK_ESCAPE && state.levelSelect) {
-                state.levelSelect = false;
-                state.mainMenu = true;
+            if(e.key.keysym.sym == SDLK_ESCAPE && state.menu == level) {
+                state.menu = head;
             }
         } else if( e.type == SDL_JOYBUTTONDOWN ) {
             if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-                controllerEvent(state,controllerMenuControl::select);
+                controllerEvent(state,MENU_CONTROL::select);
             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
-                controllerEvent(state,controllerMenuControl::back);
+                controllerEvent(state,MENU_CONTROL::back);
             }
         } else if(e.type == SDL_JOYDEVICEADDED ) {
-            controllerEvent(state,controllerMenuControl::connect);
+            controllerEvent(state,MENU_CONTROL::connect);
             loadController();
         } else if (e.type == SDL_JOYDEVICEREMOVED) {
-            controllerEvent(state,controllerMenuControl::disconnect);
+            controllerEvent(state,MENU_CONTROL::disconnect);
             controller = nullptr;
             state.controller = false;
         } else  if( e.type == SDL_MOUSEMOTION) {
             mouseMove(state);
         } else if(e.type == SDL_MOUSEBUTTONDOWN) {
-            mouseClick(state);
+            menuSelect(state);
         } else if( e.type == SDL_JOYAXISMOTION) {
             if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
                 if(state.controllerStickReset) {
-                    controllerEvent(state,controllerMenuControl::down);
+                    controllerEvent(state,MENU_CONTROL::down);
                     state.controllerStickReset = false;
                 }
             } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) < -JOYSTICK_DEAD_ZONE) {
                 if(state.controllerStickReset) {
-                    controllerEvent(state,controllerMenuControl::up);
+                    controllerEvent(state,MENU_CONTROL::up);
                     state.controllerStickReset = false;
                 }
             } else {
@@ -101,7 +102,7 @@ void startScreen() {
         }
     }
 
-    renderStartScreen(state);
+    renderMenu(state);
     SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
     SDL_RenderPresent(gameRenderer);
 }
@@ -116,34 +117,34 @@ void pauseScreen() {
             state.quit = true;
         } else if( e.type == SDL_KEYDOWN ) {
             if(e.key.keysym.sym == SDLK_ESCAPE) {
-                state.paused = false;
+                state.menu = notInMenu;
             }
         } else if( e.type == SDL_JOYBUTTONDOWN ) {
             if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-                controllerEvent(state,select);
+                controllerEvent(state,MENU_CONTROL::select);
             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
-                state.paused = false;
+                state.menu = notInMenu;
             }
         } else if(e.type == SDL_JOYDEVICEADDED ) {
-            controllerEvent(state,connect);
+            controllerEvent(state,MENU_CONTROL::connect);
             loadController();
         } else if (e.type == SDL_JOYDEVICEREMOVED) {
-            controllerEvent(state,disconnect);
+            controllerEvent(state,MENU_CONTROL::disconnect);
             controller = nullptr;
             state.controller = false;
         } else  if( e.type == SDL_MOUSEMOTION) {
             mouseMove(state);
         } else if(e.type == SDL_MOUSEBUTTONDOWN) {
-            mouseClick(state);
+            menuSelect(state);
         } else if( e.type == SDL_JOYAXISMOTION) {
             if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
                 if(state.controllerStickReset) {
-                    controllerEvent(state,controllerMenuControl::down);
+                    controllerEvent(state,MENU_CONTROL::down);
                     state.controllerStickReset = false;
                 }
             } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) < -JOYSTICK_DEAD_ZONE) {
                 if(state.controllerStickReset) {
-                    controllerEvent(state,controllerMenuControl::up);
+                    controllerEvent(state,MENU_CONTROL::up);
                     state.controllerStickReset = false;
                 }
             } else {
@@ -152,7 +153,7 @@ void pauseScreen() {
         }
     }
 
-    renderPauseScreen();
+    renderMenu(state);
     SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
     SDL_RenderPresent(gameRenderer);
 }
@@ -165,7 +166,7 @@ int main( int argc, char* args[] ) {
         SDL_Event e;
         Uint32 lastUpdate = SDL_GetTicks();
 
-        UI_init(gameRenderer);
+        UI_init(gameRenderer, state);
 
         Sound explosion("resources/sounds/shortExplosion.wav", 0,-1);
         Sound mediumExplosion("resources/sounds/mediumExplosion.wav", 0,-1);
@@ -176,15 +177,14 @@ int main( int argc, char* args[] ) {
         song.play();
 
         if(controller != nullptr) {
-            controllerEvent(state,controllerMenuControl::connect);
+            controllerEvent(state,MENU_CONTROL::connect);
         }
 
         //Game Loop
         while(!state.quit) {
 
-            state.mainMenu = true;
             if(controller != nullptr) {
-                controllerEvent(state,controllerMenuControl::connect);
+                controllerEvent(state,MENU_CONTROL::connect);
             }
 
             while(!state.started && !state.quit) {
@@ -289,160 +289,96 @@ int main( int argc, char* args[] ) {
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
-                int choice1 = rand() % 5;
-                int choice2Seed = rand() % 5;
-                int choice2;
-                while(choice2Seed == choice1) {
-                    choice2Seed = rand() % 5;
-                }
-                choice2 = choice2Seed;
-
-                Weapon* weapon1 = nullptr;
-                Weapon* weapon2 = nullptr;
-                Ability ability1 = none;
-                Ability ability2 = none;
-
-                switch(choice1) {
-                    case 0:
-                        weapon1 = &knife;
-                        break;
-                    case 1:
-                        weapon1 = &laserPistol;
-                        break;
-                    case 2:
-                        ability1 = bounce;
-                        break;
-                    case 3:
-                        ability1 = respawn;
-                        break;
-                    case 4:
-                        ability1 = c4;
-                        break;
-                    default:
-                        break;
-                }
-
-                switch(choice2) {
-                case 0:
-                    weapon2 = &knife;
-                    break;
-                case 1:
-                    weapon2 = &laserPistol;
-                    break;
-                case 2:
-                    ability2 = bounce;
-                    break;
-                case 3:
-                    ability2 = respawn;
-                    break;
-                case 4:
-                    ability2 = c4;
-                    break;
-                default:
-                    break;
-                }
-
-                updateChoices(state, weapon1, weapon2, ability1, ability2);
-
-                state.upgradeScreen = true;
-                while((waveNumber-1) % 5 == 0 && state.upgradeScreen && !state.quit && waveNumber-1 != 0) {
+                state.menu = upgrade;
+                loadUpgradeMenu(state);
+                while((waveNumber) % 1 == 0 && state.menu == upgrade && !state.quit && waveNumber-1 != 0) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
                         } else if(e.type == SDL_KEYDOWN) {
                             if(e.key.keysym.sym == SDLK_ESCAPE) {
-                                state.upgradeScreen = false;
+                                state.menu = notInMenu;
                             }
                         } else if(e.type == SDL_MOUSEBUTTONDOWN) {
-                            shootingReset = true;
-                          switch (selectionMouseClick()) {
-                            case 1: {
-                                if(weapon1 == nullptr) {
-                                    if(ability1 != none) {
-                                        timpy.setAbility(ability1);
-                                        updateInGameText(timpy.getCombo(),waveNumber,ability1);
-                                    }
-                                } else {
-                                    weapon1->reset();
-                                    timpy.setSecondaryWeapon(weapon1);
-                                }
-                                state.upgradeScreen = false;
-                            } break;
-                            case 2: {
-                                if(weapon2 == nullptr) {
-                                    if(ability2 != none) {
-                                        timpy.setAbility(ability2);
-                                        updateInGameText(timpy.getCombo(),waveNumber,ability2);
-                                    }
-                                } else {
-                                    weapon2->reset();
-                                    timpy.setSecondaryWeapon(weapon2);
-                                }
-                                state.upgradeScreen = false;
-                            } break;
-                              case 0: {
-                                  state.upgradeScreen = false;
-                              } break;
-                            default: break;
-                            }
+                            menuSelect(state);
                         } else if(e.type == SDL_MOUSEMOTION) {
                             mouseMove(state);
                         } else if( e.type == SDL_JOYAXISMOTION) {
                             if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,right);
+                                controllerEvent(state,MENU_CONTROL::right);
                             } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) < -JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,left);
+                                controllerEvent(state,MENU_CONTROL::left);
                             } else if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,down);
+                                controllerEvent(state,MENU_CONTROL::down);
                             } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) < -JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,up);
+                                controllerEvent(state,MENU_CONTROL::up);
                             }
                         } else if( e.type == SDL_JOYBUTTONDOWN ) {
                             if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-                                switch (selectionControllerClick()) {
-                                case 1: {
-                                    if(weapon1 == nullptr) {
-                                        if(ability1 != none) {
-                                            timpy.setAbility(ability1);
-                                            updateInGameText(timpy.getCombo(),waveNumber,ability1);
-                                        }
-                                    } else {
-                                        weapon1->reset();
-                                        timpy.setSecondaryWeapon(weapon1);
-                                    }
-                                    state.upgradeScreen = false;
-                                } break;
-                                case 2: {
-                                    if(weapon2 == nullptr) {
-                                        if(ability2 != none) {
-                                            timpy.setAbility(ability2);
-                                            updateInGameText(timpy.getCombo(),waveNumber,ability2);
-                                        }
-                                    } else {
-                                        weapon2->reset();
-                                        timpy.setSecondaryWeapon(weapon2);
-                                    }
-                                    state.upgradeScreen = false;
-                                } break;
-                                default:
-                                    state.upgradeScreen = false;
-                                    break;
-                                }
+
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
-                                state.upgradeScreen = false;
+                                state.menu = notInMenu;
                             }
                         }
                     }
 
                     SDL_RenderClear(gameRenderer);
 
-                    renderSelectionUI(timpy.getSecondaryWeapon(), timpy.getAbility());
+                    for(auto spawn : allSpawns) {
+                        spawn->render(gameRenderer);
+                    }
+
+                    for (auto it = bullets.begin(); it != bullets.end();++it) {
+                        it->render();
+                    }
+
+                    for (auto it = robors.begin(); it != robors.end();++it) {
+                        it->render();
+                    }
+
+                    for (auto it = robortos.begin(); it != robortos.end();++it) {
+                        it->render();
+                    }
+
+                    renderPlatforms(platforms);
+
+                    SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 200);
+                    SDL_SetRenderDrawBlendMode(gameRenderer, SDL_BLENDMODE_BLEND);
+                    SDL_RenderFillRect(gameRenderer, &fullScreenRect);
+
+                    renderMenu(state);
 
                     SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
                     SDL_RenderPresent(gameRenderer);
 
                 }
-                state.upgradeScreen = false;
+                switch(state.weapon1) {
+                    case 0:
+                        timpy.setPrimaryWeapon(&revolver);
+                        break;
+                    case 1:
+                        timpy.setPrimaryWeapon(&laserPistol);
+                        break;
+                    case 2:
+                        timpy.setPrimaryWeapon(&knife);
+                        break;
+                    default:
+                        timpy.setPrimaryWeapon(nullptr);
+                }
+                switch(state.weapon2) {
+                    case 0:
+                        timpy.setSecondaryWeapon(&revolver);
+                        break;
+                    case 1:
+                        timpy.setSecondaryWeapon(&laserPistol);
+                        break;
+                    case 2:
+                        timpy.setSecondaryWeapon(&knife);
+                        break;
+                    default:
+                        timpy.setSecondaryWeapon(nullptr);
+                }
+                state.menu = notInMenu;
 
                 bool waveStarted = false;
                 Uint32 startWaveLoad = SDL_GetTicks();
@@ -451,7 +387,7 @@ int main( int argc, char* args[] ) {
                     Uint64 start = SDL_GetPerformanceCounter();
 
                     //Controls Loop
-                    while(SDL_PollEvent(&e) != 0) {
+                    while(SDL_PollEvent(&e) != 0 && state.menu != upgrade) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
                         } else if( e.type == SDL_KEYDOWN ) {
@@ -468,7 +404,7 @@ int main( int argc, char* args[] ) {
                             if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
                                 pauseEnemy = !pauseEnemy;
                             } else if(e.key.keysym.sym == SDLK_ESCAPE) {
-                                state.paused = true;
+                                state.menu = pause;
                             }
                             if(e.key.keysym.sym == SDLK_d) {
                                 timpy.getEntity()->setXVelocity(timpyXVelocity);
@@ -570,7 +506,7 @@ int main( int argc, char* args[] ) {
                                         break;
                                 }
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START) == 1) {
-                                state.paused = true;
+                                state.menu = pause;
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X) == 1) {
                                 timpy.getWeapon()->forceReload();
                             }
@@ -638,7 +574,8 @@ int main( int argc, char* args[] ) {
                             firstLoop = true;
                         }
                         if(it->alive && it->getEntity()->isSpawned()) {
-                            if(!firstLoop && waveStarted && !pauseEnemy) {
+
+                            if(!firstLoop && waveStarted && !pauseEnemy && state.menu != upgrade) {
                                 it->move(dt, platforms,state.camY,state.levelHeight);
                             }
                             it->render();
@@ -833,11 +770,11 @@ int main( int argc, char* args[] ) {
                     float elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
                     lastFPS = (1.0f / elapsed);
 
-                    if(controller != nullptr && state.paused) {
-                        controllerEvent(state,controllerMenuControl::connect);
+                    if(controller != nullptr && state.menu == pause) {
+                        controllerEvent(state,MENU_CONTROL::connect);
                     }
 
-                    while(state.paused && !state.quit && state.started) {
+                    while(state.menu == pause && !state.quit && state.started) {
                         pauseScreen();
                         Uint32 current = SDL_GetTicks();
                         lastUpdate = current;

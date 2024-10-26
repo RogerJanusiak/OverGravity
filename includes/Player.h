@@ -35,6 +35,7 @@ public:
     Entity* getEntity() const { return playerEntity; }
 
     Weapon* getWeapon() { return currentWeapon; }
+    void setPrimaryWeapon(Weapon* priWeapon) { primaryWeapon = priWeapon; }
     void setSecondaryWeapon(Weapon* secWeapon) { secondaryWeapon = secWeapon; currentWeapon = primaryWeapon; }
     Weapon* getSecondaryWeapon() { return secondaryWeapon; }
     void changeWeapon();

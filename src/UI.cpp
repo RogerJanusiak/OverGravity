@@ -48,18 +48,6 @@ int selectY = (WINDOW_HEIGHT-selectWidth)/2;
 int select1X = WINDOW_WIDTH/2 - selectWidth - selectSpacing/2;
 int select2X = WINDOW_WIDTH/2 + selectSpacing/2;
 
-UI_Button arcadeModeButton;
-UI_Button storyModeButton;
-UI_Button settingsButton;
-
-UI_Button level1;
-UI_Button level2;
-
-UI_Button selection1;
-UI_Button selection2;
-
-Sound buttonClick;
-
 SDL_Rect timeToShootBack;
 SDL_Rect timeToShoot;
 
@@ -67,17 +55,14 @@ SDL_Rect timeToAbilityBack;
 SDL_Rect timeToAbility;
 
 Texture ammoLeftText;
-
-UI_Button resumeGameButton;
-UI_Button quitToMenuGameButton;
-UI_Button quitToDesktopGameButton;
-
-UI_Button quitToDesktopMainButton;
-
-UI_Button selectionNone;
 Texture gamePausedText;
 
-void UI_init(SDL_Renderer* _renderer) {
+UI_Menu mainMenu(4);
+UI_Menu levelSelect(2);
+UI_Menu pauseMenu(3);
+UI_Menu upgradeMenu(72);
+
+void UI_init(SDL_Renderer* _renderer, State& state) {
     counter = TTF_OpenFont("resources/sans.ttf",scale(18));
     small = TTF_OpenFont("resources/sans.ttf",scale(12));
     title = TTF_OpenFont("resources/sans.ttf",scale(34));
@@ -93,9 +78,7 @@ void UI_init(SDL_Renderer* _renderer) {
     startGameText.setup(renderer);
     initPlayerUI();
 
-    initStartScreen();
-    initSelectionUI();
-    initPauseScreen();
+    initMenus(state);
 
 }
 
@@ -138,37 +121,271 @@ void renderInGameText(bool developerMode, float lastFPS,bool waveStarted) {
     }
 }
 
-void initStartScreen() {
-    buttonClick.init("resources/sounds/buttonClick.wav", 0,-1);
-    logoTexture.setup(scale(454),scale(92),renderer);
-    logoTexture.loadFromFile("logo.png");
-    arcadeModeButton.setup((WINDOW_WIDTH-arcadeModeButton.getWidth())/2,scale(215),"Arcade Mode", renderer);
-    storyModeButton.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(280),"Story Mode", renderer);
-    settingsButton.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(345),"Settings", renderer);
-    quitToDesktopMainButton.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(410),"Quit To Desktop", renderer);
-    level1.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(215),"Level 1", renderer);
-    level2.setup((WINDOW_WIDTH-storyModeButton.getWidth())/2,scale(280),"Level 2", renderer);
-    arcadeModeButton.linkButtons(nullptr,&storyModeButton,nullptr,nullptr);
-    storyModeButton.linkButtons(&arcadeModeButton,&settingsButton,nullptr,nullptr);
-    settingsButton.linkButtons(&storyModeButton,&quitToDesktopMainButton,nullptr,nullptr);
-    quitToDesktopMainButton.linkButtons(&settingsButton,nullptr,nullptr,nullptr);
-    level1.linkButtons(nullptr,&level2,nullptr,nullptr);
-    level2.linkButtons(&level1,nullptr,nullptr,nullptr);
+
+//Button Action Functions
+void showLevelSelect(State& state, int attr1, int attr2) {
+    state.menu = level;
+    currentButton = levelSelect.loadMenu();
 }
 
-void renderStartScreen(State& state) {
-    logoTexture.render((WINDOW_WIDTH-logoTexture.getWidth())/2,scale(100));
-    if(state.mainMenu) {
-        arcadeModeButton.render();
-        storyModeButton.render();
-        settingsButton.render();
-        quitToDesktopMainButton.render();
-    } else if(state.levelSelect) {
-        level1.render();
-        level2.render();
+void quitToDesktop(State& state, int attr1, int attr2) {
+    state.quit = true;
+}
+
+void selectLevel1(State& state, int attr1, int attr2) {
+    state.level = 1;
+    state.menu = notInMenu;
+    state.started = true;
+}
+
+void selectLevel2(State& state, int attr1, int attr2) {
+    state.level = 2;
+    state.menu = notInMenu;
+    state.started = true;
+}
+
+void unpause(State& state, int attr1, int attr2) {
+    state.menu = notInMenu;
+}
+
+void quitToMenu(State& state, int attr1, int attr2) {
+    state.started = false;
+    state.menu = head;
+    currentButton = mainMenu.loadMenu();
+}
+
+void noAction(State& state, int attr1, int attr2) {}
+
+void selectWeapon(State& state, int attr1, int attr2) {
+   int weaponLevel;
+    switch(attr1) {
+        case 1:
+            weaponLevel = state.currentLaserPistolLevel;
+            break;
+        case 2:
+            weaponLevel = state.currentKnifeLevel;
+            break;
+        default:
+            weaponLevel = state.currentRevolverLevel;
+            break;
+    }
+    if(weaponLevel > 0) {
+        if(state.weapon1 == attr1) {
+            if(state.weapon2 != -1) {
+                state.weapon1 = state.weapon2;
+                state.weapon2 = -1;
+            } else {
+                SDL_Log("Must always have 1 weapon!");
+            }
+        } else if(state.weapon2 == attr1) {
+            state.weapon2 = -1;
+        } else if(state.weapon1 == -1) {
+            state.weapon1 = attr1;
+        } else if(state.weapon2 == -1) {
+            state.weapon2 = attr1;
+        } else {
+            //TODO: Add way to display errors to player
+            SDL_Log("No weapon slot free");
+        }
+        loadUpgradeMenu(state);
+    }
+}
+
+void upgradeWeapon(State& state, int attr1, int attr2) {
+    switch(attr1) {
+        case 1: {
+            if(attr2 == state.currentLaserPistolLevel) {
+                state.currentLaserPistolLevel++;
+            }
+        } break;
+        case 2: {
+            if(attr2 == state.currentKnifeLevel) {
+                state.currentKnifeLevel++;
+            }
+        } break;
+        default: {
+            if(attr2 == state.currentRevolverLevel) {
+                state.currentRevolverLevel++;
+            }
+        } break;
+    }
+    loadUpgradeMenu(state);
+}
+
+//Menu Functions
+void initMenus(State& state) {
+    const int centeredX = (WINDOW_WIDTH-UI_Button::width)/2;
+
+    mainMenu.addRenderer(renderer);
+    const int arcadeModeButton = mainMenu.addButton(centeredX,scale(215),"Arcade Mode",&white, counter,-1,-1,-1,-1,&showLevelSelect,state);
+    const int storyModeButton = mainMenu.addButton(centeredX,scale(280),"Story Mode",&white, counter,arcadeModeButton,-1,-1,-1,&noAction, state);
+    const int settingsButton = mainMenu.addButton(centeredX,scale(345),"Settings",&white, counter,storyModeButton,-1,-1,-1, &noAction, state);
+    mainMenu.addButton(centeredX,scale(410),"Quit To Desktop",&white, counter,settingsButton,-1,-1,-1,&quitToDesktop,state);
+    logoTexture.setup(scale(454),scale(92),renderer);
+    logoTexture.loadFromFile("logo.png");
+    mainMenu.addTitle((WINDOW_WIDTH-scale(454))/2,scale(100), logoTexture);
+
+    levelSelect.addRenderer(renderer);
+    const int level1Button = levelSelect.addButton(centeredX,scale(225),"Level 1",&white, counter,-1,-1,-1,-1, &selectLevel1, state);
+    levelSelect.addButton(centeredX,scale(290),"Level 2",&white, counter,level1Button,-1,-1,-1, &selectLevel2, state);
+    levelSelect.addTitle((WINDOW_WIDTH-scale(454))/2,scale(100), logoTexture);
+
+    pauseMenu.addRenderer(renderer);
+    const int resumeButton = pauseMenu.addButton(centeredX,scale(215),"Resume Game", &white, counter, -1,-1,-1,-1, &unpause, state);
+    const int quitToMenuButton = pauseMenu.addButton(centeredX,scale(280),"Quit To Menu", &white, counter,resumeButton,-1,-1,-1,&quitToMenu, state);
+    pauseMenu.addButton(centeredX,scale(345), "Quit To Desktop", &white, counter, quitToMenuButton,-1,-1,-1,&quitToDesktop, state);
+    gamePausedText.setup(renderer);
+    gamePausedText.loadFromRenderedText("Game Paused", white, title);
+    pauseMenu.addTitle((WINDOW_WIDTH-gamePausedText.getWidth())/2,scale(100),gamePausedText);
+
+    initUpgradeMenu(state);
+
+}
+
+void initUpgradeMenu(State& state) {
+    upgradeMenu.addRenderer(renderer);
+    upgradeMenu.addButton(scale(16),scale(100),"Max HP", &white,small,-1,-1,-1,-1, &noAction, state,1);
+    upgradeMenu.addButton(scale(16),scale(140),"Max Shield", &white,small,-1,-1,-1,-1, &noAction, state,1);
+    upgradeMenu.addButton(scale(16),scale(180),"Accept Changes", &white,small,-1,-1,-1,-1, &noAction, state,1);
+
+    upgradeMenu.addButton(scale(160+128),scale(16),"Weapons", &white,small,-1,-1,-1,-1, &noAction, state,1);
+    upgradeMenu.addButton(scale(160+256),scale(16),"Abilities", &white,small,-1,-1,-1,-1, &noAction, state,1);
+    upgradeMenu.addButton(scale(160+384),scale(16),"Player", &white,small,-1,-1,-1,-1, &noAction, state,1);
+
+    for(int i = 0; i < state.numberOfWeapons; i++) {
+        upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,-1,-1, &selectWeapon, state,3,i);
+        for(int j = 0; j < 5; j++) {
+            std::string path;
+            if(i == 0) {
+                path = "upgrade-menu/upgrade-revolver.png";
+            } else if(i == 1) {
+                path = "upgrade-menu/upgrade-laser-pistol.png";
+            } else if(i == 2) {
+                path = "upgrade-menu/upgrade-knife.png";
+            }
+            upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path,-1,-1,-1,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+        }
     }
 
 }
+
+void loadUpgradeMenu(State& state) {
+    for(int i = 0; i < state.numberOfWeapons; i++) {
+        (*upgradeMenu.getButtons())[6+i*6].deactivate();
+    }
+    if(state.weapon1 != -1)  {
+        (*upgradeMenu.getButtons())[6+state.weapon1*6].activate();
+    }
+    if(state.weapon2 != -1) {
+        (*upgradeMenu.getButtons())[6+state.weapon2*6].activate();
+    }
+
+    for(int i = 0; i < 5;i++) {
+        (*upgradeMenu.getButtons())[7 + i].enable();
+        (*upgradeMenu.getButtons())[13 + i].enable();
+        (*upgradeMenu.getButtons())[19 + i].enable();
+        if(i>state.currentRevolverLevel) {
+            (*upgradeMenu.getButtons())[7 + i].disable();
+        } else if(i != state.currentRevolverLevel) {
+            (*upgradeMenu.getButtons())[7 + i].activate();
+        }
+        if(i>state.currentLaserPistolLevel) {
+            (*upgradeMenu.getButtons())[13 + i].disable();
+        } else if(i != state.currentLaserPistolLevel) {
+            (*upgradeMenu.getButtons())[13 + i].activate();
+        }
+        if(i>state.currentKnifeLevel) {
+            (*upgradeMenu.getButtons())[19 + i].disable();
+        } else if(i != state.currentKnifeLevel) {
+            (*upgradeMenu.getButtons())[19 + i].activate();
+        }
+    }
+
+}
+
+UI_Menu* getCurrentMenu(State& state) {
+    switch(state.menu) {
+        case head:
+            return &mainMenu;
+        case level:
+            return &levelSelect;
+        case pause:
+            return &pauseMenu;
+        case upgrade:
+            return &upgradeMenu;
+        default:
+            return nullptr;
+    }
+}
+
+void renderMenu(State& state) {
+  if (UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr)
+        currentMenu->render();
+}
+
+void mouseMove(State& state) {
+    int x, y;
+    SDL_GetMouseState( &x, &y );
+
+    if(!state.controller) {
+        if(currentButton != nullptr) {
+            currentButton->deselect();
+            currentButton = nullptr;
+        }
+    }
+
+    if (UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr) {
+        std::vector<UI_Button>* menuButtons = currentMenu->getButtons();
+        for(auto it = menuButtons->begin(); it != menuButtons->end(); ++it) {
+            if(it->mouseEvent(x,y) && !it->isDisabled()) {
+                currentButton = &*it;
+                currentButton->select();
+            }
+        }
+    }
+}
+
+void menuSelect(State& state) {
+    if(UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr) {
+        std::vector<UI_Button>* menuButtons = currentMenu->getButtons();
+        for(auto & menuButton : *menuButtons) {
+            if(menuButton.isSelected()) {
+                menuButton.click();
+            }
+        }
+    }
+}
+
+void controllerEvent(State& state, MENU_CONTROL control) {
+    //TODO: You cannot go to disabled buttons
+    if(UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr) {
+        switch(control) {
+            case MENU_CONTROL::connect:
+                currentButton = currentMenu->loadMenu();
+                break;
+            case MENU_CONTROL::disconnect: {
+                currentButton->deselect();
+                currentButton = nullptr;
+            } break;
+            case MENU_CONTROL::select:
+                menuSelect(state);
+                break;
+            default: {
+                if(currentButton != nullptr) {
+                    UI_Button* tempButton = currentButton->move(control);
+                    if(tempButton != nullptr) {
+                        currentButton->deselect();
+                        currentButton = tempButton;
+                        currentButton->select();
+                    }
+                } else {
+                    SDL_Log("No button selection!");
+                }
+            } break;
+        }
+    }
+}
+
 
 void initPlayerUI() {
     timeToShootBack.x = WINDOW_WIDTH-scale(90);
@@ -315,353 +532,5 @@ void renderPlayerUI(Player* player) {
         }
     }
 
-}
-
-void mouseClick(State& state) {
-    selectAction(state);
-}
-
-void mouseMove(State& state) {
-    int x, y;
-    SDL_GetMouseState( &x, &y );
-    UI_Button* tempButton = nullptr;
-    if(arcadeModeButton.mouseEvent(x,y) && state.mainMenu) {
-        tempButton = &arcadeModeButton;
-    } else if(storyModeButton.mouseEvent(x,y) && state.mainMenu) {
-        tempButton = &storyModeButton;
-    } else if(settingsButton.mouseEvent(x,y) && state.mainMenu) {
-        tempButton = &settingsButton;
-    } else if(quitToDesktopMainButton.mouseEvent(x,y) && state.mainMenu) {
-        tempButton = &quitToDesktopMainButton;
-    }
-    if(level1.mouseEvent(x,y) && state.levelSelect) {
-        tempButton = &level1;
-    } else if(level2.mouseEvent(x,y) && state.levelSelect) {
-        tempButton = &level2;
-    }
-    if(resumeGameButton.mouseEvent(x,y) && state.paused) {
-        tempButton = &resumeGameButton;
-    } else if(quitToMenuGameButton.mouseEvent(x,y) && state.paused) {
-        tempButton = &quitToMenuGameButton;
-    } else if(quitToDesktopGameButton.mouseEvent(x,y) && state.paused) {
-        tempButton = &quitToDesktopGameButton;
-    }
-    if(selection1.mouseEvent(x,y) && state.upgradeScreen) {
-        tempButton = &selection1;
-    } else if(selection2.mouseEvent(x,y) && state.upgradeScreen) {
-        tempButton = &selection2;
-    } else if(selectionNone.mouseEvent(x,y) && state.upgradeScreen) {
-        tempButton = &selectionNone;
-    }
-    if(currentButton != nullptr && !state.controller) {
-        currentButton->deselect();
-    }
-    if(tempButton != nullptr) {
-        if(currentButton != nullptr) {
-            currentButton->deselect();
-        }
-        currentButton = tempButton;
-        currentButton->select();
-    }
-}
-
-void initSelectionUI() {
-
-    selectionTexture.setup(renderer);
-    selectionTexture.loadFromRenderedText("Select new weapon or upgrade: ", white, title);
-
-    currentSetupText.setup(renderer);
-    currentAbilityText.setup(renderer);
-
-    selection1.setup(select1X,selectY," ", renderer,1);
-    selection2.setup(select2X,selectY," ", renderer,1);
-
-    selection1.linkButtons(nullptr,&selectionNone,nullptr,&selection2);
-    selection2.linkButtons(nullptr,&selectionNone,&selection1,nullptr);
-    selectionNone.linkButtons(&selection1,nullptr,nullptr,nullptr);
-
-    laserPistolSelectTexture.setup(selectWidth, selectWidth,renderer);
-    laserPistolSelectTexture.loadFromFile("upgrade-laserPistol.png");
-
-    knifeSelectTexture.setup(selectWidth, selectWidth,renderer);
-    knifeSelectTexture.loadFromFile("upgrade-knife.png");
-
-    bounceSelectTexture.setup(selectWidth, selectWidth,renderer);
-    bounceSelectTexture.loadFromFile("upgrade-bounce.png");
-
-    teleportSelectTexture.setup(selectWidth, selectWidth,renderer);
-    teleportSelectTexture.loadFromFile("upgrade-teleport.png");
-
-    c4SelectTexture.setup(selectWidth, selectWidth,renderer);
-    c4SelectTexture.loadFromFile("upgrade-c4.png");
-
-    selectionNone.setup(WINDOW_WIDTH/2-selectionNone.getWidth()/2, selectY+scale(20)+selectWidth,"Keep Current Setup",renderer);
-
-}
-
-void renderSelectionUI(Weapon* currentWeapon, Ability currentAbility) {
-
-    selectionTexture.render(select1X/2,selectY/2);
-    selectionNone.render();
-
-    selection1.render();
-    selection2.render();
-
-    if(weapon1 != nullptr) {
-        if(weapon1->getType() == knife) {
-            knifeSelectTexture.render(select1X,selectY);
-        } else if(weapon1->getType() == laserPistol) {
-            laserPistolSelectTexture.render(select1X,selectY);
-        }
-    } else {
-        if(ability1 == c4) {
-            c4SelectTexture.render(select1X,selectY);
-        } else if(ability1 == respawn) {
-            teleportSelectTexture.render(select1X,selectY);
-        } else if(ability1 == bounce) {
-            bounceSelectTexture.render(select1X,selectY);
-        }
-    }
-    if(weapon2 != nullptr) {
-        if(weapon2->getType() == knife) {
-            knifeSelectTexture.render(select2X,selectY);
-        } else if(weapon2->getType() == laserPistol) {
-            laserPistolSelectTexture.render(select2X,selectY);
-        }
-    } else {
-        if(ability2 == c4) {
-            c4SelectTexture.render(select2X,selectY);
-        } else if(ability2 == respawn) {
-            teleportSelectTexture.render(select2X,selectY);
-        } else if(ability2 == bounce) {
-            bounceSelectTexture.render(select2X,selectY);
-        }
-    }
-
-    if(currentWeapon != nullptr) {
-        if(currentWeapon->getType() == knife) {
-            currentSetupText.loadFromRenderedText("Current Weapon: Knife", white, counter);
-        } else if(currentWeapon->getType() == laserPistol) {
-            currentSetupText.loadFromRenderedText("Current Weapon: Laser Pistol", white, counter);
-        }
-    } else {
-        currentSetupText.loadFromRenderedText("Current Weapon: None", white, counter);
-    }
-
-    if(currentAbility == none) {
-        currentAbilityText.loadFromRenderedText("Current Ability: None", white, counter);
-    } else {
-        if(currentAbility == c4) {
-            currentAbilityText.loadFromRenderedText("Current Ability: C4", white, counter);
-        } else if(currentAbility == respawn) {
-            currentAbilityText.loadFromRenderedText("Current Ability: Teleport", white, counter);
-        } else if(currentAbility == bounce) {
-            currentAbilityText.loadFromRenderedText("Current Ability: Bounce", white, counter);
-        }
-    }
-    currentSetupText.render(scale(15),WINDOW_HEIGHT-scale(40));
-    currentAbilityText.render(scale(15),WINDOW_HEIGHT-scale(65));
-}
-
-void updateChoices(State& state, Weapon *_weapon1, Weapon *_weapon2, Ability _ability1, Ability _ability2) {
-    weapon1 = _weapon1;
-    weapon2 = _weapon2;
-    ability1 = _ability1;
-    ability2 = _ability2;
-    if(state.controller) {
-        currentButton = &selection1;
-        selection1.select();
-        selection2.deselect();
-    }
-}
-
-int selectionMouseClick() {
-    int x, y;
-    SDL_GetMouseState( &x, &y );
-    if(selection1.isSelected()) {
-        return 1;
-    }
-    if(selection2.isSelected()) {
-        return 2;
-    }
-    if(selectionNone.mouseEvent(x,y)) {
-        selectionNone.deselect();
-        return 0;
-    }
-    return -1;
-}
-
-int selectionControllerClick() {
-    if(selection1.isSelected()) {
-        return 1;
-    }
-    if(selection2.isSelected()) {
-        return 2;
-    }
-    if(selectionNone.isSelected()) {
-        selectionNone.deselect();
-        return 0;
-    }
-    return -1;
-}
-
-void controllerEvent(State& state, controllerMenuControl control) {
-
-        if(control == connect) {
-            if(state.mainMenu) {
-                arcadeModeButton.select();
-                currentButton = &arcadeModeButton;
-            } else if(state.levelSelect) {
-                level1.select();
-                currentButton = &level1;
-            } else if(state.paused) {
-                resumeGameButton.select();
-                currentButton = &resumeGameButton;
-            }
-        } else if(control == disconnect) {
-                currentButton->deselect();
-                currentButton = nullptr;
-        } else if(control == select) {
-            selectAction(state);
-        } else {
-            if(currentButton != nullptr) {
-                UI_Button* tempButton = currentButton->move(control);
-                if(tempButton != nullptr) {
-                    currentButton->deselect();
-                    currentButton = tempButton;
-                    currentButton->select();
-                }
-            } else {
-                SDL_Log("No button selection!");
-            }
-        }
-
-}
-
-void selectAction(State& state) {
-    if(state.mainMenu) {
-        if(arcadeModeButton.isSelected()) {
-            state.mainMenu = false;
-            state.levelSelect = true;
-            currentButton = &level1;
-        } else if(quitToDesktopMainButton.isSelected()) {
-            state.quit = true;
-        }
-        if(currentButton != nullptr) {
-            currentButton->select();
-        }
-    } else if(state.levelSelect) {
-        state.levelSelect = false;
-        state.started = true;
-        if(level1.isSelected()) {
-            state.level = 1;
-        } else if(level2.isSelected()) {
-            state.level = 2;
-        }
-        if(currentButton != nullptr) {
-            currentButton->deselect();
-            currentButton = nullptr;
-        }
-    } else if(state.paused) {
-        state.paused = false;
-        if(resumeGameButton.isSelected()) {
-            currentButton->deselect();
-            currentButton = nullptr;
-        } else if(quitToMenuGameButton.isSelected()) {
-            state.started = false;
-            state.mainMenu = true;
-            currentButton->deselect();
-            currentButton = &arcadeModeButton;
-            currentButton->select();
-        } else if(quitToDesktopGameButton.isSelected()) {
-            state.quit = true;
-        }
-    }
-    buttonClick.play();
-}
-
-void initPauseScreen() {
-    gamePausedText.setup(renderer);
-    gamePausedText.loadFromRenderedText("Game Paused", white, title);
-
-    resumeGameButton.setup((WINDOW_WIDTH-arcadeModeButton.getWidth())/2,scale(215),"Resume Game",renderer);
-    quitToMenuGameButton.setup((WINDOW_WIDTH-arcadeModeButton.getWidth())/2,scale(280),"Quit to Main Menu",renderer);
-    quitToDesktopGameButton.setup((WINDOW_WIDTH-arcadeModeButton.getWidth())/2,scale(345),"Quit to Desktop",renderer);
-    resumeGameButton.linkButtons(nullptr,&quitToMenuGameButton,nullptr,nullptr);
-    quitToMenuGameButton.linkButtons(&resumeGameButton,&quitToDesktopGameButton,nullptr,nullptr);
-    quitToDesktopGameButton.linkButtons(&quitToMenuGameButton,nullptr,nullptr,nullptr);
-}
-
-void renderPauseScreen() {
-    gamePausedText.render((WINDOW_WIDTH-gamePausedText.getWidth())/2,scale(100));
-    resumeGameButton.render();
-    quitToMenuGameButton.render();
-    quitToDesktopGameButton.render();
-}
-
-// UI_Button Class Member Functions
-
-void UI_Button::setup(const int _x, const int _y, std::string text, SDL_Renderer* renderer, int _type) {
-    x = _x;
-    y = _y;
-    type = _type;
-    if(type == 0) {
-        texture.setup(width,height,renderer);
-        texture.loadFromFile("button.png");
-
-        hoverTexture.setup(width,height,renderer);
-        hoverTexture.loadFromFile("button1.png");
-    } else if(type == 1) {
-        texture.setup(sWidth,sHeight,renderer);
-        texture.loadFromFile("upgrade-background.png");
-
-        hoverTexture.setup(sWidth,sHeight,renderer);
-        hoverTexture.loadFromFile("upgrade-background-selected.png");
-    }
-
-    textTexture.setup(0,0,renderer);
-    textTexture.loadFromRenderedText(text, white, counter);
-}
-
-bool UI_Button::mouseEvent(const int mouseX, const int mouseY) const {
-    int w;
-    int h;
-    if(type == 0) {
-        w  = width;
-        h = height;
-    } else if(type == 1) {
-        w = sWidth;
-        h = sHeight;
-    }
-    if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
-        return true;
-    }
-    return false;
-}
-
-void UI_Button::render() {
-    if(selected) {
-        hoverTexture.render(x,y);
-    } else {
-        texture.render(x,y);
-    }
-    if(type == 0) {
-        textTexture.render(x+(width-textTexture.getWidth())/2,y+(height-textTexture.getHeight())/2);
-    }
-}
-
-UI_Button* UI_Button::move(const controllerMenuControl action) const {
-    switch(action) {
-    case up:
-        return buttonAbove;
-    case down:
-        return buttonBelow;
-    case left:
-        return buttonLeft;
-    case right:
-        return buttonRight;
-    default:
-        return nullptr;
-    }
 }
 

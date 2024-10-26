@@ -3,7 +3,7 @@
 
 constexpr double SCALE_FACTOR = 1.5;
 
-inline double scale(const double toScale) {
+inline int scale(const double toScale) {
     return toScale*SCALE_FACTOR;
 }
 

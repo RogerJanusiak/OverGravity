@@ -59,6 +59,7 @@ private:
   int bulletStrength = 1;
   int bulletDamage = 1;
   int bulletsPerShot = 1;
+  double coolFireRate = 0.5;
 
   int bulletsInClip = 0;
 

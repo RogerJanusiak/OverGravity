@@ -111,17 +111,22 @@ void Weapon::render(const int playerX, const int playerY, const bool playerDirec
 }
 
 int Weapon::reload(float dt) {
-  if (timeSinceShot >= reloadSpeed) {
-      timeSinceShot = 0;
-      reloaded = true;
-      bulletsInClip = clipSize;
-      justReloaded = true;
-      return 75;
-  }
   if(!reloaded) {
+      if (timeSinceShot >= reloadSpeed) {
+        timeSinceShot = 0;
+        reloaded = true;
+        if(type == laserPistol) {
+          bulletsInClip = 0;
+        } else {
+          bulletsInClip = clipSize;
+        }
+        justReloaded = true;
+        return 75;
+      }
       timeSinceShot += dt;
       return 75*timeSinceShot*(1/reloadSpeed)-2;
   }
+  timeSinceShot += dt;
   return 75;
 }
 
@@ -155,10 +160,22 @@ bool Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, cons
       bullets->back().setIterator(--eBullets->end());
     }
 
-    bulletsInClip--;
-    if(bulletsInClip == 0) {
-      reloaded = false;
+    if(type == laserPistol) {
+      if(timeSinceShot <= coolFireRate) {
+        bulletsInClip++;
+        if(bulletsInClip >= clipSize) {
+          reloaded = false;
+        }
+      }
+    } else {
+      bulletsInClip--;
+      if(bulletsInClip == 0) {
+        reloaded = false;
+      }
     }
+
+
+    timeSinceShot = 0;
     return true;
   }
   emptySound.play();
@@ -286,12 +303,47 @@ void Weapon::upgrade(const State& state) {
       default:
         break;
       }
+    } else if(type == laserPistol) {
+      switch(state.currentLaserPistolLevel) {
+      case 1: {
+        clipSize = 2;
+        reloadSpeed = 3;
+        coolFireRate = 0.5;
+      } break;
+      case 2: {
+        clipSize = 3;
+        reloadSpeed = 3;
+        coolFireRate = 0.5;
+      } break;
+      case 3: {
+        clipSize = 4;
+        reloadSpeed = 2;
+        coolFireRate = 0.4;
+      } break;
+      case 4: {
+        clipSize = 5;
+        reloadSpeed = 2;
+        coolFireRate = 0.4;
+      } break;
+      case 5: {
+        clipSize = 6;
+        reloadSpeed = 2;
+        coolFireRate = 0.3;
+      } break;
+      default:
+        break;
+      }
+      bulletsInClip = 0;
     }
 }
 
 void Weapon::reset() {
-  timeSinceShot = reloadSpeed;
+  timeSinceShot = 0;
   reloaded = true;
   justReloaded = false;
-  bulletsInClip = clipSize;
+  if(type == laserPistol) {
+    bulletsInClip = 0;
+  } else {
+    bulletsInClip = clipSize;
+  }
 }

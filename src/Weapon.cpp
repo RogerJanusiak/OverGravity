@@ -76,9 +76,6 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer, State &state) {
         relXLeft = -scale(27);
         relY = scale(15);
 
-        totalBullets = 0;
-        totalBulletsLeft = 0;
-
         reloadable = false;
       } break;
       case laserPistol: {
@@ -96,9 +93,6 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer, State &state) {
         bulletRelY = scale(17);
         bulletSpeed = scale(1200);
         bulletType = laser;
-
-        totalBullets = 0;
-        totalBulletsLeft = totalBullets;
 
         reloadSpeed = 3;
         timeSinceShot = reloadSpeed;
@@ -121,9 +115,6 @@ void Weapon::render(const int playerX, const int playerY, const bool playerDirec
 }
 
 int Weapon::reload(float dt) {
-  if(totalBulletsLeft == 0 && type != revolver) {
-    return 0;
-  }
   if (timeSinceShot >= reloadSpeed) {
       timeSinceShot = 0;
       reloaded = true;
@@ -155,7 +146,7 @@ bool Weapon::wasJustReloaded() {
 }
 
 bool Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, const State &state, bool direction, int playerX, int playerY) {
-  if(reloaded && !state.c4Placed && type != knife && (totalBulletsLeft > 0 || type == revolver)) {
+  if(reloaded && !state.c4Placed && type != knife) {
     fireSound.play();
 
     if(direction) {
@@ -167,9 +158,6 @@ bool Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, cons
     bullets->back().setIterator(--eBullets->end());
 
     bulletsInClip--;
-    if(type != revolver) {
-      totalBulletsLeft--;
-    }
     if(bulletsInClip == 0) {
       reloaded = false;
     }
@@ -220,6 +208,46 @@ void Weapon::upgrade(const State& state) {
             default:
                 break;
         }
+    } else if(type == rifle) {
+      switch(state.currentRifleLevel) {
+        case 1: {
+          clipSize = 2;
+          reloadSpeed = 3;
+          bulletDurability = 1;
+          bulletStrength = 1;
+          bulletDamage = 1;
+        } break;
+        case 2: {
+          clipSize = 2;
+          reloadSpeed = 3;
+          bulletDurability = 2;
+          bulletStrength = 2;
+          bulletDamage = 2;
+        } break;
+        case 3: {
+          clipSize = 3;
+          reloadSpeed = 2;
+          bulletDurability = 2;
+          bulletStrength = 2;
+          bulletDamage = 3;
+        } break;
+        case 4: {
+          clipSize = 3;
+          reloadSpeed = 2;
+          bulletDurability = 2;
+          bulletStrength = 3;
+          bulletDamage = 4;
+        } break;
+        case 5: {
+          clipSize = 4;
+          reloadSpeed = 2;
+          bulletDurability = 2;
+          bulletStrength = 3;
+          bulletDamage = 5;
+        } break;
+        default:
+          break;
+      }
     }
 }
 
@@ -227,6 +255,5 @@ void Weapon::reset() {
   timeSinceShot = reloadSpeed;
   reloaded = true;
   justReloaded = false;
-  totalBulletsLeft = totalBullets;
   bulletsInClip = clipSize;
 }

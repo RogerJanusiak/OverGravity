@@ -511,15 +511,11 @@ void renderPlayerUI(Player* player) {
             break;
     }
 
-    for(int i = 0; i < player->getWeapon()->getClipSize()+1; i++) {
-        if(i == 0) {
-            SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
+    for(int i = 0; i < player->getWeapon()->getClipSize(); i++) {
+        if(bulletsInClip>i) {
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         } else {
-            if(bulletsInClip>i-1) {
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            } else {
-                SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
-            }
+            SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
         }
         SDL_Rect tempRect;
         tempRect.x = WINDOW_WIDTH-scale(30)-scale(20*i);
@@ -527,25 +523,6 @@ void renderPlayerUI(Player* player) {
         tempRect.w = scale(15);
         tempRect.h = scale(15);
         SDL_RenderFillRect(renderer,&tempRect);
-    }
-
-    if(player->getWeapon()->getClipSize() != 0) {
-
-        if(player->getWeapon()->getType() == revolver) {
-            ammoLeftText.loadFromRenderedText("--",white,small);
-            ammoLeftText.render(WINDOW_WIDTH-scale(26),WINDOW_HEIGHT-scale(29));
-        } else {
-            int ammo = player->getWeapon()->getBulletsLeft();
-            ammo += player->getWeapon()->getClipSize()-bulletsInClip;
-            ammo -= player->getWeapon()->getClipSize();
-            ammoLeftText.loadFromRenderedText(std::to_string(ammo),white,small);
-            if(ammo < 10) {
-                ammoLeftText.render(WINDOW_WIDTH-scale(25),WINDOW_HEIGHT-scale(27));
-            } else {
-                ammoLeftText.render(WINDOW_WIDTH-scale(29),WINDOW_HEIGHT-scale(27));
-            }
-        }
-
     }
 
     if(player->getAbility() == c4) {

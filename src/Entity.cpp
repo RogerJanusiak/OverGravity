@@ -96,13 +96,22 @@ void Entity::forceSpawn() {
     }
 }
 
-
 bool Entity::isColliding(SDL_Rect& rectA, const SDL_Rect& rectB) {
     if (rectA.y + rectA.h >= rectB.y && rectA.y <= rectB.y + rectB.h && rectA.x + rectA.w >= rectB.x && rectA.x <= rectB.x + rectB.w) {
         return true;
     }
     return false;
 }
+
+bool Entity::damage(int damageAmount) {
+    hp -= damageAmount;
+    if(hp <= 0) {
+        alive = false;
+        return true;
+    }
+    return false;
+}
+
 
 
 

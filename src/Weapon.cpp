@@ -303,6 +303,21 @@ void Weapon::upgrade(const State& state) {
       default:
         break;
       }
+    } else if(type == knife) {
+      switch(state.currentKnifeLevel) {
+        default:
+        case 1:
+        case 2:
+          bulletDamage = 1;
+          break;
+        case 3:
+        case 4:
+          bulletDamage = 2;
+          break;
+        case 5:
+          bulletDamage = 3;
+          break;
+      }
     } else if(type == laserPistol) {
       switch(state.currentLaserPistolLevel) {
       case 1: {

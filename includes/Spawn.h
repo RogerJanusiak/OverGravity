@@ -30,7 +30,7 @@ public:
     const SDL_Rect *getRectP() const { return &rect; }
 
     void render(SDL_Renderer* renderer) {
-        type == 1 ? SDL_SetRenderDrawColor(renderer, 0, 105, 0, 5) : SDL_SetRenderDrawColor(renderer, 105, 0, 0, 5);
+        type == 1 ? SDL_SetRenderDrawColor(renderer, 0, 105, 0, 100) : SDL_SetRenderDrawColor(renderer, 105, 0, 0, 100);
         SDL_RenderFillRect(renderer, &rect);
     }
 

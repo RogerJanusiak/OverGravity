@@ -13,7 +13,7 @@ class Entity {
 public:
 
     Entity() = default;
-    Entity(std::vector<Spawn>* spawn, SDL_Renderer* renderer) : spawns(spawn), gameRender(renderer) {}
+    Entity(std::vector<Spawn>* spawn, SDL_Renderer* renderer, const int hp) : hp(hp), spawns(spawn), gameRender(renderer) {}
     Entity(int x, int y, int Vx, int Vy,SDL_Renderer *tempGameRenderer);
 
     void render() const;
@@ -41,11 +41,17 @@ public:
 
     static bool isColliding(SDL_Rect& rectA, const SDL_Rect& rectB);
 
+    bool damage(int damageAmount);
+    [[nodiscard]] bool isAlive() const { return alive; }
+
     bool justSpawned = true;
 
 private:
     float xVelocity = 0;
     float yVelocity = 0;
+
+    bool alive = true;
+    int hp = 1;
 
     //TODO: Render the texture once in main.cpp and then pass it to the entity.
     Texture entityTexture;

@@ -14,13 +14,17 @@ public:
     void render() const { roborEntity->render(); }
     Entity* getEntity() const { return roborEntity; }
 
-    bool alive = true;
+    void knifeColliding() { knifeCollision = true; }
+    void knifeNotColliding() { knifeCollision = false; }
+    [[nodiscard]] bool didAlreadyCollide() const { return knifeCollision; }
 
 private:
     const int enemyWidth = scale(24);
     const int enemyHeight = scale(50);
 
     const int xVelocity = scale(250);
+
+    bool knifeCollision = false;
 
     Entity* roborEntity;
 };

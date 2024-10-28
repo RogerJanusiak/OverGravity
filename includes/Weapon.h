@@ -52,12 +52,13 @@ private:
   int bulletRelXRight = 0;
   int bulletRelXLeft = 0;
   int bulletRelY = 0;
-  int bulletSpeed = 0;
+  int bulletSpeed = scale(1000);
 
   int clipSize = 0;
   int bulletDurability = 1;
   int bulletStrength = 1;
   int bulletDamage = 1;
+  int bulletsPerShot = 1;
 
   int bulletsInClip = 0;
 

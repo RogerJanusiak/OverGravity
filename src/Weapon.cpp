@@ -20,7 +20,6 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer, State &state) {
         bulletRelXRight = scale(19);
         bulletRelXLeft = 0;
         bulletRelY = scale(19);
-        bulletSpeed = scale(1000);
 
         fireSound.init("resources/sounds/revolver-shoot.wav",0,-1);
         reloadSound.init("resources/sounds/revolver-reload.wav", 0,-1);
@@ -39,7 +38,6 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer, State &state) {
         bulletRelXRight = scale(19);
         bulletRelXLeft = 0;
         bulletRelY = scale(19);
-        bulletSpeed = scale(1000);
 
         //TODO: Add unique sounds
         fireSound.init("resources/sounds/revolver-shoot.wav",0,-1);
@@ -59,7 +57,6 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer, State &state) {
         bulletRelXRight = scale(19);
         bulletRelXLeft = 0;
         bulletRelY = scale(19);
-        bulletSpeed = scale(1000);
 
         //TODO: Add unique sounds
         fireSound.init("resources/sounds/revolver-shoot.wav",0,-1);
@@ -91,7 +88,6 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer, State &state) {
         bulletRelXRight = scale(30);
         bulletRelXLeft = 0;
         bulletRelY = scale(17);
-        bulletSpeed = scale(1200);
         bulletType = laser;
 
         reloadSpeed = 3;
@@ -149,13 +145,15 @@ bool Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, cons
   if(reloaded && !state.c4Placed && type != knife) {
     fireSound.play();
 
-    if(direction) {
-      eBullets->emplace_back(playerX+bulletRelXRight,playerY+bulletRelY,bulletSpeed,0,renderer);
-    } else {
-      eBullets->emplace_back(playerX+bulletRelXLeft,playerY+bulletRelY,-bulletSpeed,0,renderer);
+    for(int i = 0; i < bulletsPerShot; i++) {
+      if(direction) {
+        eBullets->emplace_back(playerX+bulletRelXRight,playerY+bulletRelY,bulletSpeed+(i)*75,-150*i,renderer);
+      } else {
+        eBullets->emplace_back(playerX+bulletRelXLeft,playerY+bulletRelY,-bulletSpeed+(i)*75,-150*i,renderer);
+      }
+      bullets->emplace_back(&eBullets->back(), bulletType, bulletDurability, bulletStrength, bulletDamage);
+      bullets->back().setIterator(--eBullets->end());
     }
-    bullets->emplace_back(&eBullets->back(), bulletType, bulletDurability, bulletStrength, bulletDamage);
-    bullets->back().setIterator(--eBullets->end());
 
     bulletsInClip--;
     if(bulletsInClip == 0) {
@@ -247,6 +245,46 @@ void Weapon::upgrade(const State& state) {
         } break;
         default:
           break;
+      }
+    } else if(type == shotgun) {
+      switch(state.currentShotgunLevel) {
+      case 1: {
+        clipSize = 1;
+        reloadSpeed = 3;
+        bulletDurability = 1;
+        bulletDamage = 1;
+        bulletsPerShot = 3;
+      } break;
+      case 2: {
+        clipSize = 1;
+        reloadSpeed = 3;
+        bulletDurability = 1;
+        bulletDamage = 1;
+        bulletsPerShot = 4;
+      } break;
+      case 3: {
+        clipSize = 2;
+        reloadSpeed = 2;
+        bulletDurability = 1;
+        bulletDamage = 1;
+        bulletsPerShot = 5;
+      } break;
+      case 4: {
+        clipSize = 2;
+        reloadSpeed = 2;
+        bulletDurability = 1;
+        bulletDamage = 1;
+        bulletsPerShot = 6;
+      } break;
+      case 5: {
+        clipSize = 3;
+        reloadSpeed = 1;
+        bulletDurability = 1;
+        bulletDamage = 1;
+        bulletsPerShot = 7;
+      } break;
+      default:
+        break;
       }
     }
 }

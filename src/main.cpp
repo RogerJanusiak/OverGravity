@@ -257,6 +257,7 @@ int main( int argc, char* args[] ) {
 
                 bool leftMovement = false;
                 bool rightMovement = false;
+                shootingReset = true;
 
                 if(waveNumber == 0) {
                     timpy.setSecondaryWeapon(nullptr);
@@ -405,6 +406,7 @@ int main( int argc, char* args[] ) {
 
                 bool waveStarted = false;
                 Uint32 startWaveLoad = SDL_GetTicks();
+                shootingReset = true;
 
                 while(state.started && inWave && !state.quit) {
                     Uint64 start = SDL_GetPerformanceCounter();
@@ -639,9 +641,9 @@ int main( int argc, char* args[] ) {
                                     it->alive = false;
                                     explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                     explosion.play();
-                                } else {
-                                    ++bit;
+                                    break;
                                 }
+                                ++bit;
                             }
                             updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                             if(state.developerMode) {
@@ -682,6 +684,7 @@ int main( int argc, char* args[] ) {
                                     if(timpy.damage()) {
                                         playerAlive = false;
                                         waveNumber = 0;
+                                        shootingReset = true;
                                         timpy.zeroCombo();
                                         updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                                     }
@@ -702,9 +705,9 @@ int main( int argc, char* args[] ) {
                                     it->alive = false;
                                     explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                     explosion.play();
-                                } else {
-                                    ++bit;
+                                    break;
                                 }
+                                ++bit;
                             }
                             updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                             if(state.developerMode) {

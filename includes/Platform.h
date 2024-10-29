@@ -21,6 +21,8 @@ private:
     SDL_Rect box;
     Texture texture;
 
+    SDL_Renderer* renderer;
+
     const int width = scale(TILE_SIZE);
     const int height = scale(17);
 

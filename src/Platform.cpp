@@ -1,6 +1,6 @@
 #include "../includes/Platform.h"
 
-Platform::Platform(int x, int y, SDL_Renderer* renderer) {
+Platform::Platform(int x, int y, SDL_Renderer* renderer) : renderer(renderer) {
     box.x = scale(x);
     box.y = scale(y);
     box.h = height;
@@ -16,6 +16,8 @@ Platform::Platform(int x, int y, SDL_Renderer* renderer) {
 
 void Platform::render(){
     texture.render(box.x,box.y);
+    SDL_SetRenderDrawColor( renderer, 20, 20, 20, 80 );
+    SDL_RenderFillRect( renderer, &box );
 }
 
 void Platform::setPosition(int x, int y) {

@@ -3,7 +3,6 @@
 void UI_Button::setType(int type, SDL_Renderer* _renderer) {
     renderer = _renderer;
     if(type == 0) {
-
         w = width;
         h = height;
 
@@ -12,19 +11,15 @@ void UI_Button::setType(int type, SDL_Renderer* _renderer) {
 
         hoverTexture.setup(w,h,renderer);
         hoverTexture.loadFromFile("button1.png");
-
-
     } else if(type == 1) {
-
         w = smallWidth;
         h = smallHeight;
 
         texture.setup(w,h,renderer);
-        texture.loadFromFile("button.png");
+        texture.loadFromFile("upgrade-menu/small.png");
 
         hoverTexture.setup(w,h,renderer);
-        hoverTexture.loadFromFile("button1.png");
-
+        hoverTexture.loadFromFile("upgrade-menu/small-selected.png");
     } else if(type == 2) {
         w = weaponWidth;
         h = weaponWidth;

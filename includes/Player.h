@@ -47,6 +47,7 @@ public:
 
     void decreaseShield();
     int getShield() const { return playerShield; }
+    void setShield(int newShield) { playerShield = newShield; }
 
     void increaseCombo();
     void zeroCombo() { combo = 0;}

@@ -10,7 +10,7 @@ void updateInGameText(int playerCombo, int wave, Ability ability);
 
 void initMenus(State &state);
 void renderMenu(State & state);
-void initUpgradeMenu(State& state);
+void initWeaponUpgradeMenu(State& state);
 
 void loadUpgradeMenu(State& state);
 

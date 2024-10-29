@@ -182,6 +182,12 @@ int main( int argc, char* args[] ) {
 
         SDL_SetRenderDrawBlendMode(gameRenderer, SDL_BLENDMODE_BLEND);
 
+        Texture background;
+        background.setup(scale(960),scale(480),gameRenderer);
+        background.loadFromFile("background.png");
+
+        SDL_Rect backgroundRect = {0,0,WINDOW_WIDTH,WINDOW_HEIGHT};
+
         //Game Loop
         while(!state.quit) {
 
@@ -296,7 +302,7 @@ int main( int argc, char* args[] ) {
 
                 state.menu = upgrade;
                 loadUpgradeMenu(state);
-                while((waveNumber) % 1 == 0 && state.menu == upgrade && !state.quit && waveNumber-1 != 0) {
+                while((waveNumber) % 5 == 0 && state.menu == upgrade && !state.quit) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
@@ -329,6 +335,10 @@ int main( int argc, char* args[] ) {
 
                     SDL_RenderClear(gameRenderer);
 
+                    background.render(0,0);
+                    SDL_SetRenderDrawColor(gameRenderer,35,35,35,155);
+                    SDL_RenderFillRect(gameRenderer,&backgroundRect);
+
                     for(auto spawn : allSpawns) {
                         spawn->render(gameRenderer);
                     }
@@ -355,6 +365,14 @@ int main( int argc, char* args[] ) {
                     SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
                     SDL_RenderPresent(gameRenderer);
 
+                }
+                if(state.fullHealth) {
+                    timpy.setHP(3);
+                    state.fullHealth = false;
+                }
+                if(state.fullShield) {
+                    timpy.setShield(2);
+                    state.fullShield = false;
                 }
                 switch(state.weapon1) {
                     case 0:
@@ -410,6 +428,7 @@ int main( int argc, char* args[] ) {
                 shootingReset = true;
 
                 while(state.started && inWave && !state.quit) {
+
                     Uint64 start = SDL_GetPerformanceCounter();
 
                     //Controls Loop
@@ -559,6 +578,10 @@ int main( int argc, char* args[] ) {
                     }
 
                     SDL_RenderClear(gameRenderer);
+
+                    background.render(0,0);
+                    SDL_SetRenderDrawColor(gameRenderer,55,55,55,105);
+                    SDL_RenderFillRect(gameRenderer,&backgroundRect);
 
                     if(state.developerMode) {
                         for(auto spawn : allSpawns) {

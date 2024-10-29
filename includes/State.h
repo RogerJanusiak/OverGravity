@@ -43,6 +43,8 @@ struct State {
         int playerTileX = 0;
         int playerTileY = 0;
         int playerX = 0;
+        bool fullHealth = false;
+        bool fullShield = false;
 
     //Weapon Status
 

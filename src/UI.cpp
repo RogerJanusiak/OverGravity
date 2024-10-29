@@ -124,7 +124,6 @@ void renderInGameText(bool developerMode, float lastFPS,bool waveStarted) {
     }
 }
 
-
 //Button Action Functions
 void showLevelSelect(State& state, int attr1, int attr2) {
     state.menu = level;
@@ -231,6 +230,18 @@ void upgradeWeapon(State& state, int attr1, int attr2) {
     loadUpgradeMenu(state);
 }
 
+void fullHealth(State& state, int attr1, int attr2) {
+    state.fullHealth = true;
+}
+
+void fullShield(State& state, int attr1, int attr2) {
+    state.fullShield = true;
+}
+
+void closeUpgradeMenu(State& state, int attr1, int attr2) {
+    state.menu = notInMenu;
+}
+
 //Menu Functions
 void initMenus(State& state) {
     const int centeredX = (WINDOW_WIDTH-UI_Button::width)/2;
@@ -257,7 +268,7 @@ void initMenus(State& state) {
     gamePausedText.loadFromRenderedText("Game Paused", white, title);
     pauseMenu.addTitle((WINDOW_WIDTH-gamePausedText.getWidth())/2,scale(100),gamePausedText);
 
-    initUpgradeMenu(state);
+    initWeaponUpgradeMenu(state);
 
 }
 
@@ -270,15 +281,15 @@ std::string removeTrailingZeros(double i) {
     return result;
 }
 
-void initUpgradeMenu(State& state) {
+void initWeaponUpgradeMenu(State& state) {
     upgradeMenu.addRenderer(renderer);
-    upgradeMenu.addButton(scale(16),scale(100),"Max HP", &white,small,-1,-1,-1,-1, &noAction, state,1);
-    upgradeMenu.addButton(scale(16),scale(140),"Max Shield", &white,small,-1,-1,-1,-1, &noAction, state,1);
-    upgradeMenu.addButton(scale(16),scale(180),"Accept Changes", &white,small,-1,-1,-1,-1, &noAction, state,1);
+    upgradeMenu.addButton(scale(37),scale(100),"Max HP", &white,small,-1,-1,-1,-1, &fullHealth, state,1);
+    upgradeMenu.addButton(scale(37),scale(140),"Max Shield", &white,small,-1,-1,-1,-1, &fullShield, state,1);
+    upgradeMenu.addButton(scale(37),scale(180),"Accept Changes", &white,small,-1,-1,-1,-1, &closeUpgradeMenu, state,1);
 
-    upgradeMenu.addButton(scale(160+128),scale(16),"Weapons", &white,small,-1,-1,-1,-1, &noAction, state,1);
-    upgradeMenu.addButton(scale(160+256),scale(16),"Abilities", &white,small,-1,-1,-1,-1, &noAction, state,1);
-    upgradeMenu.addButton(scale(160+384),scale(16),"Player", &white,small,-1,-1,-1,-1, &noAction, state,1);
+    upgradeMenu.addButton(scale(160+128),scale(12),"Weapons", &white,small,-1,-1,-1,-1, &noAction, state,1);
+    upgradeMenu.addButton(scale(160+256),scale(12),"Abilities", &white,small,-1,-1,-1,-1, &noAction, state,1);
+    upgradeMenu.addButton(scale(160+384),scale(12),"Player", &white,small,-1,-1,-1,-1, &noAction, state,1);
 
     for(int i = 0; i < state.numberOfWeapons; i++) {
         upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,-1,-1, &selectWeapon, state,3,i);

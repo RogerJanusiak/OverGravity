@@ -47,7 +47,6 @@ struct State {
     //Weapon Status
 
         //TODO: Reset on new game
-        //TODO: Can't shoot right after upgrade screen
         bool c4Placed;
         int numberOfWeapons = 5;
         int currentRevolverLevel = 1;
@@ -57,6 +56,13 @@ struct State {
         int currentLaserPistolLevel = 0;
         int weapon1 = 0;
         int weapon2 = -1;
+
+        float weaponLevel[5][5][5] = {
+            {{4,3,1,1,1},{5,3,1,1,1},{6,2,2,1,1},{7,2,2,2,1},{8,1,2,2,1}}, //Revolver
+            {{2,3,1,1,1},{2,3,2,2,2},{3,2,2,3,2},{3,2,2,4,3},{4,2,2,5,3}}, //Rifle
+            {{1,3,1,1,3},{1,3,1,1,4},{2,2,1,1,5},{2,2,1,1,6},{3,1,1,1,7}}, //Shotgun
+            {{1,0,0,0,0},{1,0,0,0,0},{2,0,0,0,0},{2,0,0,0,0},{3,0,0,0,0}}, //Knife
+            {{0.5,2,3,0,0},{0.5,3,3,0,0},{0.4,4,2,0,0},{0.4,5,2,0,0},{0.3,6,2,0,0}}};
 
 };
 

@@ -12,6 +12,7 @@ SDL_Color gray = { 105, 105, 105 };
 TTF_Font *counter;
 TTF_Font *title;
 TTF_Font *small;
+TTF_Font *verySmall;
 
 Texture waveNumberText;
 Texture waveNumberTitle;
@@ -65,6 +66,7 @@ UI_Menu upgradeMenu(72);
 void UI_init(SDL_Renderer* _renderer, State& state) {
     counter = TTF_OpenFont("resources/sans.ttf",scale(18));
     small = TTF_OpenFont("resources/sans.ttf",scale(12));
+    verySmall = TTF_OpenFont("resources/sans.ttf",scale(10));
     title = TTF_OpenFont("resources/sans.ttf",scale(34));
 
     renderer = _renderer;
@@ -85,6 +87,7 @@ void UI_init(SDL_Renderer* _renderer, State& state) {
 void UI_close() {
     TTF_CloseFont(counter);
     TTF_CloseFont(small);
+    TTF_CloseFont(verySmall);
     TTF_CloseFont(title);
 }
 
@@ -258,6 +261,15 @@ void initMenus(State& state) {
 
 }
 
+std::string removeTrailingZeros(double i) {
+    std::string result = std::to_string(i);
+    result.erase(result.find_last_not_of('0') + 1, std::string::npos); // Remove trailing zeros
+    if (result.back() == '.') {
+        result.pop_back();  // Remove the decimal point if it's at the end
+    }
+    return result;
+}
+
 void initUpgradeMenu(State& state) {
     upgradeMenu.addRenderer(renderer);
     upgradeMenu.addButton(scale(16),scale(100),"Max HP", &white,small,-1,-1,-1,-1, &noAction, state,1);
@@ -283,7 +295,33 @@ void initUpgradeMenu(State& state) {
             } else if(i == 4) {
                 path = "upgrade-menu/upgrade-laser-pistol.png";
             }
-            upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path,-1,-1,-1,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+
+            upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,-1,-1,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+
+            upgradeMenu.getButtons()->back().setupHover(5);
+
+            if(i == 0 || i == 1) {
+                upgradeMenu.getButtons()->back().addLine("Clip Size: ", removeTrailingZeros(state.weaponLevel[i][j][0]), verySmall, white);
+                upgradeMenu.getButtons()->back().addLine("Reload Speed : ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
+                upgradeMenu.getButtons()->back().addLine("Bullet Durability: ", removeTrailingZeros(state.weaponLevel[i][j][2]), verySmall, white);
+                upgradeMenu.getButtons()->back().addLine("Damage: ", removeTrailingZeros(state.weaponLevel[i][j][3]), verySmall, white);
+                upgradeMenu.getButtons()->back().addLine("Strength: ", removeTrailingZeros(state.weaponLevel[i][j][4]), verySmall, white);
+            } else if(i== 2) {
+                upgradeMenu.getButtons()->back().addLine("Clip Size: ", removeTrailingZeros(state.weaponLevel[i][j][0]), verySmall, white);
+                upgradeMenu.getButtons()->back().addLine("Reload Speed : ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
+                upgradeMenu.getButtons()->back().addLine("Bullet Durability: ", removeTrailingZeros(state.weaponLevel[i][j][2]), verySmall, white);
+                upgradeMenu.getButtons()->back().addLine("Damage: ", removeTrailingZeros(state.weaponLevel[i][j][3]), verySmall, white);
+                upgradeMenu.getButtons()->back().addLine("# of Bullets: ", removeTrailingZeros(state.weaponLevel[i][j][4]), verySmall, white);
+            } else if(i == 3) {
+                upgradeMenu.getButtons()->back().addLine("Damage: ", removeTrailingZeros(state.weaponLevel[i][j][0]), verySmall, white);
+            } else if(i == 4) {
+                upgradeMenu.getButtons()->back().addLine("Cool Fire Rate: ", removeTrailingZeros(state.weaponLevel[i][j][0]), verySmall, white);
+                upgradeMenu.getButtons()->back().addLine("Heat Buffer: ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
+                upgradeMenu.getButtons()->back().addLine("Cool Off Time: ", removeTrailingZeros(state.weaponLevel[i][j][2]), verySmall, white);
+            }
+
+
+
         }
     }
 

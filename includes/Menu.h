@@ -27,6 +27,25 @@ enum class RELATIVE_DIRECTION {
   right,
 };
 
+class UI_HoverText {
+
+public:
+
+  UI_HoverText() = default;
+
+  void setup(int numberOfLines, SDL_Renderer* _renderer) { text.reserve(numberOfLines);values.reserve(numberOfLines);renderer = _renderer; }
+  void addLine(const std::string &lineText, const std::string& lineValue, TTF_Font *font, SDL_Color color);
+
+  void render(int x, int y) const;
+
+private:
+
+  std::vector<Texture> text;
+  std::vector<Texture> values;
+  SDL_Renderer* renderer = nullptr;
+
+};
+
 class UI_Button {
 
 public:
@@ -36,7 +55,7 @@ public:
   UI_Button(int x, int y, const std::string& path, SDL_Renderer* renderer, void (*action)(State& state, int attr1, int attr2),State& state, int type = 0, int attribute = 0,int attribute2 = 0, const std::string& secondaryPath = "no");
 
   void render() const;
-  static int getWidth() {return width;}
+  [[nodiscard]] int getWidth() const { return w; }
 
   [[nodiscard]] UI_Button* move(MENU_CONTROL action) const;
   void linkButtons(UI_Button* above, UI_Button* below,UI_Button* left, UI_Button* right) { buttonAbove = above; buttonBelow = below; buttonLeft = left; buttonRight = right; }
@@ -49,15 +68,25 @@ public:
   void deactivate() { active = false; }
   [[nodiscard]] bool isActive() const { return active; }
 
+  void setupHover(int numberOflines) { ht.setup(numberOflines,renderer); }
+  void addLine(const std::string &lineText, const std::string& lineValue, TTF_Font *font, SDL_Color color) { ht.addLine(lineText,lineValue,font,color); }
+  void renderHover(int x, int y) const { ht.render(x,y); }
+
   void disable() { disabled = true; }
   void enable() { disabled = false; }
   [[nodiscard]] bool isDisabled() const { return disabled; }
 
   [[nodiscard]] bool isSelected() const {return selected;}
 
-  void setType(int type , SDL_Renderer* renderer);
+  void setType(int type , SDL_Renderer* _renderer);
+
+
 
   void click();
+
+  int getType() const { return type; }
+  int getX() const { return x; }
+  int getY() const { return y; }
 
   [[nodiscard]] bool mouseEvent(int mouseX, int mouseY) const;
 
@@ -80,7 +109,10 @@ private:
   int type;
   bool usingText;
 
+  UI_HoverText ht;
+
   State& state;
+  SDL_Renderer* renderer;
   void (*action)(State& state, int attr1, int attr2);
 
   UI_Button* buttonAbove = nullptr;
@@ -115,7 +147,7 @@ public:
   int addButton(int x, int y, const std::string& path, int above, int below, int left, int right, void (*action)(State& state, int attr1, int attr2),State& state, int type = 0, int attribute = 0,int attribute2 = 0, const std::string& secondaryPath = "no");
   std::vector<UI_Button>* getButtons() {return &buttons;}
   [[nodiscard]] UI_Button* loadMenu();
-  void addRenderer(SDL_Renderer* _renderer) {renderer = _renderer;}
+  void addRenderer(SDL_Renderer* _renderer) { renderer = _renderer; }
 
   void addTitle(const int x, const int y, const Texture & texture) { titleX = x, titleY = y, titleTexture = texture; }
 
@@ -123,7 +155,10 @@ public:
 
 private:
 
-  SDL_Renderer* renderer;
+  TTF_Font* font = nullptr;
+  SDL_Color* color = nullptr;
+
+  SDL_Renderer* renderer = nullptr;
   Texture titleTexture;
   int titleX = 0,titleY = 0;
   std::vector<UI_Button> buttons;

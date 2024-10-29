@@ -1,6 +1,7 @@
 #include "../includes/Menu.h"
 
-void UI_Button::setType(int type, SDL_Renderer* renderer) {
+void UI_Button::setType(int type, SDL_Renderer* _renderer) {
+    renderer = _renderer;
     if(type == 0) {
 
         w = width;
@@ -63,7 +64,6 @@ UI_Button::UI_Button(const int x, const int y, const std::string& text, SDL_Rend
 
 UI_Button::UI_Button(const int x, const int y, const std::string& path, SDL_Renderer* renderer, void (*action)(State& state, int attr1, int attr2),State& state, const int type, int attribute, int attribute2, const std::string& secondaryPath) : x(x), y(y), type(type), action(action), state(state), attribute(attribute), attribute2(attribute2) {
     setType(type, renderer);
-
     buttonClick.init("resources/sounds/buttonClick.wav", 0,-1);
 
     usingText = false;
@@ -194,6 +194,11 @@ void UI_Menu::render() const {
     for(auto& button : buttons) {
         button.render();
     }
+    for(auto& button : buttons) {
+        if(button.getType() == 2 && button.isSelected()) {
+            button.renderHover(button.getX()+button.getWidth(),button.getY());
+        }
+    }
 }
 
 UI_Button *UI_Menu::loadMenu() {
@@ -208,5 +213,40 @@ void UI_Button::click() {
     action(state, attribute, attribute2);
     buttonClick.play();
 }
+
+
+
+void UI_HoverText::addLine(const std::string &lineText, const std::string& lineValue, TTF_Font *font, SDL_Color color) {
+    text.emplace_back();
+    text.back().setup(renderer);
+    text.back().loadFromRenderedText(lineText,color,font);
+    values.emplace_back();
+    values.back().setup(renderer);
+    values.back().loadFromRenderedText(lineValue,color,font);
+}
+
+void UI_HoverText::render(const int x, const int y) const {
+
+    int widestWidth = 0;
+    int breakPoint = 0;
+    for(int i = 0; i < text.size(); i++) {
+        if(widestWidth < text[i].getWidth()+2+values[i].getWidth()+20) {
+            widestWidth = text[i].getWidth()+2+values[i].getWidth()+20;
+            breakPoint = 10+text[i].getWidth();
+        }
+    }
+
+    const SDL_Rect rect = {x,y,widestWidth,scale(15*text.size())};
+    SDL_SetRenderDrawColor(renderer, 26, 26, 26, 255);
+    SDL_RenderFillRect(renderer, &rect);
+    SDL_SetRenderDrawColor(renderer, 220, 220, 220, 255);
+    SDL_RenderDrawRect(renderer,&rect);
+
+    for(int i = 0; i < text.size(); i++) {
+        text[i].render(x+breakPoint-text[i].getWidth(),y+scale(15*i));
+        values[i].render(x+breakPoint+2,y+scale(15*i));
+    }
+}
+
 
 

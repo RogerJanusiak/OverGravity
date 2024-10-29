@@ -111,14 +111,30 @@ void UI_Button::render() const {
 
 UI_Button* UI_Button::move(const MENU_CONTROL action) const {
     switch(action) {
-    case MENU_CONTROL::up:
-        return buttonAbove;
-    case MENU_CONTROL::down:
-        return buttonBelow;
-    case MENU_CONTROL::left:
-        return buttonLeft;
-    case MENU_CONTROL::right:
-        return buttonRight;
+    case MENU_CONTROL::up: {
+        if (buttonAbove != nullptr && !buttonAbove->isDisabled()) {
+            return buttonAbove;
+        }
+        return nullptr;
+    }
+    case MENU_CONTROL::down: {
+        if (buttonBelow != nullptr && !buttonBelow->isDisabled()) {
+            return buttonBelow;
+        }
+        return nullptr;
+    }
+    case MENU_CONTROL::left: {
+        if (buttonLeft != nullptr && !buttonLeft->isDisabled()) {
+            return buttonLeft;
+        }
+        return nullptr;
+    }
+    case MENU_CONTROL::right: {
+        if (buttonRight != nullptr && !buttonRight->isDisabled()) {
+            return buttonRight;
+        }
+        return nullptr;
+    }
     default:
         return nullptr;
     }
@@ -149,16 +165,16 @@ int UI_Menu::addButton(int x, int y, const std::string &text, SDL_Color* color, 
             buttons[above].link(RELATIVE_DIRECTION::below, &buttons.back());
         }
         if(below != -1) {
-            buttons.back().link(RELATIVE_DIRECTION::above, &buttons[below]);
-            buttons[below].link(RELATIVE_DIRECTION::below, &buttons.back());
+            buttons.back().link(RELATIVE_DIRECTION::below, &buttons[below]);
+            buttons[below].link(RELATIVE_DIRECTION::above, &buttons.back());
         }
         if(left != -1) {
-            buttons.back().link(RELATIVE_DIRECTION::above, &buttons[left]);
-            buttons[left].link(RELATIVE_DIRECTION::below, &buttons.back());
+            buttons.back().link(RELATIVE_DIRECTION::left, &buttons[left]);
+            buttons[left].link(RELATIVE_DIRECTION::right, &buttons.back());
         }
         if(right != -1) {
-            buttons.back().link(RELATIVE_DIRECTION::above, &buttons[right]);
-            buttons[right].link(RELATIVE_DIRECTION::below, &buttons.back());
+            buttons.back().link(RELATIVE_DIRECTION::right, &buttons[right]);
+            buttons[right].link(RELATIVE_DIRECTION::left, &buttons.back());
         }
         return static_cast<int>(buttons.size())-1;
     }
@@ -170,16 +186,16 @@ int UI_Menu::addButton(int x, int y, const std::string &path, const int above, c
         buttons[above].link(RELATIVE_DIRECTION::below, &buttons.back());
     }
     if(below != -1) {
-        buttons.back().link(RELATIVE_DIRECTION::above, &buttons[below]);
-        buttons[below].link(RELATIVE_DIRECTION::below, &buttons.back());
+        buttons.back().link(RELATIVE_DIRECTION::below, &buttons[below]);
+        buttons[below].link(RELATIVE_DIRECTION::above, &buttons.back());
     }
     if(left != -1) {
-        buttons.back().link(RELATIVE_DIRECTION::above, &buttons[left]);
-        buttons[left].link(RELATIVE_DIRECTION::below, &buttons.back());
+        buttons.back().link(RELATIVE_DIRECTION::left, &buttons[left]);
+        buttons[left].link(RELATIVE_DIRECTION::right, &buttons.back());
     }
     if(right != -1) {
-        buttons.back().link(RELATIVE_DIRECTION::above, &buttons[right]);
-        buttons[right].link(RELATIVE_DIRECTION::below, &buttons.back());
+        buttons.back().link(RELATIVE_DIRECTION::right, &buttons[right]);
+        buttons[right].link(RELATIVE_DIRECTION::left, &buttons.back());
     }
     return static_cast<int>(buttons.size())-1;
 }

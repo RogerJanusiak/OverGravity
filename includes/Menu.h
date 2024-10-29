@@ -80,8 +80,6 @@ public:
 
   void setType(int type , SDL_Renderer* _renderer);
 
-
-
   void click();
 
   int getType() const { return type; }

@@ -61,7 +61,7 @@ Texture gamePausedText;
 UI_Menu mainMenu(4);
 UI_Menu levelSelect(2);
 UI_Menu pauseMenu(3);
-UI_Menu upgradeMenu(72);
+UI_Menu upgradeMenu(36);
 
 void UI_init(SDL_Renderer* _renderer, State& state) {
     counter = TTF_OpenFont("resources/sans.ttf",scale(18));
@@ -239,6 +239,10 @@ void fullShield(State& state, int attr1, int attr2) {
 }
 
 void closeUpgradeMenu(State& state, int attr1, int attr2) {
+    if(currentButton != nullptr) {
+        currentButton->deselect();
+        currentButton = nullptr;
+    }
     state.menu = notInMenu;
 }
 
@@ -284,15 +288,21 @@ std::string removeTrailingZeros(double i) {
 void initWeaponUpgradeMenu(State& state) {
     upgradeMenu.addRenderer(renderer);
     upgradeMenu.addButton(scale(37),scale(100),"Max HP", &white,small,-1,-1,-1,-1, &fullHealth, state,1);
-    upgradeMenu.addButton(scale(37),scale(140),"Max Shield", &white,small,-1,-1,-1,-1, &fullShield, state,1);
-    upgradeMenu.addButton(scale(37),scale(180),"Accept Changes", &white,small,-1,-1,-1,-1, &closeUpgradeMenu, state,1);
+    upgradeMenu.addButton(scale(37),scale(140),"Max Shield", &white,small,0,-1,-1,-1, &fullShield, state,1);
+    upgradeMenu.addButton(scale(37),scale(180),"Accept Changes", &white,small,1,-1,-1,-1, &closeUpgradeMenu, state,1);
 
     upgradeMenu.addButton(scale(160+128),scale(12),"Weapons", &white,small,-1,-1,-1,-1, &noAction, state,1);
     upgradeMenu.addButton(scale(160+256),scale(12),"Abilities", &white,small,-1,-1,-1,-1, &noAction, state,1);
     upgradeMenu.addButton(scale(160+384),scale(12),"Player", &white,small,-1,-1,-1,-1, &noAction, state,1);
 
     for(int i = 0; i < state.numberOfWeapons; i++) {
-        upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,-1,-1, &selectWeapon, state,3,i);
+        int start;
+        if(i==0) {
+            start = 2;
+        } else {
+            start = 0;
+        }
+        upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,start+i*6,-1, &selectWeapon, state,3,i);
         for(int j = 0; j < 5; j++) {
             std::string path;
             if(i == 0) {
@@ -307,7 +317,11 @@ void initWeaponUpgradeMenu(State& state) {
                 path = "upgrade-menu/upgrade-laser-pistol.png";
             }
 
-            upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,-1,-1,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+            if(i == 0) {
+                upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+            } else {
+                upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+            }
 
             upgradeMenu.getButtons()->back().setupHover(5);
 
@@ -330,12 +344,9 @@ void initWeaponUpgradeMenu(State& state) {
                 upgradeMenu.getButtons()->back().addLine("Heat Buffer: ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
                 upgradeMenu.getButtons()->back().addLine("Cool Off Time: ", removeTrailingZeros(state.weaponLevel[i][j][2]), verySmall, white);
             }
-
-
-
         }
     }
-
+    (*upgradeMenu.getButtons())[2].linkButtons(&(*upgradeMenu.getButtons())[1],&(*upgradeMenu.getButtons())[6],nullptr,&(*upgradeMenu.getButtons())[6]);
 }
 
 void loadUpgradeMenu(State& state) {
@@ -384,6 +395,13 @@ void loadUpgradeMenu(State& state) {
 
 }
 
+void launchUpgradeMenu() {
+    currentButton = &(*upgradeMenu.getButtons())[2];
+    if(currentButton != nullptr) {
+        currentButton->select();
+    }
+}
+
 UI_Menu* getCurrentMenu(State& state) {
     switch(state.menu) {
         case head:
@@ -419,6 +437,9 @@ void mouseMove(State& state) {
         std::vector<UI_Button>* menuButtons = currentMenu->getButtons();
         for(auto it = menuButtons->begin(); it != menuButtons->end(); ++it) {
             if(it->mouseEvent(x,y) && !it->isDisabled()) {
+                if(currentButton != nullptr) {
+                    currentButton->deselect();
+                }
                 currentButton = &*it;
                 currentButton->select();
             }
@@ -438,7 +459,6 @@ void menuSelect(State& state) {
 }
 
 void controllerEvent(State& state, MENU_CONTROL control) {
-    //TODO: You cannot go to disabled buttons
     if(UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr) {
         switch(control) {
             case MENU_CONTROL::connect:

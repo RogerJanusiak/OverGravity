@@ -13,6 +13,8 @@ void renderMenu(State & state);
 void initWeaponUpgradeMenu(State& state);
 
 void loadUpgradeMenu(State& state);
+void launchUpgradeMenu();
+void closeUpgradeMenu(State& state, int attr1, int attr2);
 
 void UI_init(SDL_Renderer* renderer, State& state);
 void UI_close();

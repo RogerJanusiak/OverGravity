@@ -27,6 +27,8 @@
 #include "../includes/Sound.h"
 #include "../includes/UI.h"
 
+#include <future>
+
 SDL_Window *gameWindow = nullptr;
 SDL_Renderer *gameRenderer = nullptr;
 
@@ -301,34 +303,49 @@ int main( int argc, char* args[] ) {
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
                 state.menu = upgrade;
+                launchUpgradeMenu();
                 loadUpgradeMenu(state);
-                while((waveNumber) % 5 == 0 && state.menu == upgrade && !state.quit) {
+                while((waveNumber) % 1 == 0 && state.menu == upgrade && !state.quit) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
                         } else if(e.type == SDL_KEYDOWN) {
                             if(e.key.keysym.sym == SDLK_ESCAPE) {
-                                state.menu = notInMenu;
+                                closeUpgradeMenu(state,0,0);
                             }
                         } else if(e.type == SDL_MOUSEBUTTONDOWN) {
                             menuSelect(state);
                         } else if(e.type == SDL_MOUSEMOTION) {
                             mouseMove(state);
                         } else if( e.type == SDL_JOYAXISMOTION) {
-                            if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,MENU_CONTROL::right);
-                            } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) < -JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,MENU_CONTROL::left);
-                            } else if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,MENU_CONTROL::down);
+                            if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
+                                if(state.controllerStickReset) {
+                                    controllerEvent(state,MENU_CONTROL::down);
+                                    state.controllerStickReset = false;
+                                }
                             } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) < -JOYSTICK_DEAD_ZONE) {
-                                controllerEvent(state,MENU_CONTROL::up);
+                                if(state.controllerStickReset) {
+                                    controllerEvent(state,MENU_CONTROL::up);
+                                    state.controllerStickReset = false;
+                                }
+                            } else if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
+                                if(state.controllerStickReset) {
+                                    controllerEvent(state,MENU_CONTROL::right);
+                                    state.controllerStickReset = false;
+                                }
+                            } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) < -JOYSTICK_DEAD_ZONE) {
+                                if(state.controllerStickReset) {
+                                    controllerEvent(state,MENU_CONTROL::left);
+                                    state.controllerStickReset = false;
+                                }
+                            } else {
+                                state.controllerStickReset = true;
                             }
                         } else if( e.type == SDL_JOYBUTTONDOWN ) {
                             if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-
+                                controllerEvent(state,MENU_CONTROL::select);
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
-                                state.menu = notInMenu;
+                                closeUpgradeMenu(state,0,0);
                             }
                         }
                     }
@@ -1008,10 +1025,10 @@ bool init() {
         }
 
         loadController();
-        if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
+        /*if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
             printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
             success = false;
-        }
+        }*/
 
     }
 

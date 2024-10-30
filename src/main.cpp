@@ -44,6 +44,7 @@ void renderPlatforms(std::list<Platform*>& platforms);
 std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, int notDiv, int hp, std::vector<Spawn>* spawns);
 void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
 void loadController();
+void resetState();
 
 void checkIfSpawnsAreOnScreen(std::vector<Spawn>& enemySpawns);
 
@@ -270,6 +271,7 @@ int main( int argc, char* args[] ) {
                 shootingReset = true;
 
                 if(waveNumber == 0) {
+                    resetState();
                     timpy.setSecondaryWeapon(nullptr);
                     timpy.setAbility(none);
                 }
@@ -305,7 +307,8 @@ int main( int argc, char* args[] ) {
                 state.menu = upgrade;
                 launchUpgradeMenu();
                 loadUpgradeMenu(state);
-                while((waveNumber) % 1 == 0 && state.menu == upgrade && !state.quit) {
+                state.playerXP = timpy.getXP();
+                while((waveNumber) % 5 == 0 && state.menu == upgrade && !state.quit) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
@@ -383,6 +386,7 @@ int main( int argc, char* args[] ) {
                     SDL_RenderPresent(gameRenderer);
 
                 }
+                timpy.changeXP(state.playerXP-timpy.getXP());
                 if(state.fullHealth) {
                     timpy.setHP(3);
                     state.fullHealth = false;
@@ -443,6 +447,8 @@ int main( int argc, char* args[] ) {
                 bool waveStarted = false;
                 Uint32 startWaveLoad = SDL_GetTicks();
                 shootingReset = true;
+
+                updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
 
                 while(state.started && inWave && !state.quit) {
 
@@ -660,7 +666,6 @@ int main( int argc, char* args[] ) {
                                                 playerAlive = false;
                                                 waveNumber = 0;
                                                 timpy.zeroCombo();
-                                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                                             }
                                             playerDamaged = true;
                                         }
@@ -680,7 +685,6 @@ int main( int argc, char* args[] ) {
                                 }
                                 ++bit;
                             }
-                            updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                             if(state.developerMode) {
                                 SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                             }
@@ -694,7 +698,9 @@ int main( int argc, char* args[] ) {
                             if(!it->getEntity()->isAlive()) {
                                 explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                 explosion.play();
+                                timpy.changeXP(it->getDifficulty());
                                 timpy.increaseCombo();
+                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
                             }
                         }
                         if(it->getEntity()->isAlive()) {
@@ -730,7 +736,6 @@ int main( int argc, char* args[] ) {
                                             waveNumber = 0;
                                             shootingReset = true;
                                             timpy.zeroCombo();
-                                            updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                                         }
                                         playerDamaged = true;
                                     }
@@ -750,7 +755,6 @@ int main( int argc, char* args[] ) {
                                 }
                                 ++bit;
                             }
-                            updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                             if(state.developerMode) {
                                 SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                             }
@@ -765,6 +769,8 @@ int main( int argc, char* args[] ) {
                                 explosion.play();
                                 explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                 timpy.increaseCombo();
+                                timpy.changeXP(it->getDifficulty());
+                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
                             }
                         }
                         if(it->getEntity()->isAlive()) {
@@ -791,7 +797,6 @@ int main( int argc, char* args[] ) {
                     if(playerDamaged) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
                         timpy.zeroCombo();
-                        updateInGameText(timpy.getCombo(),waveNumber, timpy.getAbility());
                         timpy.charge(dt);
                         timpy.getEntity()->forceSpawn();
                     }
@@ -865,6 +870,20 @@ int main( int argc, char* args[] ) {
     }
     close();
     return 0;
+}
+
+void resetState() {
+    state.playerXP = 0;
+    timpyPointer->setXP(0);
+    state.c4Placed = false;
+    state.currentRevolverLevel = 1;
+    state.currentRifleLevel = 0;
+    state.currentShotgunLevel = 0;
+    state.currentKnifeLevel = 0;
+    state.currentLaserPistolLevel = 0;
+    state.weapon1 = 0;
+    state.weapon2 = -1;
+    loadUpgradeMenu(state);
 }
 
 void checkIfSpawnsAreOnScreen(std::vector<Spawn>& enemySpawns) {

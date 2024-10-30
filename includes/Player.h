@@ -53,6 +53,10 @@ public:
     void zeroCombo() { combo = 0;}
     int getCombo() const { return combo; }
 
+    void changeXP(int _xp) { xp += _xp;SDL_Log("Player XP: %i",xp); }
+    void setXP(int _xp ) { xp = _xp; }
+    int getXP() const { return xp; }
+
     int charge(float dt);
     Ability useAbility();
     Ability getAbility() { return currentAbility; }
@@ -94,6 +98,8 @@ private:
 
     int playerHealth = 3;
     int playerShield = 0;
+
+    int xp = 0;
 
     int combo = 0;
     bool topLevelShieldHit = false;

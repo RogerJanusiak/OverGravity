@@ -18,6 +18,8 @@ public:
     void knifeNotColliding() { knifeCollision = false; }
     [[nodiscard]] bool didAlreadyCollide() const { return knifeCollision; }
 
+    static int getDifficulty() { return 1; }
+
 private:
     const int enemyWidth = scale(24);
     const int enemyHeight = scale(50);

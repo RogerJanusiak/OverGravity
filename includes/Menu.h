@@ -68,7 +68,8 @@ public:
   void deactivate() { active = false; }
   [[nodiscard]] bool isActive() const { return active; }
 
-  void setupHover(int numberOflines) { ht.setup(numberOflines,renderer); }
+  void setupHover(int numberOflines) { ht.setup(numberOflines,renderer);hover = true; }
+  [[nodiscard]] bool hasHover() const { return hover; }
   void addLine(const std::string &lineText, const std::string& lineValue, TTF_Font *font, SDL_Color color) { ht.addLine(lineText,lineValue,font,color); }
   void renderHover(int x, int y) const { ht.render(x,y); }
 
@@ -108,6 +109,7 @@ private:
   bool usingText;
 
   UI_HoverText ht;
+  bool hover = false;
 
   State& state;
   SDL_Renderer* renderer;

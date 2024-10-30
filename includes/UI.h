@@ -6,7 +6,7 @@
 #include "Menu.h"
 
 void renderInGameText(bool developerMode, float lastFPS, bool waveStarted);
-void updateInGameText(int playerCombo, int wave, Ability ability);
+void updateInGameText(int playerCombo, int wave, int xp);
 
 void initMenus(State &state);
 void renderMenu(State & state);

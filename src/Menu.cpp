@@ -206,7 +206,7 @@ void UI_Menu::render() const {
         button.render();
     }
     for(auto& button : buttons) {
-        if(button.getType() == 2 && button.isSelected()) {
+        if(button.hasHover() && button.isSelected()) {
             button.renderHover(button.getX()+button.getWidth(),button.getY());
         }
     }
@@ -241,8 +241,8 @@ void UI_HoverText::render(const int x, const int y) const {
     int widestWidth = 0;
     int breakPoint = 0;
     for(int i = 0; i < text.size(); i++) {
-        if(widestWidth < text[i].getWidth()+2+values[i].getWidth()+20) {
-            widestWidth = text[i].getWidth()+2+values[i].getWidth()+20;
+        if(widestWidth < text[i].getWidth()+2+values[i].getWidth()+30) {
+            widestWidth = text[i].getWidth()+2+values[i].getWidth()+30;
             breakPoint = 10+text[i].getWidth();
         }
     }

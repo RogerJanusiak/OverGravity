@@ -2,7 +2,6 @@
 #define PLAYER_H
 #include <list>
 
-#include "Bullet.h"
 #include "Platform.h"
 #include "Texture.h"
 
@@ -17,6 +16,7 @@ enum Ability {
     bounce,
     respawn,
     c4,
+    grenade,
     none,
 };
 

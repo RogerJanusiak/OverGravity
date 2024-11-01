@@ -169,8 +169,6 @@ int main( int argc, char* args[] ) {
         SDL_Event e;
         Uint32 lastUpdate = SDL_GetTicks();
 
-        UI_init(gameRenderer, state);
-
         Sound explosion("resources/sounds/shortExplosion.wav", 0,-1);
         Sound mediumExplosion("resources/sounds/mediumExplosion.wav", 0,-1);
         Sound song("resources/sounds/song.wav", -1,0);
@@ -198,10 +196,6 @@ int main( int argc, char* args[] ) {
                 controllerEvent(state,MENU_CONTROL::connect);
             }
 
-            while(!state.started && !state.quit) {
-                startScreen();
-            }
-
             std::list<Platform> ePlatforms;
             std::vector<Spawn> enemySpawns;
             enemySpawns.reserve(15);
@@ -224,6 +218,12 @@ int main( int argc, char* args[] ) {
             Entity eTimpy = Entity(&playerSpawns,gameRenderer,10);
             Player timpy = Player(&eTimpy,&revolver);
             timpyPointer = &timpy;
+
+            UI_init(gameRenderer, state, &timpy);
+
+            while(!state.started && !state.quit) {
+                startScreen();
+            }
 
             state.camY = 0;
             state.camV = 0;
@@ -306,12 +306,8 @@ int main( int argc, char* args[] ) {
                 state.menu = upgrade;
                 launchUpgradeMenu();
 
-
-                state.playerXP = timpy.getXP();
-                state.playerHealth = timpy.getHP();
-                state.playerShield = timpy.getShield();
                 loadUpgradeMenu(state);
-                while((waveNumber-1) % 5 == 0 && state.menu == upgrade && !state.quit && waveNumber != 1) {
+                while((waveNumber-1) % 1 == 0 && (state.menu == upgrade || state.menu == abilityUpgrade) && !state.quit && waveNumber != 1) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
@@ -352,6 +348,14 @@ int main( int argc, char* args[] ) {
                                 controllerEvent(state,MENU_CONTROL::select);
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
                                 closeUpgradeMenu(state,0,0);
+                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) == 1) {
+                                if(state.menu == upgrade) {
+                                    showAbilityMenu(state,0,0);
+                                }
+                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_LEFTSHOULDER) == 1) {
+                                if(state.menu == abilityUpgrade) {
+                                    showWeaponMenu(state,0,0);
+                                }
                             }
                         }
                     }
@@ -389,16 +393,7 @@ int main( int argc, char* args[] ) {
                     SDL_RenderPresent(gameRenderer);
 
                 }
-
-                timpy.setXP(state.playerXP);
-                if(state.fullHealth) {
-                    timpy.setHP(3);
-                    state.fullHealth = false;
-                }
-                if(state.fullShield) {
-                    timpy.setShield(2);
-                    state.fullShield = false;
-                }
+                timpy.getEntity()->setXVelocity(0);
                 switch(state.weapon1) {
                     case 0:
                         timpy.setPrimaryWeapon(&revolver);
@@ -497,9 +492,10 @@ int main( int argc, char* args[] ) {
                                 timpy.getWeapon()->forceReload();
                             }
                             if(e.key.keysym.sym == SDLK_SPACE && waveStarted) {
-                                if(shootingReset) {
+                                if(shootingReset || state.resetShooting) {
                                     timpy.getWeapon()->shoot(&eBullets,&bullets,state,timpy.getDirection(),timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y);
                                     shootingReset = false;
+                                    state.resetShooting = false;
                                 }
                             } else if(e.key.keysym.sym == SDLK_e) {
                                 switch(timpy.useAbility()) {
@@ -876,7 +872,6 @@ int main( int argc, char* args[] ) {
 }
 
 void resetState() {
-    state.playerXP = 0;
     timpyPointer->setXP(0);
     state.c4Placed = false;
     state.currentRevolverLevel = 1;
@@ -884,6 +879,12 @@ void resetState() {
     state.currentShotgunLevel = 0;
     state.currentKnifeLevel = 0;
     state.currentLaserPistolLevel = 0;
+    state.currentBounceLevel = 0;
+    state.currentBounceLevel = 0;
+    state.currentTeleportLevel = 0;
+    state.currentC4Level = 0;
+    state.currentGrenadeLevel = 0;
+    timpyPointer->setAbility(none);
     state.weapon1 = 0;
     state.weapon2 = -1;
     loadUpgradeMenu(state);

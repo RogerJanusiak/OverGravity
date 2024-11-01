@@ -1,6 +1,6 @@
 #include "../includes/UI.h"
-#include "../includes/Player.h"
 #include "../includes/GlobalConstants.h"
+#include "../includes/State.h"
 
 #include <SDL_ttf.h>
 #include <string>
@@ -67,15 +67,20 @@ SDL_Rect upgradeShield2;
 UI_Menu mainMenu(4);
 UI_Menu levelSelect(2);
 UI_Menu pauseMenu(3);
-UI_Menu upgradeMenu(36);
+UI_Menu weaponUpgradeMenu(36);
+UI_Menu abilityUpgradeMenu(36);
 
-void UI_init(SDL_Renderer* _renderer, State& state) {
+Player* player;
+
+void UI_init(SDL_Renderer* _renderer, State& state, Player* _player) {
     counter = TTF_OpenFont("resources/sans.ttf",scale(18));
     small = TTF_OpenFont("resources/sans.ttf",scale(12));
     verySmall = TTF_OpenFont("resources/sans.ttf",scale(10));
     title = TTF_OpenFont("resources/sans.ttf",scale(34));
 
     renderer = _renderer;
+
+    player = _player;
 
     waveNumberText.setup(renderer);
     waveNumberTitle.setup(renderer);
@@ -194,51 +199,122 @@ void selectWeapon(State& state, int attr1, int attr2) {
 }
 
 void upgradeWeapon(State& state, int attr1, int attr2) {
-    if(state.playerXP >= state.weaponLevel[attr1][attr2][0]) {
+    if(player->getXP() >= state.weaponLevel[attr1][attr2][0]) {
+        bool upgraded = false;
         switch(attr1) {
         case 1: {
             if(attr2 == state.currentRifleLevel) {
                 state.currentRifleLevel++;
+                upgraded = true;
             }
         } break;
         case 2: {
             if(attr2 == state.currentShotgunLevel) {
                 state.currentShotgunLevel++;
+                upgraded = true;
             }
         } break;
         case 3: {
             if(attr2 == state.currentKnifeLevel) {
                 state.currentKnifeLevel++;
+                upgraded = true;
             }
         } break;
         case 4: {
             if(attr2 == state.currentLaserPistolLevel) {
                 state.currentLaserPistolLevel++;
+                upgraded = true;
             }
         } break;
         default: {
             if(attr2 == state.currentRevolverLevel) {
                 state.currentRevolverLevel++;
+                upgraded = true;
             }
         } break;
         }
-        state.playerXP -= state.weaponLevel[attr1][attr2][0];
+        if(upgraded) {
+            player->changeXP(-state.weaponLevel[attr1][attr2][0]);
+            loadUpgradeMenu(state);
+        }
+    }
+}
+
+void selectAbility(State& state, int attr1, int attr2) {
+    int abilityLevel;
+    Ability ability;
+    switch(attr1) {
+        case 1:
+            ability = respawn;
+            abilityLevel = state.currentTeleportLevel;
+            break;
+        case 2:
+            ability = c4;
+            abilityLevel = state.currentC4Level;
+            break;
+        case 3:
+            ability = grenade;
+            abilityLevel = state.currentGrenadeLevel;
+            break;
+        default:
+            ability = bounce;
+            abilityLevel = state.currentBounceLevel;
+            break;
+    }
+    if(abilityLevel > 0) {
+        player->setAbility(ability);
         loadUpgradeMenu(state);
     }
 }
 
+void upgradeAbility(State& state, int attr1, int attr2) {
+    if(player->getXP() >= state.abilityLevel[attr1][attr2][0]) {
+        bool upgraded = false;
+        switch(attr1) {
+        case 1: {
+            if(attr2 == state.currentTeleportLevel) {
+                state.currentTeleportLevel++;
+                upgraded = true;
+            }
+        } break;
+        case 2: {
+            if(attr2 == state.currentC4Level) {
+                state.currentC4Level++;
+                upgraded = true;
+            }
+        } break;
+        case 3: {
+            if(attr2 == state.currentGrenadeLevel) {
+                state.currentGrenadeLevel++;
+                upgraded = true;
+            }
+        } break;
+        default: {
+            if(attr2 == state.currentBounceLevel) {
+                state.currentBounceLevel++;
+                upgraded = true;
+            }
+        } break;
+        }
+        if(upgraded) {
+            player->changeXP(-state.abilityLevel[attr1][attr2][0]);
+            loadUpgradeMenu(state);
+        }
+    }
+}
+
 void fullHealth(State& state, int attr1, int attr2) {
-    if(state.playerXP >= 15) {
-        state.playerXP -= 15;
-        state.fullHealth = true;
+    if(player->getXP() >= 15) {
+        player->changeXP(-15);
+        player->setHP(3);
         loadUpgradeMenu(state);
     }
 }
 
 void fullShield(State& state, int attr1, int attr2) {
-    if(state.playerXP >= 15) {
-        state.playerXP -= 15;
-        state.fullShield = true;
+    if(player->getXP() >= 15) {
+        player->changeXP(-15);
+        player->setShield(2);
         loadUpgradeMenu(state);
     }
 }
@@ -249,6 +325,23 @@ void closeUpgradeMenu(State& state, int attr1, int attr2) {
         currentButton = nullptr;
     }
     state.menu = notInMenu;
+    state.resetShooting = true;
+}
+
+void showWeaponMenu(State& state, int attr1, int attr2) {
+    state.menu = upgrade;
+    currentButton = &(*weaponUpgradeMenu.getButtons())[2];
+    if(currentButton != nullptr) {
+        currentButton->select();
+    }
+}
+
+void showAbilityMenu(State& state, int attr1, int attr2) {
+    state.menu = abilityUpgrade;
+    currentButton = &(*abilityUpgradeMenu.getButtons())[2];
+    if(currentButton != nullptr) {
+        currentButton->select();
+    }
 }
 
 //Menu Functions
@@ -278,7 +371,7 @@ void initMenus(State& state) {
     pauseMenu.addTitle((WINDOW_WIDTH-gamePausedText.getWidth())/2,scale(100),gamePausedText);
 
     initWeaponUpgradeMenu(state);
-
+    initAbilityUpgradeMenu(state);
 }
 
 std::string removeTrailingZeros(double i) {
@@ -290,21 +383,26 @@ std::string removeTrailingZeros(double i) {
     return result;
 }
 
+void genericUpgradeMenuLayout(State& state, UI_Menu* menu) {
+    menu->addRenderer(renderer);
+    menu->addButton(scale(37),scale(100),"Max HP", &white,small,-1,-1,-1,-1, &fullHealth, state,1);
+    menu->getButtons()->back().setupHover(1);
+    menu->getButtons()->back().addLine("Cost: ", removeTrailingZeros(15), verySmall, white);
+
+    menu->addButton(scale(37),scale(140),"Max Shield", &white,small,0,-1,-1,-1, &fullShield, state,1);
+    menu->getButtons()->back().setupHover(1);
+    menu->getButtons()->back().addLine("Cost: ", removeTrailingZeros(15), verySmall, white);
+
+    menu->addButton(scale(37),scale(180),"Accept Changes", &white,small,1,-1,-1,-1, &closeUpgradeMenu, state,1);
+
+    menu->addButton(scale(160+128),scale(12),"Weapons", &white,small,-1,-1,-1,-1, &showWeaponMenu, state,1);
+    menu->addButton(scale(160+256),scale(12),"Abilities", &white,small,-1,-1,-1,-1, &showAbilityMenu, state,1);
+    menu->addButton(scale(160+384),scale(12),"Player", &white,small,-1,-1,-1,-1, &noAction, state,1);
+}
+
 void initWeaponUpgradeMenu(State& state) {
-    upgradeMenu.addRenderer(renderer);
-    upgradeMenu.addButton(scale(37),scale(100),"Max HP", &white,small,-1,-1,-1,-1, &fullHealth, state,1);
-    upgradeMenu.getButtons()->back().setupHover(1);
-    upgradeMenu.getButtons()->back().addLine("Cost: ", removeTrailingZeros(15), verySmall, white);
 
-    upgradeMenu.addButton(scale(37),scale(140),"Max Shield", &white,small,0,-1,-1,-1, &fullShield, state,1);
-    upgradeMenu.getButtons()->back().setupHover(1);
-    upgradeMenu.getButtons()->back().addLine("Cost: ", removeTrailingZeros(15), verySmall, white);
-
-    upgradeMenu.addButton(scale(37),scale(180),"Accept Changes", &white,small,1,-1,-1,-1, &closeUpgradeMenu, state,1);
-
-    upgradeMenu.addButton(scale(160+128),scale(12),"Weapons", &white,small,-1,-1,-1,-1, &noAction, state,1);
-    upgradeMenu.addButton(scale(160+256),scale(12),"Abilities", &white,small,-1,-1,-1,-1, &noAction, state,1);
-    upgradeMenu.addButton(scale(160+384),scale(12),"Player", &white,small,-1,-1,-1,-1, &noAction, state,1);
+    genericUpgradeMenuLayout(state,&weaponUpgradeMenu);
 
     for(int i = 0; i < state.numberOfWeapons; i++) {
         int start;
@@ -313,7 +411,7 @@ void initWeaponUpgradeMenu(State& state) {
         } else {
             start = 0;
         }
-        upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,start+i*6,-1, &selectWeapon, state,3,i);
+        weaponUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,start+i*6,-1, &selectWeapon, state,3,i);
         for(int j = 0; j < 5; j++) {
             std::string path;
             if(i == 0) {
@@ -329,35 +427,35 @@ void initWeaponUpgradeMenu(State& state) {
             }
 
             if(i == 0) {
-                upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                weaponUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
             } else {
-                upgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                weaponUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
             }
 
-            upgradeMenu.getButtons()->back().setupHover(6);
-            upgradeMenu.getButtons()->back().addLine("Cost: ", removeTrailingZeros(state.weaponLevel[i][j][0]), verySmall, white);
+            weaponUpgradeMenu.getButtons()->back().setupHover(6);
+            weaponUpgradeMenu.getButtons()->back().addLine("Cost: ", removeTrailingZeros(state.weaponLevel[i][j][0]), verySmall, white);
             if(i == 0 || i == 1) {
-                upgradeMenu.getButtons()->back().addLine("Clip Size: ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
-                upgradeMenu.getButtons()->back().addLine("Reload Speed : ", removeTrailingZeros(state.weaponLevel[i][j][2]), verySmall, white);
-                upgradeMenu.getButtons()->back().addLine("Bullet Durability: ", removeTrailingZeros(state.weaponLevel[i][j][3]), verySmall, white);
-                upgradeMenu.getButtons()->back().addLine("Damage: ", removeTrailingZeros(state.weaponLevel[i][j][4]), verySmall, white);
-                upgradeMenu.getButtons()->back().addLine("Strength: ", removeTrailingZeros(state.weaponLevel[i][j][5]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Clip Size: ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Reload Speed : ", removeTrailingZeros(state.weaponLevel[i][j][2]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Bullet Durability: ", removeTrailingZeros(state.weaponLevel[i][j][3]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Damage: ", removeTrailingZeros(state.weaponLevel[i][j][4]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Strength: ", removeTrailingZeros(state.weaponLevel[i][j][5]), verySmall, white);
             } else if(i== 2) {
-                upgradeMenu.getButtons()->back().addLine("Clip Size: ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
-                upgradeMenu.getButtons()->back().addLine("Reload Speed : ", removeTrailingZeros(state.weaponLevel[i][j][2]), verySmall, white);
-                upgradeMenu.getButtons()->back().addLine("Bullet Durability: ", removeTrailingZeros(state.weaponLevel[i][j][3]), verySmall, white);
-                upgradeMenu.getButtons()->back().addLine("Damage: ", removeTrailingZeros(state.weaponLevel[i][j][4]), verySmall, white);
-                upgradeMenu.getButtons()->back().addLine("# of Bullets: ", removeTrailingZeros(state.weaponLevel[i][j][5]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Clip Size: ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Reload Speed : ", removeTrailingZeros(state.weaponLevel[i][j][2]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Bullet Durability: ", removeTrailingZeros(state.weaponLevel[i][j][3]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Damage: ", removeTrailingZeros(state.weaponLevel[i][j][4]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("# of Bullets: ", removeTrailingZeros(state.weaponLevel[i][j][5]), verySmall, white);
             } else if(i == 3) {
-                upgradeMenu.getButtons()->back().addLine("Damage: ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Damage: ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
             } else if(i == 4) {
-                upgradeMenu.getButtons()->back().addLine("Cool Fire Rate: ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
-                upgradeMenu.getButtons()->back().addLine("Heat Buffer: ", removeTrailingZeros(state.weaponLevel[i][j][2]), verySmall, white);
-                upgradeMenu.getButtons()->back().addLine("Cool Off Time: ", removeTrailingZeros(state.weaponLevel[i][j][3]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Cool Fire Rate: ", removeTrailingZeros(state.weaponLevel[i][j][1]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Heat Buffer: ", removeTrailingZeros(state.weaponLevel[i][j][2]), verySmall, white);
+                weaponUpgradeMenu.getButtons()->back().addLine("Cool Off Time: ", removeTrailingZeros(state.weaponLevel[i][j][3]), verySmall, white);
             }
         }
     }
-    (*upgradeMenu.getButtons())[2].linkButtons(&(*upgradeMenu.getButtons())[1],&(*upgradeMenu.getButtons())[6],nullptr,&(*upgradeMenu.getButtons())[6]);
+    (*weaponUpgradeMenu.getButtons())[2].linkButtons(&(*weaponUpgradeMenu.getButtons())[1],&(*weaponUpgradeMenu.getButtons())[6],nullptr,&(*weaponUpgradeMenu.getButtons())[6]);
 
     xpText.setup(renderer);
     xpText.loadFromRenderedText("XP: 0", white, counter);
@@ -370,56 +468,139 @@ void initWeaponUpgradeMenu(State& state) {
 }
 
 void loadUpgradeMenu(State& state) {
-    for(auto& button : *upgradeMenu.getButtons()) {
+    for(auto& button : *weaponUpgradeMenu.getButtons()) {
         button.deactivate();
     }
     if(state.weapon1 != -1)  {
-        (*upgradeMenu.getButtons())[6+state.weapon1*6].activate();
+        (*weaponUpgradeMenu.getButtons())[6+state.weapon1*6].activate();
     }
     if(state.weapon2 != -1) {
-        (*upgradeMenu.getButtons())[6+state.weapon2*6].activate();
+        (*weaponUpgradeMenu.getButtons())[6+state.weapon2*6].activate();
     }
 
     for(int i = 0; i < 5;i++) {
-        (*upgradeMenu.getButtons())[7 + i].enable();
-        (*upgradeMenu.getButtons())[13 + i].enable();
-        (*upgradeMenu.getButtons())[19 + i].enable();
-        (*upgradeMenu.getButtons())[25 + i].enable();
-        (*upgradeMenu.getButtons())[31 + i].enable();
+        (*weaponUpgradeMenu.getButtons())[7 + i].enable();
+        (*weaponUpgradeMenu.getButtons())[13 + i].enable();
+        (*weaponUpgradeMenu.getButtons())[19 + i].enable();
+        (*weaponUpgradeMenu.getButtons())[25 + i].enable();
+        (*weaponUpgradeMenu.getButtons())[31 + i].enable();
         if(i>state.currentRevolverLevel) {
-            (*upgradeMenu.getButtons())[7 + i].disable();
+            (*weaponUpgradeMenu.getButtons())[7 + i].disable();
         } else if(i != state.currentRevolverLevel) {
-            (*upgradeMenu.getButtons())[7 + i].activate();
+            (*weaponUpgradeMenu.getButtons())[7 + i].activate();
         }
         if(i>state.currentRifleLevel) {
-            (*upgradeMenu.getButtons())[13 + i].disable();
+            (*weaponUpgradeMenu.getButtons())[13 + i].disable();
         } else if(i != state.currentRifleLevel) {
-            (*upgradeMenu.getButtons())[13 + i].activate();
+            (*weaponUpgradeMenu.getButtons())[13 + i].activate();
         }
         if(i>state.currentShotgunLevel) {
-            (*upgradeMenu.getButtons())[19 + i].disable();
+            (*weaponUpgradeMenu.getButtons())[19 + i].disable();
         } else if(i != state.currentShotgunLevel) {
-            (*upgradeMenu.getButtons())[19 + i].activate();
+            (*weaponUpgradeMenu.getButtons())[19 + i].activate();
         }
         if(i>state.currentKnifeLevel) {
-            (*upgradeMenu.getButtons())[25 + i].disable();
+            (*weaponUpgradeMenu.getButtons())[25 + i].disable();
         } else if(i != state.currentKnifeLevel) {
-            (*upgradeMenu.getButtons())[25 + i].activate();
+            (*weaponUpgradeMenu.getButtons())[25 + i].activate();
         }
         if(i>state.currentLaserPistolLevel) {
-            (*upgradeMenu.getButtons())[31 + i].disable();
+            (*weaponUpgradeMenu.getButtons())[31 + i].disable();
         } else if(i != state.currentLaserPistolLevel) {
-            (*upgradeMenu.getButtons())[31 + i].activate();
+            (*weaponUpgradeMenu.getButtons())[31 + i].activate();
         }
     }
-    xpText.loadFromRenderedText("Current XP: " + std::to_string(state.playerXP), white, counter);
+
+    for(auto& button : *abilityUpgradeMenu.getButtons()) {
+        button.deactivate();
+    }
+
+    if(player->getAbility() != none)  {
+        (*abilityUpgradeMenu.getButtons())[6+player->getAbility()*6].activate();
+    }
+
+    for(int i = 0; i < 5;i++) {
+        (*abilityUpgradeMenu.getButtons())[7 + i].enable();
+        (*abilityUpgradeMenu.getButtons())[13 + i].enable();
+        (*abilityUpgradeMenu.getButtons())[19 + i].enable();
+        (*abilityUpgradeMenu.getButtons())[25 + i].enable();
+        (*abilityUpgradeMenu.getButtons())[31 + i].enable();
+        if(i>state.currentBounceLevel) {
+            (*abilityUpgradeMenu.getButtons())[7 + i].disable();
+        } else if(i != state.currentBounceLevel) {
+            (*abilityUpgradeMenu.getButtons())[7 + i].activate();
+        }
+        if(i>state.currentTeleportLevel) {
+            (*abilityUpgradeMenu.getButtons())[13 + i].disable();
+        } else if(i != state.currentTeleportLevel) {
+            (*abilityUpgradeMenu.getButtons())[13 + i].activate();
+        }
+        if(i>state.currentC4Level) {
+            (*abilityUpgradeMenu.getButtons())[19 + i].disable();
+        } else if(i != state.currentC4Level) {
+            (*abilityUpgradeMenu.getButtons())[19 + i].activate();
+        }
+        if(i>state.currentGrenadeLevel) {
+            (*abilityUpgradeMenu.getButtons())[25 + i].disable();
+        } else if(i != state.currentGrenadeLevel) {
+            (*abilityUpgradeMenu.getButtons())[25 + i].activate();
+        }
+    }
+
+    xpText.loadFromRenderedText("Current XP: " + std::to_string(player->getXP()), white, counter);
 }
 
 void launchUpgradeMenu() {
-    currentButton = &(*upgradeMenu.getButtons())[2];
+    currentButton = &(*weaponUpgradeMenu.getButtons())[2];
     if(currentButton != nullptr) {
         currentButton->select();
     }
+}
+
+void initAbilityUpgradeMenu(State& state) {
+    genericUpgradeMenuLayout(state,&abilityUpgradeMenu);
+
+    for(int i = 0; i < state.numberOfAbilities; i++) {
+        int start;
+        if(i==0) {
+            start = 2;
+        } else {
+            start = 0;
+        }
+        abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,start+i*6,-1, &selectAbility, state,3,i);
+        for(int j = 0; j < 5; j++) {
+            std::string path;
+            if(i == 0) {
+                path = "upgrade-menu/upgrade-bounce.png";
+            } else if(i == 1) {
+                path = "upgrade-menu/upgrade-teleport.png";
+            } else if(i == 2) {
+                path = "upgrade-menu/upgrade-c4.png";
+            } else if(i == 3) {
+                path = "upgrade-menu/upgrade-grenade.png";
+            }
+
+            if(i == 0) {
+                abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+            } else {
+                abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+            }
+            abilityUpgradeMenu.getButtons()->back().setupHover(3);
+            abilityUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.abilityLevel[i][j][0]), verySmall, white);
+            abilityUpgradeMenu.getButtons()->back().addLine("Refresh: ",removeTrailingZeros(state.abilityLevel[i][j][1]), verySmall, white);
+
+            if(i == 1) {
+                abilityUpgradeMenu.getButtons()->back().addLine("Duration: ",removeTrailingZeros(state.abilityLevel[i][j][2]), verySmall, white);
+            } else if(i == 2) {
+                abilityUpgradeMenu.getButtons()->back().addLine("Damage: ",removeTrailingZeros(state.abilityLevel[i][j][2]), verySmall, white);
+            } else if(i == 3) {
+                abilityUpgradeMenu.getButtons()->back().addLine("Damage: ",removeTrailingZeros(state.abilityLevel[i][j][2]), verySmall, white);
+            }
+
+        }
+    }
+    (*abilityUpgradeMenu.getButtons())[2].linkButtons(&(*abilityUpgradeMenu.getButtons())[1],&(*abilityUpgradeMenu.getButtons())[6],nullptr,&(*abilityUpgradeMenu.getButtons())[6]);
+
 }
 
 UI_Menu* getCurrentMenu(State& state) {
@@ -431,7 +612,9 @@ UI_Menu* getCurrentMenu(State& state) {
         case pause:
             return &pauseMenu;
         case upgrade:
-            return &upgradeMenu;
+            return &weaponUpgradeMenu;
+        case abilityUpgrade:
+            return &abilityUpgradeMenu;
         default:
             return nullptr;
     }
@@ -439,7 +622,7 @@ UI_Menu* getCurrentMenu(State& state) {
 
 void renderUpgradeMenu(State& state) {
     xpText.render(scale(37),scale(37));
-    switch(state.playerShield) {
+    switch(player->getShield()) {
         case 2: {
             SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
             SDL_RenderFillRect(renderer,&upgradeShield1);
@@ -458,7 +641,7 @@ void renderUpgradeMenu(State& state) {
         } break;
     }
 
-    switch(state.playerHealth) {
+    switch(player->getHP()) {
         case 3: {
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
             SDL_RenderFillRect(renderer,&upgradeHealth1);
@@ -490,7 +673,7 @@ void renderMenu(State& state) {
   if (UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr) {
       currentMenu->render();
   }
-    if(state.menu == upgrade) {
+    if(state.menu == upgrade || state.menu == abilityUpgrade) {
         renderUpgradeMenu(state);
     }
 }

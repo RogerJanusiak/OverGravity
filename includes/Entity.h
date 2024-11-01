@@ -66,7 +66,7 @@ private:
 
     bool isOnPlatform = true;
 
-    SDL_Rect entityRect;
+    SDL_Rect entityRect = {-150,-150,0,0};
     SDL_Renderer* gameRender;
 
 };

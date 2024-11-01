@@ -56,6 +56,13 @@ SDL_Rect timeToAbility;
 
 Texture ammoLeftText;
 Texture gamePausedText;
+Texture xpText;
+
+SDL_Rect upgradeHealth1;
+SDL_Rect upgradeHealth2;
+SDL_Rect upgradeHealth3;
+SDL_Rect upgradeShield1;
+SDL_Rect upgradeShield2;
 
 UI_Menu mainMenu(4);
 UI_Menu levelSelect(2);
@@ -224,6 +231,7 @@ void fullHealth(State& state, int attr1, int attr2) {
     if(state.playerXP >= 15) {
         state.playerXP -= 15;
         state.fullHealth = true;
+        loadUpgradeMenu(state);
     }
 }
 
@@ -231,6 +239,7 @@ void fullShield(State& state, int attr1, int attr2) {
     if(state.playerXP >= 15) {
         state.playerXP -= 15;
         state.fullShield = true;
+        loadUpgradeMenu(state);
     }
 }
 
@@ -349,6 +358,15 @@ void initWeaponUpgradeMenu(State& state) {
         }
     }
     (*upgradeMenu.getButtons())[2].linkButtons(&(*upgradeMenu.getButtons())[1],&(*upgradeMenu.getButtons())[6],nullptr,&(*upgradeMenu.getButtons())[6]);
+
+    xpText.setup(renderer);
+    xpText.loadFromRenderedText("XP: 0", white, counter);
+
+    upgradeHealth1 = {scale(37),scale(72),scale(15),scale(15)};
+    upgradeHealth2 = {scale(57),scale(72),scale(15),scale(15)};
+    upgradeHealth3 = {scale(77),scale(72),scale(15),scale(15)};
+    upgradeShield1 = {scale(97),scale(72),scale(15),scale(15)};
+    upgradeShield2 = {scale(117),scale(72),scale(15),scale(15)};
 }
 
 void loadUpgradeMenu(State& state) {
@@ -394,7 +412,7 @@ void loadUpgradeMenu(State& state) {
             (*upgradeMenu.getButtons())[31 + i].activate();
         }
     }
-
+    xpText.loadFromRenderedText("Current XP: " + std::to_string(state.playerXP), white, counter);
 }
 
 void launchUpgradeMenu() {
@@ -419,10 +437,64 @@ UI_Menu* getCurrentMenu(State& state) {
     }
 }
 
-void renderMenu(State& state) {
-  if (UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr)
-        currentMenu->render();
+void renderUpgradeMenu(State& state) {
+    xpText.render(scale(37),scale(37));
+    switch(state.playerShield) {
+        case 2: {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            SDL_RenderFillRect(renderer,&upgradeShield1);
+            SDL_RenderFillRect(renderer,&upgradeShield2);
+        } break;
+        case 1: {
+            SDL_SetRenderDrawColor(renderer, 183, 201, 226, 255);
+            SDL_RenderFillRect(renderer,&upgradeShield1);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            SDL_RenderFillRect(renderer,&upgradeShield2);
+        } break;
+        default: {
+            SDL_SetRenderDrawColor(renderer, 183, 201, 226, 255);
+            SDL_RenderFillRect(renderer,&upgradeShield1);
+            SDL_RenderFillRect(renderer,&upgradeShield2);
+        } break;
+    }
+
+    switch(state.playerHealth) {
+        case 3: {
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            SDL_RenderFillRect(renderer,&upgradeHealth1);
+            SDL_RenderFillRect(renderer,&upgradeHealth2);
+            SDL_RenderFillRect(renderer,&upgradeHealth3);
+        } break;
+        case 2: {
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            SDL_RenderFillRect(renderer,&upgradeHealth1);
+            SDL_RenderFillRect(renderer,&upgradeHealth2);
+            SDL_SetRenderDrawColor(renderer, 170, 104, 95, 255);
+            SDL_RenderFillRect(renderer,&upgradeHealth3);
+        } break;
+        case 1: {
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            SDL_RenderFillRect(renderer,&upgradeHealth1);
+            SDL_SetRenderDrawColor(renderer, 170, 104, 95, 255);
+            SDL_RenderFillRect(renderer,&upgradeHealth2);
+            SDL_RenderFillRect(renderer,&upgradeHealth3);
+        } break;
+    default:
+        break;
+    }
+
+
 }
+
+void renderMenu(State& state) {
+  if (UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr) {
+      currentMenu->render();
+  }
+    if(state.menu == upgrade) {
+        renderUpgradeMenu(state);
+    }
+}
+
 
 void mouseMove(State& state) {
     int x, y;

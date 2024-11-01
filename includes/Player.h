@@ -53,7 +53,7 @@ public:
     void zeroCombo() { combo = 0;}
     int getCombo() const { return combo; }
 
-    void changeXP(int _xp) { xp += _xp;SDL_Log("Player XP: %i",xp); }
+    void changeXP(int _xp) { xp += _xp; }
     void setXP(int _xp ) { xp = _xp; }
     int getXP() const { return xp; }
 
@@ -65,6 +65,7 @@ public:
 
     Entity* getC4Entity() { return &c4Entity; }
 
+    SDL_Rect getHitRect() { return playerHitRect; }
     SDL_Rect* getWheelRect() { return &wheelRect; }
     void updateWheelRect() {
         wheelRect.x = getEntity()->getRect().x+((getEntity()->getRect().w-20)/2);
@@ -85,6 +86,7 @@ private:
 
     Entity* playerEntity;
 
+    SDL_Rect playerHitRect;
     SDL_Rect wheelRect;
 
     Texture playerTextureRight;

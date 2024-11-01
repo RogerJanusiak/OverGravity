@@ -75,7 +75,8 @@ bool Entity::move(float dt,const std::list<Platform*> &platforms, int* amountFal
 }
 
 void Entity::spawn(bool spawnOnScreen) {
-    auto currentSpawnIt = spawns->begin() + (rand() % spawns->size());
+    int test2 =  rand() % spawns->size();
+    auto currentSpawnIt = spawns->begin() + test2;
     if(!currentSpawnIt->getOccupied() && (!spawnOnScreen || currentSpawnIt->isOnScreen())) {
         offPlatform = false;
         spawned = true;

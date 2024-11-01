@@ -43,6 +43,8 @@ struct State {
         int playerTileX = 0;
         int playerTileY = 0;
         int playerX = 0;
+        int playerHealth = 3;
+        int playerShield = 2;
         bool fullHealth = false;
         bool fullShield = false;
         int playerXP = 0;
@@ -59,7 +61,7 @@ struct State {
         int weapon1 = 0;
         int weapon2 = -1;
 
-        float weaponLevel[5][5][6] = {
+        double weaponLevel[5][5][6] = {
             {{10,4,3,1,1,1},{20,5,3,1,1,1},{30,6,2,2,1,1},{40,7,2,2,2,1},{50,8,1,2,2,1}}, //Revolver
             {{10,2,3,1,1,1},{20,2,3,2,2,2},{30,3,2,2,3,2},{40,3,2,2,4,3},{50,4,2,2,5,3}}, //Rifle
             {{10,1,3,1,1,3},{20,1,3,1,1,4},{30,2,2,1,1,5},{40,2,2,1,1,6},{50,3,1,1,1,7}}, //Shotgun

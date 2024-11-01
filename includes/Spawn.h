@@ -38,7 +38,7 @@ private:
 
     SDL_Rect rect;
     bool occupied = false;
-    bool onScreen = false;
+    bool onScreen = true;
     int type = 0;
 
 };

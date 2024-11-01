@@ -121,6 +121,11 @@ int Player::move(float dt,const std::list<Platform*> &platforms,int camY) {
     wheelRect.x = getEntity()->getRect().x+((getEntity()->getRect().w-20)/2);
     wheelRect.y = getEntity()->getRect().y+getEntity()->getRect().h-20;
 
+    playerHitRect.x = getEntity()->getRect().x+scale(12);
+    playerHitRect.y = getEntity()->getRect().y;
+    playerHitRect.w = getEntity()->getRect().w-scale(25);
+    playerHitRect.h = getEntity()->getRect().h;
+
     return amountFallen;
 }
 

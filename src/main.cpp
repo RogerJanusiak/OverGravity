@@ -177,7 +177,7 @@ int main( int argc, char* args[] ) {
 
         std::list<Explosion> explosions;
 
-        song.play();
+        //song.play();
 
         if(controller != nullptr) {
             controllerEvent(state,MENU_CONTROL::connect);
@@ -268,7 +268,6 @@ int main( int argc, char* args[] ) {
 
                 bool leftMovement = false;
                 bool rightMovement = false;
-                shootingReset = true;
 
                 if(waveNumber == 0) {
                     resetState();
@@ -306,9 +305,13 @@ int main( int argc, char* args[] ) {
 
                 state.menu = upgrade;
                 launchUpgradeMenu();
-                loadUpgradeMenu(state);
+
+
                 state.playerXP = timpy.getXP();
-                while((waveNumber) % 5 == 0 && state.menu == upgrade && !state.quit) {
+                state.playerHealth = timpy.getHP();
+                state.playerShield = timpy.getShield();
+                loadUpgradeMenu(state);
+                while((waveNumber-1) % 5 == 0 && state.menu == upgrade && !state.quit && waveNumber != 1) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
@@ -386,7 +389,8 @@ int main( int argc, char* args[] ) {
                     SDL_RenderPresent(gameRenderer);
 
                 }
-                timpy.changeXP(state.playerXP-timpy.getXP());
+
+                timpy.setXP(state.playerXP);
                 if(state.fullHealth) {
                     timpy.setHP(3);
                     state.fullHealth = false;
@@ -446,7 +450,6 @@ int main( int argc, char* args[] ) {
 
                 bool waveStarted = false;
                 Uint32 startWaveLoad = SDL_GetTicks();
-                shootingReset = true;
 
                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
 
@@ -657,7 +660,7 @@ int main( int argc, char* args[] ) {
                                 if(timpy.getWeapon()->getType() == Weapon_Type::knife && !Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
                                     it->knifeNotColliding();
                                 }
-                                if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
+                                if( Entity::isColliding(it->getEntity()->getRect(),timpy.getHitRect())) {
                                     if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y
                                         && timpy.getAbility() == Ability::bounce) {
                                         timpy.getEntity()->setYVelocity(-1800);
@@ -727,14 +730,13 @@ int main( int argc, char* args[] ) {
                                 if(timpy.getWeapon()->getType() == Weapon_Type::knife && !Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
                                     it->knifeNotColliding();
                                 }
-                                if( Entity::isColliding(it->getEntity()->getRect(),timpy.getEntity()->getRect())) {
+                                if( Entity::isColliding(it->getEntity()->getRect(),timpy.getHitRect())) {
                                     if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y && timpy.getAbility() == Ability::bounce) {
                                         timpy.getEntity()->setYVelocity(-1800);
                                     } else {
                                         if(timpy.damage()) {
                                             playerAlive = false;
                                             waveNumber = 0;
-                                            shootingReset = true;
                                             timpy.zeroCombo();
                                         }
                                         playerDamaged = true;
@@ -791,7 +793,6 @@ int main( int argc, char* args[] ) {
                         }
                     }
 
-
                     c4Exploded = false;
 
                     if(playerDamaged) {
@@ -833,6 +834,8 @@ int main( int argc, char* args[] ) {
                     if(state.developerMode) {
                         SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
                         SDL_RenderDrawRect(gameRenderer, timpy.getWheelRect());
+                        SDL_Rect tempHitRect = timpy.getHitRect();
+                        SDL_RenderDrawRect(gameRenderer, &tempHitRect);
                     }
 
                     checkIfSpawnsAreOnScreen(enemySpawns);
@@ -1044,10 +1047,10 @@ bool init() {
         }
 
         loadController();
-        /*if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
+        if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
             printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
             success = false;
-        }*/
+        }
 
     }
 

@@ -131,10 +131,9 @@ int Weapon::reload(float dt) {
 }
 
 void Weapon::forceReload() {
-
+  timeSinceShot = 0;
   reloaded = false;
   bulletsInClip = 0;
-
 }
 
 bool Weapon::wasJustReloaded() {

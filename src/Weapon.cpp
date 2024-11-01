@@ -183,170 +183,34 @@ bool Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, cons
 
 void Weapon::upgrade(const State& state) {
     if(type == revolver) {
-        switch(state.currentRevolverLevel) {
-            case 1: {
-              clipSize = 4;
-              reloadSpeed = 3;
-              bulletDurability = 1;
-              bulletStrength = 1;
-              bulletDamage = 1;
-            } break;
-            case 2: {
-              clipSize = 5;
-              reloadSpeed = 3;
-              bulletDurability = 1;
-              bulletStrength = 1;
-              bulletDamage = 1;
-            } break;
-            case 3: {
-              clipSize = 6;
-              reloadSpeed = 2;
-              bulletDurability = 2;
-              bulletStrength = 1;
-              bulletDamage = 1;
-            } break;
-            case 4: {
-              clipSize = 7;
-              reloadSpeed = 2;
-              bulletDurability = 2;
-              bulletStrength = 1;
-              bulletDamage = 2;
-            } break;
-            case 5: {
-              clipSize = 8;
-              reloadSpeed = 1;
-              bulletDurability = 2;
-              bulletStrength = 1;
-              bulletDamage = 2;
-            } break;
-            default:
-                break;
-        }
+        int level = state.currentRevolverLevel == 0 ? 0 : state.currentRevolverLevel - 1;
+        clipSize = state.weaponLevel[0][level][1];
+        reloadSpeed = state.weaponLevel[0][level][2];
+        bulletDurability = state.weaponLevel[0][level][3];
+        bulletStrength = state.weaponLevel[0][level][4];
+        bulletDamage = state.weaponLevel[0][level][5];
     } else if(type == rifle) {
-      switch(state.currentRifleLevel) {
-        case 1: {
-          clipSize = 2;
-          reloadSpeed = 3;
-          bulletDurability = 1;
-          bulletStrength = 1;
-          bulletDamage = 1;
-        } break;
-        case 2: {
-          clipSize = 2;
-          reloadSpeed = 3;
-          bulletDurability = 2;
-          bulletStrength = 2;
-          bulletDamage = 2;
-        } break;
-        case 3: {
-          clipSize = 3;
-          reloadSpeed = 2;
-          bulletDurability = 2;
-          bulletStrength = 2;
-          bulletDamage = 3;
-        } break;
-        case 4: {
-          clipSize = 3;
-          reloadSpeed = 2;
-          bulletDurability = 2;
-          bulletStrength = 3;
-          bulletDamage = 4;
-        } break;
-        case 5: {
-          clipSize = 4;
-          reloadSpeed = 2;
-          bulletDurability = 2;
-          bulletStrength = 3;
-          bulletDamage = 5;
-        } break;
-        default:
-          break;
-      }
+      int level = state.currentRifleLevel == 0 ? 0 : state.currentRifleLevel - 1;
+      clipSize = state.weaponLevel[1][level][1];
+      reloadSpeed = state.weaponLevel[1][level][2];
+      bulletDurability = state.weaponLevel[1][level][3];
+      bulletStrength = state.weaponLevel[1][level][4];
+      bulletDamage = state.weaponLevel[1][level][5];
     } else if(type == shotgun) {
-      switch(state.currentShotgunLevel) {
-      case 1: {
-        clipSize = 1;
-        reloadSpeed = 3;
-        bulletDurability = 1;
-        bulletDamage = 1;
-        bulletsPerShot = 3;
-      } break;
-      case 2: {
-        clipSize = 1;
-        reloadSpeed = 3;
-        bulletDurability = 1;
-        bulletDamage = 1;
-        bulletsPerShot = 4;
-      } break;
-      case 3: {
-        clipSize = 2;
-        reloadSpeed = 2;
-        bulletDurability = 1;
-        bulletDamage = 1;
-        bulletsPerShot = 5;
-      } break;
-      case 4: {
-        clipSize = 2;
-        reloadSpeed = 2;
-        bulletDurability = 1;
-        bulletDamage = 1;
-        bulletsPerShot = 6;
-      } break;
-      case 5: {
-        clipSize = 3;
-        reloadSpeed = 1;
-        bulletDurability = 1;
-        bulletDamage = 1;
-        bulletsPerShot = 7;
-      } break;
-      default:
-        break;
-      }
+      int level = state.currentShotgunLevel == 0 ? 0 : state.currentShotgunLevel - 1;
+      clipSize = state.weaponLevel[2][level][1];
+      reloadSpeed = state.weaponLevel[2][level][2];
+      bulletDurability = state.weaponLevel[2][level][3];
+      bulletDamage = state.weaponLevel[2][level][4];
+      bulletsPerShot = state.weaponLevel[2][level][5];
     } else if(type == knife) {
-      switch(state.currentKnifeLevel) {
-        default:
-        case 1:
-        case 2:
-          bulletDamage = 1;
-          break;
-        case 3:
-        case 4:
-          bulletDamage = 2;
-          break;
-        case 5:
-          bulletDamage = 3;
-          break;
-      }
+      int level = state.currentKnifeLevel == 0 ? 0 : state.currentKnifeLevel - 1;
+      bulletDamage = state.weaponLevel[3][level][1];
     } else if(type == laserPistol) {
-      switch(state.currentLaserPistolLevel) {
-      case 1: {
-        clipSize = 2;
-        reloadSpeed = 3;
-        coolFireRate = 0.5;
-      } break;
-      case 2: {
-        clipSize = 3;
-        reloadSpeed = 3;
-        coolFireRate = 0.5;
-      } break;
-      case 3: {
-        clipSize = 4;
-        reloadSpeed = 2;
-        coolFireRate = 0.4;
-      } break;
-      case 4: {
-        clipSize = 5;
-        reloadSpeed = 2;
-        coolFireRate = 0.4;
-      } break;
-      case 5: {
-        clipSize = 6;
-        reloadSpeed = 2;
-        coolFireRate = 0.3;
-      } break;
-      default:
-        break;
-      }
+      int level = state.currentLaserPistolLevel == 0 ? 0 : state.currentLaserPistolLevel - 1;
+      clipSize = state.weaponLevel[4][level][1];
+      reloadSpeed = state.weaponLevel[4][level][2];
+      coolFireRate = state.weaponLevel[4][level][3];
       bulletsInClip = 0;
     }
 }

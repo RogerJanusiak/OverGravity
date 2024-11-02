@@ -272,7 +272,7 @@ int main( int argc, char* args[] ) {
                 if(waveNumber == 0) {
                     resetState();
                     timpy.setSecondaryWeapon(nullptr);
-                    timpy.setAbility(none);
+                    timpy.setAbility(bounce);
                 }
                 inWave = true;
                 waveNumber++;
@@ -465,7 +465,8 @@ int main( int argc, char* args[] ) {
                                 waveOverride = true;
                             }
                             if(e.key.keysym.sym == SDLK_3 && state.developerMode) {
-                                timpy.getEntity()->forceSpawn();
+                                timpy.setInvincible(true);
+                                SDL_Log("test");
                             }
                             if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
                                 pauseEnemy = !pauseEnemy;
@@ -499,7 +500,7 @@ int main( int argc, char* args[] ) {
                                 }
                             } else if(e.key.keysym.sym == SDLK_e) {
                                 switch(timpy.useAbility()) {
-                                    case respawn: {
+                                    case teleport: {
                                         timpy.getEntity()->forceSpawn();
                                     } break;
                                     case c4: {
@@ -562,7 +563,7 @@ int main( int argc, char* args[] ) {
                                 timpy.changeWeapon();
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
                                 switch(timpy.useAbility()) {
-                                    case respawn: {
+                                    case teleport: {
                                         timpy.getEntity()->forceSpawn();
                                     } break;
                                     case c4: {
@@ -594,7 +595,7 @@ int main( int argc, char* args[] ) {
                         updateTimeToShoot(scale(75));
                     }
 
-                    updateTimeToAbility(scale(timpy.charge(dt)));
+                    updateTimeToAbility(scale(timpy.charge(dt, state)));
                     if(timpy.getWeapon()->wasJustReloaded()) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 1 / 2, 0xFFFF * 1 / 2, 50 );
                     }
@@ -658,17 +659,20 @@ int main( int argc, char* args[] ) {
                                 }
                                 if( Entity::isColliding(it->getEntity()->getRect(),timpy.getHitRect())) {
                                     if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y
-                                        && timpy.getAbility() == Ability::bounce) {
-                                        timpy.getEntity()->setYVelocity(-1800);
-                                        } else {
+                                        && timpy.getAbility() == Ability::bounce && timpy.isCharged()) {
+                                            timpy.getEntity()->setYVelocity(-1800);
+                                            it->getEntity()->damage(5);
+                                            timpy.setInvincible(true);
+                                        } else if(!timpy.isInvincible()) {
                                             if(timpy.damage()) {
                                                 playerAlive = false;
                                                 waveNumber = 0;
                                                 timpy.zeroCombo();
                                             }
                                             playerDamaged = true;
+                                            it->getEntity()->damage(5);
                                         }
-                                    it->getEntity()->damage(5);
+
                                 }
                             }
                             for(auto bit = bullets.begin(); bit != bullets.end();) {
@@ -727,17 +731,20 @@ int main( int argc, char* args[] ) {
                                     it->knifeNotColliding();
                                 }
                                 if( Entity::isColliding(it->getEntity()->getRect(),timpy.getHitRect())) {
-                                    if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y && timpy.getAbility() == Ability::bounce) {
+                                    if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y && timpy.getAbility() == Ability::bounce && timpy.isCharged()) {
                                         timpy.getEntity()->setYVelocity(-1800);
-                                    } else {
+                                        it->getEntity()->damage(5);
+                                        timpy.setInvincible(true);
+                                    } else if(!timpy.isInvincible()) {
                                         if(timpy.damage()) {
                                             playerAlive = false;
                                             waveNumber = 0;
                                             timpy.zeroCombo();
                                         }
                                         playerDamaged = true;
+                                        it->getEntity()->damage(5);
                                     }
-                                    it->getEntity()->damage(5);
+
                                 }
                             }
                             for(auto bit = bullets.begin(); bit != bullets.end();) {
@@ -794,7 +801,7 @@ int main( int argc, char* args[] ) {
                     if(playerDamaged) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
                         timpy.zeroCombo();
-                        timpy.charge(dt);
+                        timpy.charge(dt,state);
                         timpy.getEntity()->forceSpawn();
                     }
 
@@ -872,22 +879,22 @@ int main( int argc, char* args[] ) {
 }
 
 void resetState() {
-    timpyPointer->setXP(0);
+    timpyPointer->setXP(200);
     state.c4Placed = false;
     state.currentRevolverLevel = 1;
     state.currentRifleLevel = 0;
     state.currentShotgunLevel = 0;
     state.currentKnifeLevel = 0;
     state.currentLaserPistolLevel = 0;
-    state.currentBounceLevel = 0;
-    state.currentBounceLevel = 0;
-    state.currentTeleportLevel = 0;
-    state.currentC4Level = 0;
-    state.currentGrenadeLevel = 0;
-    timpyPointer->setAbility(none);
+    state.abilityLevels[grenade] = 0;
+    state.abilityLevels[teleport] = 0;
+    state.abilityLevels[c4] = 0;
+    state.abilityLevels[bounce] = 0;
+    timpyPointer->setAbility(bounce);
     state.weapon1 = 0;
     state.weapon2 = -1;
     loadUpgradeMenu(state);
+    timpyPointer->charge(100,state);
 }
 
 void checkIfSpawnsAreOnScreen(std::vector<Spawn>& enemySpawns) {

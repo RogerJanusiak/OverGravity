@@ -14,7 +14,7 @@
 
 enum Ability {
     bounce,
-    respawn,
+    teleport,
     c4,
     grenade,
     none,
@@ -57,11 +57,15 @@ public:
     void setXP(int _xp ) { xp = _xp; }
     int getXP() const { return xp; }
 
-    int charge(float dt);
+    int charge(float dt, State& state);
     Ability useAbility();
+    [[nodiscard]] bool isCharged() const { return charged;}
     Ability getAbility() { return currentAbility; }
     void setAbility(Ability ability) { currentAbility = ability; c4left = 3; }
     int getC4Left() { return c4left; }
+
+    [[nodiscard]] bool isInvincible() const { return invincible; }
+    void setInvincible(bool _invincible) { invincible = _invincible; }
 
     Entity* getC4Entity() { return &c4Entity; }
 
@@ -109,7 +113,8 @@ private:
     bool charged = true;
     bool justCharged = false;
 
-    const double abilityReloadSpeed = 15;
+    bool invincible = false;
+
     const int comboToGetShield = 10;
 
     float timeSinceShot;

@@ -329,6 +329,7 @@ void closeUpgradeMenu(State& state, int attr1, int attr2) {
 }
 
 void showWeaponMenu(State& state, int attr1, int attr2) {
+    closeUpgradeMenu(state,attr1,attr2);
     state.menu = upgrade;
     currentButton = &(*weaponUpgradeMenu.getButtons())[2];
     if(currentButton != nullptr) {
@@ -337,6 +338,7 @@ void showWeaponMenu(State& state, int attr1, int attr2) {
 }
 
 void showAbilityMenu(State& state, int attr1, int attr2) {
+    closeUpgradeMenu(state,attr1,attr2);
     state.menu = abilityUpgrade;
     currentButton = &(*abilityUpgradeMenu.getButtons())[2];
     if(currentButton != nullptr) {

@@ -57,7 +57,7 @@ public:
     void setXP(int _xp ) { xp = _xp; }
     int getXP() const { return xp; }
 
-    int charge(float dt, State& state);
+    int charge(State& state);
     void useAbility(State& state);
     [[nodiscard]] bool isCharged() const { return charged;}
     Ability getAbility() { return currentAbility; }
@@ -117,7 +117,6 @@ private:
     const int comboToGetShield = 10;
 
     float timeSinceShot;
-    float timeSinceAbilty;
 
     SDL_Rect weaponRect;
 

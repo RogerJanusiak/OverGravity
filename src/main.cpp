@@ -274,7 +274,7 @@ int main( int argc, char* args[] ) {
                 if(waveNumber == 0) {
                     resetState();
                     timpy.setSecondaryWeapon(nullptr);
-                    timpy.setAbility(c4);
+                    timpy.setAbility(none);
                 }
                 inWave = true;
                 waveNumber++;
@@ -309,7 +309,7 @@ int main( int argc, char* args[] ) {
                 launchUpgradeMenu();
 
                 loadUpgradeMenu(state);
-                while((waveNumber-1) % 1 == 0 && (state.menu == upgrade || state.menu == abilityUpgrade) && !state.quit && waveNumber != 1) {
+                while((waveNumber-1) % 5 == 0 && (state.menu == upgrade || state.menu == abilityUpgrade) && !state.quit && waveNumber != 1) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
@@ -520,8 +520,8 @@ int main( int argc, char* args[] ) {
                             } else if(e.key.keysym.sym == SDLK_r) {
                                 timpy.getWeapon()->forceReload();
                             }
-                            if(e.key.keysym.sym == SDLK_SPACE && waveStarted) {
-                                if(shootingReset || state.resetShooting) {
+                            if(e.key.keysym.sym == SDLK_SPACE && waveStarted && !state.c4Placed) {
+                                if((shootingReset || state.resetShooting) && !state.teleportSelection) {
                                     timpy.getWeapon()->shoot(&eBullets,&bullets,state,timpy.getDirection(),timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y);
                                     shootingReset = false;
                                     state.resetShooting = false;
@@ -573,7 +573,7 @@ int main( int argc, char* args[] ) {
                             }
                         } else if( e.type == SDL_JOYAXISMOTION) {
                             if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
-                                if(shootingReset) {
+                                if(shootingReset && !state.teleportSelection && !state.c4Placed) {
                                     if(timpy.getWeapon()->shoot(&eBullets,&bullets,state,timpy.getDirection(),timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y)) {
                                         SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 150 );
                                     } else {
@@ -586,9 +586,31 @@ int main( int argc, char* args[] ) {
                             }
 
                             if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX) > JOYSTICK_DEAD_ZONE) {
-                                timpy.setDirection(true);
+                                if(state.teleportSelection) {
+                                    state.tcVx = 1;
+                                } else {
+                                    timpy.setDirection(true);
+                                }
                             } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX) < -JOYSTICK_DEAD_ZONE) {
-                                timpy.setDirection(false);
+                                if(state.teleportSelection) {
+                                    state.tcVx = -1;
+                                } else {
+                                    timpy.setDirection(false);
+                                }
+                            } else {
+                                state.tcVx = 0;
+                            }
+
+                            if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY) > JOYSTICK_DEAD_ZONE) {
+                                if(state.teleportSelection) {
+                                    state.tcVy = 1;
+                                }
+                            } else if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY) < -JOYSTICK_DEAD_ZONE) {
+                                if(state.teleportSelection) {
+                                    state.tcVy = -1;
+                                }
+                            } else {
+                                state.tcVy = 0;
                             }
 
                             if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
@@ -632,7 +654,7 @@ int main( int argc, char* args[] ) {
                         updateTimeToShoot(scale(75));
                     }
 
-                    updateTimeToAbility(scale(timpy.charge(dt, state)));
+                    updateTimeToAbility(scale(timpy.charge( state)));
                     if(timpy.getWeapon()->wasJustReloaded()) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 1 / 2, 0xFFFF * 1 / 2, 50 );
                     }
@@ -740,6 +762,7 @@ int main( int argc, char* args[] ) {
                                 explosion.play();
                                 timpy.changeXP(it->getDifficulty());
                                 timpy.increaseCombo();
+                                state.abilitiesKills++;
                                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
                             }
                         }
@@ -811,6 +834,7 @@ int main( int argc, char* args[] ) {
                                 explosion.play();
                                 explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                 timpy.increaseCombo();
+                                state.abilitiesKills++;
                                 timpy.changeXP(it->getDifficulty());
                                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
                             }
@@ -838,7 +862,7 @@ int main( int argc, char* args[] ) {
                     if(playerDamaged) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
                         timpy.zeroCombo();
-                        timpy.charge(dt,state);
+                        timpy.charge(state);
                         timpy.getEntity()->forceSpawn();
                     }
 
@@ -921,7 +945,7 @@ int main( int argc, char* args[] ) {
 }
 
 void resetState() {
-    timpyPointer->setXP(200);
+    timpyPointer->setXP(0);
     state.c4Placed = false;
     state.currentRevolverLevel = 1;
     state.currentRifleLevel = 0;
@@ -932,11 +956,12 @@ void resetState() {
     state.abilityLevels[teleport] = 0;
     state.abilityLevels[c4] = 0;
     state.abilityLevels[bounce] = 0;
-    timpyPointer->setAbility(c4);
+    timpyPointer->setAbility(none);
     state.weapon1 = 0;
     state.weapon2 = -1;
     loadUpgradeMenu(state);
-    timpyPointer->charge(100,state);
+    timpyPointer->charge(state);
+    state.abilitiesKills = 0;
 }
 
 void checkIfSpawnsAreOnScreen(std::vector<Spawn>& enemySpawns) {

@@ -102,7 +102,6 @@ int Player::move(float dt,const std::list<Platform*> &platforms,int camY) {
     if(!playerEntity->move(dt,platforms,&amountFallen,&wheelRect) && invincible) {
         invincible = false;
         charged = false;
-        timeSinceAbilty = 0;
     }
 
     if(playerDirection) {
@@ -152,18 +151,17 @@ void Player::increaseCombo() {
     }
 }
 
-int Player::charge(float dt, State& state) {
+int Player::charge(State& state) {
     int abilityLevel = state.abilityLevels[currentAbility] == 0 ? 0 : state.abilityLevels[currentAbility] - 1;
     int abilityReloadSpeed = state.abilityProperties[currentAbility][abilityLevel][1];
-    if (timeSinceAbilty >= abilityReloadSpeed) {
-        timeSinceAbilty = 0;
+    if (state.abilitiesKills >= abilityReloadSpeed) {
+        state.abilitiesKills = 0;
         charged = true;
         justCharged = true;
         return 75;
     }
     if(!charged) {
-        timeSinceAbilty += dt;
-        return 75*timeSinceAbilty/abilityReloadSpeed;
+        return 75*state.abilitiesKills/abilityReloadSpeed;
     }
     return 75;
 }
@@ -173,6 +171,7 @@ void Player::useAbility(State& state) {
     if(c4Placed) {
         state.c4Exploded = true;
         c4Placed = false;
+        state.c4Placed = false;
     } else if (charged) {
         switch(currentAbility) {
             case teleport: {
@@ -185,6 +184,7 @@ void Player::useAbility(State& state) {
                 if (!c4Placed) {
                     c4Entity.setPhysics(playerEntity->getRect().x,playerEntity->getRect().y+playerEntity->getRect().h - scale(32),0,0);
                     c4Placed = true;
+                    state.c4Placed = true;
                 }
             } break;
             default:

@@ -74,6 +74,7 @@ struct State {
 
     int numberOfAbilities = 4;
     int abilityLevels[4] = {0,0,0,0};
+    int abilitiesKills = 0;
 
     double weaponProperties[5][5][6] = {
         {{10,4,3,1,1,1},{20,5,3,1,1,1},{30,6,2,2,1,1},{40,7,2,2,2,1},{50,8,1,2,2,1}}, //Revolver

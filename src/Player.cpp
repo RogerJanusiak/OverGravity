@@ -170,7 +170,10 @@ int Player::charge(float dt, State& state) {
 
 void Player::useAbility(State& state) {
 
-    if (charged) {
+    if(c4Placed) {
+        state.c4Exploded = true;
+        c4Placed = false;
+    } else if (charged) {
         switch(currentAbility) {
             case teleport: {
                 state.teleportSelection = !state.teleportSelection;
@@ -178,20 +181,18 @@ void Player::useAbility(State& state) {
                 state.teleportCursorY = getEntity()->getRect().y;
                 state.startSelection = SDL_GetTicks();
             } break;
+            case c4: {
+                if (!c4Placed) {
+                    c4Entity.setPhysics(playerEntity->getRect().x,playerEntity->getRect().y+playerEntity->getRect().h - scale(32),0,0);
+                    c4Placed = true;
+                }
+            } break;
             default:
                 break;
         }
         charged = false;
     }
-    if (currentAbility == c4 && !c4Placed && c4left > 0) {
-        c4Entity.setPhysics(playerEntity->getRect().x,playerEntity->getRect().y+playerEntity->getRect().h - scale(32),0,0);
-        c4Placed = true;
-        c4left--;
-    }
-    if(currentAbility == c4 && c4Placed) {
-        state.c4Exploded = true;
-        c4Placed = false;
-    }
+
 }
 
 bool Player::damage() {

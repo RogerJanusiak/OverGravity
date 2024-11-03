@@ -274,7 +274,7 @@ int main( int argc, char* args[] ) {
                 if(waveNumber == 0) {
                     resetState();
                     timpy.setSecondaryWeapon(nullptr);
-                    timpy.setAbility(teleport);
+                    timpy.setAbility(c4);
                 }
                 inWave = true;
                 waveNumber++;
@@ -732,7 +732,7 @@ int main( int argc, char* args[] ) {
                                 int c4x = timpy.getC4Entity()->getRect().x;
                                 int c4y = timpy.getC4Entity()->getRect().y;
                                 if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
-                                    it->getEntity()->damage(5);
+                                    it->getEntity()->damage(state.abilityProperties[2][state.abilityLevels[2]][2]);
                                 }
                             }
                             if(!it->getEntity()->isAlive()) {
@@ -804,7 +804,7 @@ int main( int argc, char* args[] ) {
                                 int c4x = timpy.getC4Entity()->getRect().x;
                                 int c4y = timpy.getC4Entity()->getRect().y;
                                 if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
-                                    it->getEntity()->damage(5);
+                                    it->getEntity()->damage(state.abilityProperties[2][state.abilityLevels[2]][2]);
                                 }
                             }
                             if(!it->getEntity()->isAlive()) {
@@ -932,7 +932,7 @@ void resetState() {
     state.abilityLevels[teleport] = 0;
     state.abilityLevels[c4] = 0;
     state.abilityLevels[bounce] = 0;
-    timpyPointer->setAbility(teleport);
+    timpyPointer->setAbility(c4);
     state.weapon1 = 0;
     state.weapon2 = -1;
     loadUpgradeMenu(state);

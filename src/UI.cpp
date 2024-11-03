@@ -851,21 +851,5 @@ void renderPlayerUI(Player* player) {
         SDL_RenderFillRect(renderer,&tempRect);
     }
 
-    if(player->getAbility() == c4) {
-        for(int i = 0; i < 3; i++) {
-            if(player->getC4Left()>i) {
-                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-            } else {
-                SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
-            }
-            SDL_Rect tempRect;
-            tempRect.x = WINDOW_WIDTH-scale(30)-scale(20*i);
-            tempRect.y = WINDOW_HEIGHT-scale(100);
-            tempRect.w = scale(15);
-            tempRect.h = scale(15);
-            SDL_RenderFillRect(renderer,&tempRect);
-        }
-    }
-
 }
 

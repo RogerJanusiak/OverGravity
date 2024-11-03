@@ -61,8 +61,7 @@ public:
     void useAbility(State& state);
     [[nodiscard]] bool isCharged() const { return charged;}
     Ability getAbility() { return currentAbility; }
-    void setAbility(Ability ability) { currentAbility = ability; c4left = 3; }
-    int getC4Left() { return c4left; }
+    void setAbility(Ability ability) { currentAbility = ability; }
 
     [[nodiscard]] bool isInvincible() const { return invincible; }
     void setInvincible(bool _invincible) { invincible = _invincible; }
@@ -127,7 +126,6 @@ private:
     Texture c4Texture;
     Texture detinatorTexture;
     bool c4Placed = false;
-    int c4left = 3;
 
     Sound damageSound;
 };

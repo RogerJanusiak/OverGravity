@@ -22,31 +22,6 @@ Player::Player(Entity* entity, Weapon* primaryWeapon) : playerEntity(entity), pr
     weaponRect.w = scale(42);
     weaponRect.h = scale(10);
 
-    playerHealth1.x = scale(10);
-    playerHealth1.y = WINDOW_HEIGHT-scale(30);
-    playerHealth1.w = scale(20);
-    playerHealth1.h = scale(20);
-
-    playerHealth2.x = scale(10);
-    playerHealth2.y = WINDOW_HEIGHT-scale(60);
-    playerHealth2.w = scale(20);
-    playerHealth2.h = scale(20);
-
-    playerHealth3.x = scale(10);
-    playerHealth3.y = WINDOW_HEIGHT-scale(90);
-    playerHealth3.w = scale(20);
-    playerHealth3.h = scale(20);
-
-    playerShield1.x = scale(10);
-    playerShield1.y = WINDOW_HEIGHT-scale(120);
-    playerShield1.w = scale(20);
-    playerShield1.h = scale(20);
-
-    playerShield2.x = scale(10);
-    playerShield2.y = WINDOW_HEIGHT-scale(150);
-    playerShield2.w = scale(20);
-    playerShield2.h = scale(20);
-
     playerEntity->setDimensions(playerWidth,playerHeight);
     playerTextureLeft.setup(playerWidth,playerHeight,playerEntity->getRenderer());
     playerTextureRight.setup(playerWidth,playerHeight,playerEntity->getRenderer());
@@ -141,14 +116,10 @@ void Player::setDirection(bool direction) {
     }
 }
 
-void Player::increaseCombo() {
+void Player::killEnemy() {
     combo++;
-    if(combo == comboToGetShield && (playerShield == 0 || topLevelShieldHit)) {
-        playerShield++;
-        topLevelShieldHit = false;
-    } else if(combo == comboToGetShield*2 && playerShield == 1) {
-        playerShield++;
-    }
+    shield += combo;
+    shield = shield >= maxShield ? maxShield : shield;
 }
 
 int Player::charge(State& state) {
@@ -196,22 +167,16 @@ void Player::useAbility(State& state) {
 }
 
 bool Player::damage() {
-    if(playerShield == 2) {
-        playerShield--;
-        topLevelShieldHit = true;
-    } else if(playerShield == 1) {
-        playerShield--;
-    } else {
-        if(playerHealth == 3) {
-            playerHealth--;
-        } else if(playerHealth == 2) {
-            playerHealth--;
-        } else if (playerHealth == 1) {
-            playerHealth = 3;
+    shield -= 50;
+    if(shield <= 0) {
+        health += shield;
+        if (health <= 0) {
+            health = maxHealth;
             combo = 0;
             c4Placed = false;
             return true;
         }
+        shield = 0;
     }
     damageSound.play();
     return false;
@@ -225,4 +190,9 @@ void Player::changeWeapon() {
         currentWeapon = primaryWeapon;
     }
 
+}
+
+void Player::reset() {
+    health = 200;
+    shield = 0;
 }

@@ -42,14 +42,16 @@ public:
     void changeWeapon();
 
     bool damage();
-    int getHP() const { return playerHealth; }
-    void setHP(int newHP) { playerHealth = newHP; }
+    [[nodiscard]] int getHealth() const { return health; }
+    [[nodiscard]] double getHealthPercentage() const { return health/static_cast<double>(maxHealth); }
+    [[nodiscard]] int getShield() const { return shield; }
+    [[nodiscard]] double getShieldPercentage() const { return shield/static_cast<double>(maxShield); }
 
-    void decreaseShield();
-    int getShield() const { return playerShield; }
-    void setShield(int newShield) { playerShield = newShield; }
+    void fullHealth() { health = maxHealth; }
+    void fillShield() { shield = maxShield; }
+    void reset();
 
-    void increaseCombo();
+    void killEnemy();
     void zeroCombo() { combo = 0;}
     int getCombo() const { return combo; }
 
@@ -75,12 +77,6 @@ public:
         wheelRect.y = getEntity()->getRect().y+getEntity()->getRect().h-20;
     }
 
-    SDL_Rect playerHealth1;
-    SDL_Rect playerHealth2;
-    SDL_Rect playerHealth3;
-    SDL_Rect playerShield1;
-    SDL_Rect playerShield2;
-
 private:
     const int playerWidth = scale(50);
     const int playerHeight = scale(60);
@@ -101,20 +97,19 @@ private:
 
     Ability currentAbility = Ability::none;
 
-    int playerHealth = 3;
-    int playerShield = 0;
+    int health = 200;
+    const int maxHealth = 200;
+    int shield = 0;
+    const int maxShield = 200;
 
     int xp = 0;
 
     int combo = 0;
-    bool topLevelShieldHit = false;
 
     bool charged = true;
     bool justCharged = false;
 
     bool invincible = false;
-
-    const int comboToGetShield = 10;
 
     float timeSinceShot;
 

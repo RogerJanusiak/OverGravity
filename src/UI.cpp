@@ -54,6 +54,11 @@ SDL_Rect timeToShoot;
 SDL_Rect timeToAbilityBack;
 SDL_Rect timeToAbility;
 
+SDL_Rect healthBackRect;
+SDL_Rect healthRect;
+SDL_Rect shieldBackRect;
+SDL_Rect shieldRect;
+
 Texture ammoLeftText;
 Texture gamePausedText;
 Texture xpText;
@@ -306,7 +311,7 @@ void upgradeAbility(State& state, int attr1, int attr2) {
 void fullHealth(State& state, int attr1, int attr2) {
     if(player->getXP() >= 15) {
         player->changeXP(-15);
-        player->setHP(3);
+        player->fullHealth();
         loadUpgradeMenu(state);
     }
 }
@@ -314,7 +319,7 @@ void fullHealth(State& state, int attr1, int attr2) {
 void fullShield(State& state, int attr1, int attr2) {
     if(player->getXP() >= 15) {
         player->changeXP(-15);
-        player->setShield(2);
+        player->fillShield();
         loadUpgradeMenu(state);
     }
 }
@@ -624,50 +629,6 @@ UI_Menu* getCurrentMenu(State& state) {
 
 void renderUpgradeMenu(State& state) {
     xpText.render(scale(37),scale(37));
-    switch(player->getShield()) {
-        case 2: {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-            SDL_RenderFillRect(renderer,&upgradeShield1);
-            SDL_RenderFillRect(renderer,&upgradeShield2);
-        } break;
-        case 1: {
-            SDL_SetRenderDrawColor(renderer, 183, 201, 226, 255);
-            SDL_RenderFillRect(renderer,&upgradeShield1);
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-            SDL_RenderFillRect(renderer,&upgradeShield2);
-        } break;
-        default: {
-            SDL_SetRenderDrawColor(renderer, 183, 201, 226, 255);
-            SDL_RenderFillRect(renderer,&upgradeShield1);
-            SDL_RenderFillRect(renderer,&upgradeShield2);
-        } break;
-    }
-
-    switch(player->getHP()) {
-        case 3: {
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            SDL_RenderFillRect(renderer,&upgradeHealth1);
-            SDL_RenderFillRect(renderer,&upgradeHealth2);
-            SDL_RenderFillRect(renderer,&upgradeHealth3);
-        } break;
-        case 2: {
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            SDL_RenderFillRect(renderer,&upgradeHealth1);
-            SDL_RenderFillRect(renderer,&upgradeHealth2);
-            SDL_SetRenderDrawColor(renderer, 170, 104, 95, 255);
-            SDL_RenderFillRect(renderer,&upgradeHealth3);
-        } break;
-        case 1: {
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            SDL_RenderFillRect(renderer,&upgradeHealth1);
-            SDL_SetRenderDrawColor(renderer, 170, 104, 95, 255);
-            SDL_RenderFillRect(renderer,&upgradeHealth2);
-            SDL_RenderFillRect(renderer,&upgradeHealth3);
-        } break;
-    default:
-        break;
-    }
-
 
 }
 
@@ -768,6 +729,26 @@ void initPlayerUI() {
     timeToAbility.w = scale(75);
     timeToAbility.h = scale(15);
 
+    shieldBackRect.x = scale(35);
+    shieldBackRect.y = WINDOW_HEIGHT-scale(80);
+    shieldBackRect.w = scale(15);
+    shieldBackRect.h = scale(75);
+
+    shieldRect.x = scale(35);
+    shieldRect.y = WINDOW_HEIGHT-scale(80);
+    shieldRect.w = scale(15);
+    shieldRect.h = scale(75);
+
+    healthBackRect.x = scale(10);
+    healthBackRect.y = WINDOW_HEIGHT-scale(80);
+    healthBackRect.w = scale(15);
+    healthBackRect.h = scale(75);
+
+    healthRect.x = scale(10);
+    healthRect.y = WINDOW_HEIGHT-scale(80);
+    healthRect.w = scale(15);
+    healthRect.h = scale(75);
+
     ammoLeftText.setup(renderer);
 
 }
@@ -795,49 +776,21 @@ void renderPlayerUI(Player* player) {
         SDL_RenderFillRect(renderer,&timeToAbility);
     }
 
-    switch(player->getShield()) {
-        case 2: {
-                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-                SDL_RenderFillRect(renderer,&player->playerShield1);
-                SDL_RenderFillRect(renderer,&player->playerShield2);
-        } break;
-        case 1: {
-                SDL_SetRenderDrawColor(renderer, 183, 201, 226, 255);
-                SDL_RenderFillRect(renderer,&player->playerShield2);
-                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-                SDL_RenderFillRect(renderer,&player->playerShield1);
-        } break;
-        default: {
-                SDL_SetRenderDrawColor(renderer, 183, 201, 226, 255);
-                SDL_RenderFillRect(renderer,&player->playerShield1);
-                SDL_RenderFillRect(renderer,&player->playerShield2);
-        } break;
-    }
+    healthRect.h = scale(player->getHealthPercentage()*75);
+    healthRect.y = WINDOW_HEIGHT-scale(80-75)-healthRect.h;
 
-    switch(player->getHP()) {
-        case 3: {
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            SDL_RenderFillRect(renderer,&player->playerHealth1);
-            SDL_RenderFillRect(renderer,&player->playerHealth2);
-            SDL_RenderFillRect(renderer,&player->playerHealth3);
-        } break;
-        case 2: {
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-                SDL_RenderFillRect(renderer,&player->playerHealth1);
-                SDL_RenderFillRect(renderer,&player->playerHealth2);
-                SDL_SetRenderDrawColor(renderer, 170, 104, 95, 255);
-                SDL_RenderFillRect(renderer,&player->playerHealth3);
-        } break;
-        case 1: {
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-                SDL_RenderFillRect(renderer,&player->playerHealth1);
-                SDL_SetRenderDrawColor(renderer, 170, 104, 95, 255);
-                SDL_RenderFillRect(renderer,&player->playerHealth2);
-                SDL_RenderFillRect(renderer,&player->playerHealth3);
-        } break;
-        default:
-            break;
-    }
+    shieldRect.h = scale(player->getShieldPercentage()*75);
+    shieldRect.y = WINDOW_HEIGHT-scale(80-75)-shieldRect.h;
+
+    SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+    SDL_RenderFillRect(renderer,&healthBackRect);
+    SDL_RenderFillRect(renderer,&shieldBackRect);
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(renderer,&healthRect);
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    SDL_RenderFillRect(renderer,&shieldRect);
 
     for(int i = 0; i < player->getWeapon()->getClipSize(); i++) {
         if(bulletsInClip>i) {

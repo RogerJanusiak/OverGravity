@@ -13,7 +13,7 @@ const int WINDOW_HEIGHT = scale(480);
 const int TILE_SIZE = 80;
 const int TILE_SIZE_SCALED = scale(80);
 
-const int ACCELERATION = scale(5000);
+const float ACCELERATION = scale(5000);
 
 constexpr int JOYSTICK_DEAD_ZONE = 18000;
 

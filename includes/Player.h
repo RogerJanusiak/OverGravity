@@ -58,7 +58,7 @@ public:
     int getXP() const { return xp; }
 
     int charge(float dt, State& state);
-    Ability useAbility();
+    void useAbility(State& state);
     [[nodiscard]] bool isCharged() const { return charged;}
     Ability getAbility() { return currentAbility; }
     void setAbility(Ability ability) { currentAbility = ability; c4left = 3; }

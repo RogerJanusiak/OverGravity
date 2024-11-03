@@ -217,6 +217,9 @@ int main( int argc, char* args[] ) {
 
             Entity eTimpy = Entity(&playerSpawns,gameRenderer,10);
             Player timpy = Player(&eTimpy,&revolver);
+            Texture teleportCursor = Texture();
+            teleportCursor.setup(scale(50),scale(60),gameRenderer);
+            teleportCursor.loadFromFile("Timpy.png");
             timpyPointer = &timpy;
 
             UI_init(gameRenderer, state, &timpy);
@@ -231,7 +234,6 @@ int main( int argc, char* args[] ) {
             bool waveOverride = false;
 
             bool shootingReset = true;
-            bool c4Exploded = false;
 
             bool inWave;
             int waveNumber = 0;
@@ -272,7 +274,7 @@ int main( int argc, char* args[] ) {
                 if(waveNumber == 0) {
                     resetState();
                     timpy.setSecondaryWeapon(nullptr);
-                    timpy.setAbility(bounce);
+                    timpy.setAbility(teleport);
                 }
                 inWave = true;
                 waveNumber++;
@@ -452,6 +454,14 @@ int main( int argc, char* args[] ) {
 
                     Uint64 start = SDL_GetPerformanceCounter();
 
+                    Uint32 current = SDL_GetTicks();
+                    float dt = (current - lastUpdate) / 1000.0f;
+                    lastUpdate = current;
+
+                    if((current-startWaveLoad)/1000.0f > 1) {
+                        waveStarted = true;
+                    }
+
                     //Controls Loop
                     while(SDL_PollEvent(&e) != 0 && state.menu != upgrade) {
                         if( e.type == SDL_QUIT ) {
@@ -465,8 +475,7 @@ int main( int argc, char* args[] ) {
                                 waveOverride = true;
                             }
                             if(e.key.keysym.sym == SDLK_3 && state.developerMode) {
-                                timpy.setInvincible(true);
-                                SDL_Log("test");
+
                             }
                             if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
                                 pauseEnemy = !pauseEnemy;
@@ -482,12 +491,31 @@ int main( int argc, char* args[] ) {
                                 leftMovement = true;
                             }
                             if(e.key.keysym.sym == SDLK_l) {
-                                timpy.setDirection(true);
-                            }
-                            if(e.key.keysym.sym == SDLK_j) {
-                                timpy.setDirection(false);
-                            }
-                            if(e.key.keysym.sym == SDLK_w) {
+                                if(state.teleportSelection) {
+                                    state.tcVx = 1;
+                                    state.tcMovingRight = true;
+                                } else {
+                                    timpy.setDirection(true);
+                                }
+
+                            } else if(e.key.keysym.sym == SDLK_j) {
+                                if(state.teleportSelection) {
+                                    state.tcVx = -1;
+                                    state.tcMovingLeft = true;
+                                } else {
+                                    timpy.setDirection(false);
+                                }
+                            } else if(e.key.keysym.sym == SDLK_k) {
+                                if(state.teleportSelection) {
+                                    state.tcVy = 1;
+                                    state.tcMovingDown = true;
+                                }
+                            } else if(e.key.keysym.sym == SDLK_i) {
+                                if(state.teleportSelection) {
+                                    state.tcVy = -1;
+                                    state.tcMovingUp = true;
+                                }
+                            } else if(e.key.keysym.sym == SDLK_w) {
                                 timpy.changeWeapon();
                             } else if(e.key.keysym.sym == SDLK_r) {
                                 timpy.getWeapon()->forceReload();
@@ -499,17 +527,7 @@ int main( int argc, char* args[] ) {
                                     state.resetShooting = false;
                                 }
                             } else if(e.key.keysym.sym == SDLK_e) {
-                                switch(timpy.useAbility()) {
-                                    case teleport: {
-                                        timpy.getEntity()->forceSpawn();
-                                    } break;
-                                    case c4: {
-                                        mediumExplosion.play();
-                                        c4Exploded = true;
-                                    } break;
-                                    default:
-                                        break;
-                                }
+                                timpy.useAbility(state);
                             }
                         } else if(e.type == SDL_KEYUP) {
                             if(e.key.keysym.sym == SDLK_d)
@@ -522,6 +540,32 @@ int main( int argc, char* args[] ) {
                                 timpy.getEntity()->setXVelocity(-timpyXVelocity);
                             } else {
                                 timpy.getEntity()->setXVelocity(timpyXVelocity);
+                            }
+
+                            if(e.key.keysym.sym == SDLK_l) {
+                                state.tcMovingRight = false;
+                            } else if(e.key.keysym.sym == SDLK_j) {
+                                state.tcMovingLeft = false;
+                            } else if(e.key.keysym.sym == SDLK_k) {
+                                state.tcMovingDown = false;
+                            } else if(e.key.keysym.sym == SDLK_i) {
+                                state.tcMovingUp = false;
+                            }
+
+                            if(!state.tcMovingLeft && !state.tcMovingRight) {
+                                state.tcVx = 0;
+                            } else if (state.tcMovingLeft) {
+                                state.tcVx = -1;
+                            } else {
+                                state.tcVx = 1;
+                            }
+
+                            if(!state.tcMovingUp && !state.tcMovingDown) {
+                                state.tcVy = 0;
+                            } else if (state.tcMovingUp) {
+                                state.tcVy = -1;
+                            } else {
+                                state.tcVy = 1;
                             }
 
                             if(e.key.keysym.sym == SDLK_SPACE) {
@@ -562,17 +606,7 @@ int main( int argc, char* args[] ) {
                             if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y) == 1) {
                                 timpy.changeWeapon();
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
-                                switch(timpy.useAbility()) {
-                                    case teleport: {
-                                        timpy.getEntity()->forceSpawn();
-                                    } break;
-                                    case c4: {
-                                        mediumExplosion.play();
-                                        c4Exploded = true;
-                                    } break;
-                                    default:
-                                        break;
-                                }
+                                timpy.useAbility(state);
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START) == 1) {
                                 state.menu = pause;
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X) == 1) {
@@ -581,12 +615,15 @@ int main( int argc, char* args[] ) {
                         }
                     }
 
-                    Uint32 current = SDL_GetTicks();
-                    float dt = (current - lastUpdate) / 1000.0f;
-                    lastUpdate = current;
-
-                    if((current-startWaveLoad)/1000.0f > 1) {
-                        waveStarted = true;
+                    if(state.teleportSelection) {
+                        pauseEnemy = true;
+                        state.teleportCursorX += state.tcVx*dt*scale(300);
+                        state.teleportCursorY += state.tcVy*dt*scale(300);
+                        if((current-state.startSelection)/2000.0f > 1) {
+                            state.teleportSelection = false;
+                            timpy.getEntity()->setPosition(state.teleportCursorX, state.teleportCursorY);
+                            pauseEnemy = false;
+                        }
                     }
 
                     if(timpy.getWeapon()->isReloadable()) {
@@ -691,7 +728,7 @@ int main( int argc, char* args[] ) {
                             if(state.developerMode) {
                                 SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                             }
-                            if(c4Exploded) {
+                            if(state.c4Exploded) {
                                 int c4x = timpy.getC4Entity()->getRect().x;
                                 int c4y = timpy.getC4Entity()->getRect().y;
                                 if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
@@ -763,7 +800,7 @@ int main( int argc, char* args[] ) {
                             if(state.developerMode) {
                                 SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
                             }
-                            if(c4Exploded) {
+                            if(state.c4Exploded) {
                                 int c4x = timpy.getC4Entity()->getRect().x;
                                 int c4y = timpy.getC4Entity()->getRect().y;
                                 if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
@@ -796,7 +833,7 @@ int main( int argc, char* args[] ) {
                         }
                     }
 
-                    c4Exploded = false;
+                    state.c4Exploded = false;
 
                     if(playerDamaged) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
@@ -851,6 +888,11 @@ int main( int argc, char* args[] ) {
 
                     renderPlayerUI(&timpy);
 
+                    if(state.teleportSelection) {
+                        SDL_SetTextureColorMod(teleportCursor.getTexture(),0,150,255);
+                        teleportCursor.render(state.teleportCursorX,state.teleportCursorY);
+                    }
+
                     SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                     SDL_RenderPresent(gameRenderer);
 
@@ -890,7 +932,7 @@ void resetState() {
     state.abilityLevels[teleport] = 0;
     state.abilityLevels[c4] = 0;
     state.abilityLevels[bounce] = 0;
-    timpyPointer->setAbility(bounce);
+    timpyPointer->setAbility(teleport);
     state.weapon1 = 0;
     state.weapon2 = -1;
     loadUpgradeMenu(state);

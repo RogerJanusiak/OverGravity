@@ -17,6 +17,20 @@ struct State {
     //Game State
     bool quit = false;
 
+
+    bool teleportSelection = false;
+    int teleportCursorX = 0;
+    int teleportCursorY = 0;
+    int tcVx = 0;
+    int tcVy = 0;
+    bool tcMovingRight = false;
+    bool tcMovingLeft = false;
+    bool tcMovingUp = false;
+    bool tcMovingDown = false;
+    float startSelection = 0;
+
+    bool c4Exploded = false;
+
     //Menu Status
     Menu menu = head;
     bool controllerStickReset = true;

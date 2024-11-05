@@ -309,6 +309,42 @@ void upgradeAbility(State& state, int attr1, int attr2) {
     }
 }
 
+void upgradePlayer(State& state, int attr1, int attr2) {
+    if(player->getXP() >= state.playerProperties[attr1][attr2][0]) {
+        bool upgraded = false;
+        switch(attr1) {
+        case 1: {
+            if(attr2 == state.playerLevels[shield]) {
+                state.playerLevels[shield]++;
+                upgraded = true;
+            }
+        } break;
+        case 2: {
+            if(attr2 == state.playerLevels[speed]) {
+                state.playerLevels[speed]++;
+                upgraded = true;
+            }
+        } break;
+        case 3: {
+            if(attr2 == state.playerLevels[dodge]) {
+                state.playerLevels[dodge]++;
+                upgraded = true;
+            }
+        } break;
+        default: {
+            if(attr2 == state.playerLevels[armor]) {
+                state.playerLevels[armor]++;
+                upgraded = true;
+            }
+        } break;
+        }
+        if(upgraded) {
+            player->changeXP(-state.playerProperties[attr1][attr2][0]);
+            loadUpgradeMenu(state);
+        }
+    }
+}
+
 void fullHealth(State& state, int attr1, int attr2) {
     if(player->getXP() >= 15) {
         player->changeXP(-15);
@@ -555,21 +591,28 @@ void initPlayerUpgradeMenu(State& state) {
             }
 
             if(i == 0) {
-                playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &noAction, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
             } else {
-                playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &noAction, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
             }
             playerUpgradeMenu.getButtons()->back().setupHover(3);
-            playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
 
             if(i == 0) {
-                playerUpgradeMenu.getButtons()->back().addLine("Damage Reduction: ",removeTrailingZeros(state.playerProperties[i][j][1]), verySmall, white);
+                playerUpgradeMenu.getButtons()->back().addLine("Armor: "," ", verySmall, white);
+                playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                playerUpgradeMenu.getButtons()->back().addLine("Damage Reduction: ",removeTrailingZeros(state.playerProperties[i][j][1]) + "%", verySmall, white);
             } else if(i == 1) {
+                playerUpgradeMenu.getButtons()->back().addLine("Shield Charge: "," ", verySmall, white);
+                playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
                 playerUpgradeMenu.getButtons()->back().addLine("Multiplier: ",removeTrailingZeros(state.playerProperties[i][j][1]), verySmall, white);
             } else if(i == 2) {
-                playerUpgradeMenu.getButtons()->back().addLine("Speed Increase: ",removeTrailingZeros(state.playerProperties[i][j][1]), verySmall, white);
+                playerUpgradeMenu.getButtons()->back().addLine("Player Speed: "," ", verySmall, white);
+                playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                playerUpgradeMenu.getButtons()->back().addLine("Speed Increase: ",removeTrailingZeros(state.playerProperties[i][j][1])+ "%", verySmall, white);
             } else if(i == 3) {
-                playerUpgradeMenu.getButtons()->back().addLine("Dodge Chance: ",removeTrailingZeros(state.playerProperties[i][j][1]), verySmall, white);
+                playerUpgradeMenu.getButtons()->back().addLine("Dodge: "," ", verySmall, white);
+                playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                playerUpgradeMenu.getButtons()->back().addLine("Dodge Chance: ",removeTrailingZeros(state.playerProperties[i][j][1])+ "%", verySmall, white);
             }
 
         }
@@ -625,11 +668,9 @@ void loadUpgradeMenu(State& state) {
     for(auto& button : *abilityUpgradeMenu.getButtons()) {
         button.deactivate();
     }
-
     if(player->getAbility() != none)  {
         (*abilityUpgradeMenu.getButtons())[6+player->getAbility()*6].activate();
     }
-
     for(int i = 0; i < 5;i++) {
         (*abilityUpgradeMenu.getButtons())[7 + i].enable();
         (*abilityUpgradeMenu.getButtons())[13 + i].enable();
@@ -655,6 +696,37 @@ void loadUpgradeMenu(State& state) {
             (*abilityUpgradeMenu.getButtons())[25 + i].disable();
         } else if(i != state.abilityLevels[grenade]) {
             (*abilityUpgradeMenu.getButtons())[25 + i].activate();
+        }
+    }
+
+    for(auto& button : *playerUpgradeMenu.getButtons()) {
+        button.deactivate();
+    }
+    for(int i = 0; i < 5;i++) {
+        (*playerUpgradeMenu.getButtons())[7 + i].enable();
+        (*playerUpgradeMenu.getButtons())[13 + i].enable();
+        (*playerUpgradeMenu.getButtons())[19 + i].enable();
+        (*playerUpgradeMenu.getButtons())[25 + i].enable();
+        (*playerUpgradeMenu.getButtons())[31 + i].enable();
+        if(i>state.playerLevels[armor]) {
+            (*playerUpgradeMenu.getButtons())[7 + i].disable();
+        } else if(i != state.playerLevels[armor]) {
+            (*playerUpgradeMenu.getButtons())[7 + i].activate();
+        }
+        if(i>state.playerLevels[shield]) {
+            (*playerUpgradeMenu.getButtons())[13 + i].disable();
+        } else if(i != state.playerLevels[shield]) {
+            (*playerUpgradeMenu.getButtons())[13 + i].activate();
+        }
+        if(i>state.playerLevels[speed]) {
+            (*playerUpgradeMenu.getButtons())[19 + i].disable();
+        } else if(i != state.playerLevels[speed]) {
+            (*playerUpgradeMenu.getButtons())[19 + i].activate();
+        }
+        if(i>state.playerLevels[dodge]) {
+            (*playerUpgradeMenu.getButtons())[25 + i].disable();
+        } else if(i != state.playerLevels[dodge]) {
+            (*playerUpgradeMenu.getButtons())[25 + i].activate();
         }
     }
 

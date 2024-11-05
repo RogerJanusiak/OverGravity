@@ -727,7 +727,7 @@ int main( int argc, char* args[] ) {
                                             it->getEntity()->damage(5);
                                             timpy.setInvincible(true);
                                         } else if(!timpy.isInvincible()) {
-                                            if(timpy.damage()) {
+                                            if(timpy.damage(state)) {
                                                 playerAlive = false;
                                                 waveNumber = 0;
                                                 timpy.zeroCombo();
@@ -800,7 +800,7 @@ int main( int argc, char* args[] ) {
                                         it->getEntity()->damage(5);
                                         timpy.setInvincible(true);
                                     } else if(!timpy.isInvincible()) {
-                                        if(timpy.damage()) {
+                                        if(timpy.damage(state)) {
                                             playerAlive = false;
                                             waveNumber = 0;
                                             timpy.zeroCombo();
@@ -949,7 +949,7 @@ int main( int argc, char* args[] ) {
 }
 
 void resetState() {
-    timpyPointer->setXP(0);
+    timpyPointer->setXP(200);
     state.c4Placed = false;
     state.currentRevolverLevel = 1;
     state.currentRifleLevel = 0;
@@ -960,6 +960,10 @@ void resetState() {
     state.abilityLevels[teleport] = 0;
     state.abilityLevels[c4] = 0;
     state.abilityLevels[bounce] = 0;
+    state.playerLevels[armor] = 0;
+    state.playerLevels[speed] = 0;
+    state.playerLevels[shield] = 0;
+    state.playerLevels[dodge] = 0;
     timpyPointer->setAbility(none);
     state.weapon1 = 0;
     state.weapon2 = -1;

@@ -166,8 +166,10 @@ void Player::useAbility(State& state) {
 
 }
 
-bool Player::damage() {
-    shield -= 50;
+bool Player::damage(State& state) {
+    int shieldDecrease = state.playerLevels[armor] == 0 ? 50 : 50 - 50*state.playerProperties[armor][state.playerLevels[armor]-1][1]/100;
+    shield -= shieldDecrease;
+    SDL_Log("Damage: %i",shieldDecrease);
     if(shield <= 0) {
         health += shield;
         if (health <= 0) {

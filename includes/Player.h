@@ -20,6 +20,13 @@ enum Ability {
     none,
 };
 
+enum PlayerUpgrades {
+    armor,
+    shield,
+    speed,
+    dodge
+};
+
 class Player {
 public:
     Player(Entity* entity, Weapon* primaryWeapon);
@@ -41,7 +48,7 @@ public:
     Weapon* getPrimaryWeapon() { return primaryWeapon; }
     void changeWeapon();
 
-    bool damage();
+    bool damage(State& state);
     [[nodiscard]] int getHealth() const { return health; }
     [[nodiscard]] double getHealthPercentage() const { return health/static_cast<double>(maxHealth); }
     [[nodiscard]] int getShield() const { return shield; }

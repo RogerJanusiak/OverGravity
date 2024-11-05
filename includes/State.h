@@ -8,8 +8,9 @@ enum Menu {
     level,
     settings,
     pause,
-    upgrade,
+    weaponUpgrade,
     abilityUpgrade,
+    playerUpgrade,
     notInMenu,
 };
 
@@ -74,7 +75,10 @@ struct State {
 
     int numberOfAbilities = 4;
     int abilityLevels[4] = {0,0,0,0};
+    int playerLevels[4] = {0,0,0,0};
     int abilitiesKills = 0;
+
+    int numberOfPlayerUpgrades = 4;
 
     double weaponProperties[5][5][6] = {
         {{10,4,3,1,1,1},{20,5,3,1,1,1},{30,6,2,2,1,1},{40,7,2,2,2,1},{50,8,1,2,2,1}}, //Revolver
@@ -88,6 +92,13 @@ struct State {
         {{10,15,2},{20,12,2},{30,10,3},{40,8,3},{50,5,3}},
         {{10,15,1},{20,15,2},{30,12,3},{40,12,4},{50,10,5}},
         {{10,5,1},{20,4,1},{20,4,2},{40,3,2},{50,3,3}}
+    };
+
+    double playerProperties[4][5][2] = {
+        {{10,10},{20,20},{30,30},{40,40},{50,50}},
+        {{10,1.25},{20,1.5},{30,1.75},{40,2},{50,2.5}},
+        {{10,10},{20,20},{30,30},{40,40},{50,50}},
+        {{10,1},{20,2},{30,3},{40,4},{50,5}}
     };
 
 };

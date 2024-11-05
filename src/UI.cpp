@@ -74,6 +74,7 @@ UI_Menu levelSelect(2);
 UI_Menu pauseMenu(3);
 UI_Menu weaponUpgradeMenu(36);
 UI_Menu abilityUpgradeMenu(36);
+UI_Menu playerUpgradeMenu(36);
 
 Player* player;
 
@@ -333,19 +334,28 @@ void closeUpgradeMenu(State& state, int attr1, int attr2) {
     state.resetShooting = true;
 }
 
-void showWeaponMenu(State& state, int attr1, int attr2) {
+void showWeaponUpgradeMenu(State& state, int attr1, int attr2) {
     closeUpgradeMenu(state,attr1,attr2);
-    state.menu = upgrade;
+    state.menu = weaponUpgrade;
     currentButton = &(*weaponUpgradeMenu.getButtons())[2];
     if(currentButton != nullptr) {
         currentButton->select();
     }
 }
 
-void showAbilityMenu(State& state, int attr1, int attr2) {
+void showAbilityUpgradeMenu(State& state, int attr1, int attr2) {
     closeUpgradeMenu(state,attr1,attr2);
     state.menu = abilityUpgrade;
     currentButton = &(*abilityUpgradeMenu.getButtons())[2];
+    if(currentButton != nullptr) {
+        currentButton->select();
+    }
+}
+
+void showPlayerUpgradeMenu(State& state, int attr1, int attr2) {
+    closeUpgradeMenu(state,attr1,attr2);
+    state.menu = playerUpgrade;
+    currentButton = &(*playerUpgradeMenu.getButtons())[2];
     if(currentButton != nullptr) {
         currentButton->select();
     }
@@ -379,6 +389,7 @@ void initMenus(State& state) {
 
     initWeaponUpgradeMenu(state);
     initAbilityUpgradeMenu(state);
+    initPlayerUpgradeMenu(state);
 }
 
 std::string removeTrailingZeros(double i) {
@@ -402,9 +413,9 @@ void genericUpgradeMenuLayout(State& state, UI_Menu* menu) {
 
     menu->addButton(scale(37),scale(180),"Accept Changes", &white,small,1,-1,-1,-1, &closeUpgradeMenu, state,1);
 
-    menu->addButton(scale(160+128),scale(12),"Weapons", &white,small,-1,-1,-1,-1, &showWeaponMenu, state,1);
-    menu->addButton(scale(160+256),scale(12),"Abilities", &white,small,-1,-1,-1,-1, &showAbilityMenu, state,1);
-    menu->addButton(scale(160+384),scale(12),"Player", &white,small,-1,-1,-1,-1, &noAction, state,1);
+    menu->addButton(scale(160+128),scale(12),"Weapons", &white,small,-1,-1,-1,-1, &showWeaponUpgradeMenu, state,1);
+    menu->addButton(scale(160+256),scale(12),"Abilities", &white,small,-1,-1,-1,-1, &showAbilityUpgradeMenu, state,1);
+    menu->addButton(scale(160+384),scale(12),"Player", &white,small,-1,-1,-1,-1, &showPlayerUpgradeMenu, state,1);
 }
 
 void initWeaponUpgradeMenu(State& state) {
@@ -472,6 +483,99 @@ void initWeaponUpgradeMenu(State& state) {
     upgradeHealth3 = {scale(77),scale(72),scale(15),scale(15)};
     upgradeShield1 = {scale(97),scale(72),scale(15),scale(15)};
     upgradeShield2 = {scale(117),scale(72),scale(15),scale(15)};
+}
+
+void initAbilityUpgradeMenu(State& state) {
+    genericUpgradeMenuLayout(state,&abilityUpgradeMenu);
+
+    for(int i = 0; i < state.numberOfAbilities; i++) {
+        int start;
+        if(i==0) {
+            start = 2;
+        } else {
+            start = 0;
+        }
+        abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,start+i*6,-1, &selectAbility, state,3,i);
+        for(int j = 0; j < 5; j++) {
+            std::string path;
+            if(i == 0) {
+                path = "upgrade-menu/upgrade-bounce.png";
+            } else if(i == 1) {
+                path = "upgrade-menu/upgrade-teleport.png";
+            } else if(i == 2) {
+                path = "upgrade-menu/upgrade-c4.png";
+            } else if(i == 3) {
+                path = "upgrade-menu/upgrade-grenade.png";
+            }
+
+            if(i == 0) {
+                abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+            } else {
+                abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+            }
+            abilityUpgradeMenu.getButtons()->back().setupHover(3);
+            abilityUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.abilityProperties[i][j][0]), verySmall, white);
+            abilityUpgradeMenu.getButtons()->back().addLine("Refresh: ",removeTrailingZeros(state.abilityProperties[i][j][1]), verySmall, white);
+
+            if(i == 1) {
+                abilityUpgradeMenu.getButtons()->back().addLine("Duration: ",removeTrailingZeros(state.abilityProperties[i][j][2]), verySmall, white);
+            } else if(i == 2) {
+                abilityUpgradeMenu.getButtons()->back().addLine("Damage: ",removeTrailingZeros(state.abilityProperties[i][j][2]), verySmall, white);
+            } else if(i == 3) {
+                abilityUpgradeMenu.getButtons()->back().addLine("Damage: ",removeTrailingZeros(state.abilityProperties[i][j][2]), verySmall, white);
+            }
+
+        }
+    }
+    (*abilityUpgradeMenu.getButtons())[2].linkButtons(&(*abilityUpgradeMenu.getButtons())[1],&(*abilityUpgradeMenu.getButtons())[6],nullptr,&(*abilityUpgradeMenu.getButtons())[6]);
+
+}
+
+void initPlayerUpgradeMenu(State& state) {
+    genericUpgradeMenuLayout(state,&playerUpgradeMenu);
+
+    for(int i = 0; i < state.numberOfPlayerUpgrades; i++) {
+        int start;
+        if(i==0) {
+            start = 2;
+        } else {
+            start = 0;
+        }
+        playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,start+i*6,-1, &noAction, state,3,i);
+        for(int j = 0; j < 5; j++) {
+            std::string path;
+            if(i == 0) {
+                path = "upgrade-menu/upgrade-armor.png";
+            } else if(i == 1) {
+                path = "upgrade-menu/upgrade-shield.png";
+            } else if(i == 2) {
+                path = "upgrade-menu/upgrade-speed.png";
+            } else if(i == 3) {
+                path = "upgrade-menu/upgrade-dodge.png";
+            }
+
+            if(i == 0) {
+                playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &noAction, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+            } else {
+                playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &noAction, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+            }
+            playerUpgradeMenu.getButtons()->back().setupHover(3);
+            playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+
+            if(i == 0) {
+                playerUpgradeMenu.getButtons()->back().addLine("Damage Reduction: ",removeTrailingZeros(state.playerProperties[i][j][1]), verySmall, white);
+            } else if(i == 1) {
+                playerUpgradeMenu.getButtons()->back().addLine("Multiplier: ",removeTrailingZeros(state.playerProperties[i][j][1]), verySmall, white);
+            } else if(i == 2) {
+                playerUpgradeMenu.getButtons()->back().addLine("Speed Increase: ",removeTrailingZeros(state.playerProperties[i][j][1]), verySmall, white);
+            } else if(i == 3) {
+                playerUpgradeMenu.getButtons()->back().addLine("Dodge Chance: ",removeTrailingZeros(state.playerProperties[i][j][1]), verySmall, white);
+            }
+
+        }
+    }
+    (*abilityUpgradeMenu.getButtons())[2].linkButtons(&(*abilityUpgradeMenu.getButtons())[1],&(*abilityUpgradeMenu.getButtons())[6],nullptr,&(*abilityUpgradeMenu.getButtons())[6]);
+
 }
 
 void loadUpgradeMenu(State& state) {
@@ -564,51 +668,7 @@ void launchUpgradeMenu() {
     }
 }
 
-void initAbilityUpgradeMenu(State& state) {
-    genericUpgradeMenuLayout(state,&abilityUpgradeMenu);
 
-    for(int i = 0; i < state.numberOfAbilities; i++) {
-        int start;
-        if(i==0) {
-            start = 2;
-        } else {
-            start = 0;
-        }
-        abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,start+i*6,-1, &selectAbility, state,3,i);
-        for(int j = 0; j < 5; j++) {
-            std::string path;
-            if(i == 0) {
-                path = "upgrade-menu/upgrade-bounce.png";
-            } else if(i == 1) {
-                path = "upgrade-menu/upgrade-teleport.png";
-            } else if(i == 2) {
-                path = "upgrade-menu/upgrade-c4.png";
-            } else if(i == 3) {
-                path = "upgrade-menu/upgrade-grenade.png";
-            }
-
-            if(i == 0) {
-                abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
-            } else {
-                abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
-            }
-            abilityUpgradeMenu.getButtons()->back().setupHover(3);
-            abilityUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.abilityProperties[i][j][0]), verySmall, white);
-            abilityUpgradeMenu.getButtons()->back().addLine("Refresh: ",removeTrailingZeros(state.abilityProperties[i][j][1]), verySmall, white);
-
-            if(i == 1) {
-                abilityUpgradeMenu.getButtons()->back().addLine("Duration: ",removeTrailingZeros(state.abilityProperties[i][j][2]), verySmall, white);
-            } else if(i == 2) {
-                abilityUpgradeMenu.getButtons()->back().addLine("Damage: ",removeTrailingZeros(state.abilityProperties[i][j][2]), verySmall, white);
-            } else if(i == 3) {
-                abilityUpgradeMenu.getButtons()->back().addLine("Damage: ",removeTrailingZeros(state.abilityProperties[i][j][2]), verySmall, white);
-            }
-
-        }
-    }
-    (*abilityUpgradeMenu.getButtons())[2].linkButtons(&(*abilityUpgradeMenu.getButtons())[1],&(*abilityUpgradeMenu.getButtons())[6],nullptr,&(*abilityUpgradeMenu.getButtons())[6]);
-
-}
 
 UI_Menu* getCurrentMenu(State& state) {
     switch(state.menu) {
@@ -618,10 +678,12 @@ UI_Menu* getCurrentMenu(State& state) {
             return &levelSelect;
         case pause:
             return &pauseMenu;
-        case upgrade:
+        case weaponUpgrade:
             return &weaponUpgradeMenu;
         case abilityUpgrade:
             return &abilityUpgradeMenu;
+        case playerUpgrade:
+            return &playerUpgradeMenu;
         default:
             return nullptr;
     }
@@ -636,7 +698,7 @@ void renderMenu(State& state) {
   if (UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr) {
       currentMenu->render();
   }
-    if(state.menu == upgrade || state.menu == abilityUpgrade) {
+    if(state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) {
         renderUpgradeMenu(state);
     }
 }

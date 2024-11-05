@@ -305,11 +305,11 @@ int main( int argc, char* args[] ) {
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
-                state.menu = upgrade;
+                state.menu = weaponUpgrade;
                 launchUpgradeMenu();
 
                 loadUpgradeMenu(state);
-                while((waveNumber-1) % 5 == 0 && (state.menu == upgrade || state.menu == abilityUpgrade) && !state.quit && waveNumber != 1) {
+                while((waveNumber-1) % 5 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
@@ -351,12 +351,16 @@ int main( int argc, char* args[] ) {
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
                                 closeUpgradeMenu(state,0,0);
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) == 1) {
-                                if(state.menu == upgrade) {
-                                    showAbilityMenu(state,0,0);
+                                if(state.menu == weaponUpgrade) {
+                                    showAbilityUpgradeMenu(state,0,0);
+                                } else if(state.menu == abilityUpgrade) {
+                                    showPlayerUpgradeMenu(state,0,0);
                                 }
                             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_LEFTSHOULDER) == 1) {
                                 if(state.menu == abilityUpgrade) {
-                                    showWeaponMenu(state,0,0);
+                                    showWeaponUpgradeMenu(state,0,0);
+                                } else if(state.menu == playerUpgrade) {
+                                    showAbilityUpgradeMenu(state,0,0);
                                 }
                             }
                         }
@@ -463,7 +467,7 @@ int main( int argc, char* args[] ) {
                     }
 
                     //Controls Loop
-                    while(SDL_PollEvent(&e) != 0 && state.menu != upgrade) {
+                    while(SDL_PollEvent(&e) != 0 && state.menu != weaponUpgrade) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
                         } else if( e.type == SDL_KEYDOWN ) {
@@ -705,7 +709,7 @@ int main( int argc, char* args[] ) {
                             firstLoop = true;
                         }
                         if(it->getEntity()->isAlive() && it->getEntity()->isSpawned()) {
-                            if(!firstLoop && waveStarted && !pauseEnemy && state.menu != upgrade) {
+                            if(!firstLoop && waveStarted && !pauseEnemy && state.menu != weaponUpgrade) {
                                 it->move(dt, platforms,state.camY,state.levelHeight);
                             }
                             it->render();

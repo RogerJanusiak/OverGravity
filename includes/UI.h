@@ -11,15 +11,19 @@ void updateInGameText(int playerCombo, int wave, int xp);
 void initMenus(State &state);
 void renderMenu(State & state);
 
+void initAbilityUpgradeMenu(State& state);
+void initPlayerUpgradeMenu(State& state);
 void initWeaponUpgradeMenu(State& state);
+
 void loadUpgradeMenu(State& state);
 void launchUpgradeMenu();
 void closeUpgradeMenu(State& state, int attr1, int attr2);
 
-void showWeaponMenu(State& state, int attr1, int attr2);
-void showAbilityMenu(State& state, int attr1, int attr2);
+void showWeaponUpgradeMenu(State& state, int attr1, int attr2);
+void showAbilityUpgradeMenu(State& state, int attr1, int attr2);
+void showPlayerUpgradeMenu(State& state, int attr1, int attr2);
 
-void initAbilityUpgradeMenu(State& state);
+
 
 void UI_init(SDL_Renderer* renderer, State& state, Player* _player);
 void UI_close();

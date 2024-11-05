@@ -768,7 +768,7 @@ int main( int argc, char* args[] ) {
                                 explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                 explosion.play();
                                 timpy.changeXP(it->getDifficulty());
-                                timpy.killEnemy();
+                                timpy.killEnemy(state);
                                 state.abilitiesKills++;
                                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
                             }
@@ -844,7 +844,7 @@ int main( int argc, char* args[] ) {
                             if(!it->getEntity()->isAlive()) {
                                 explosion.play();
                                 explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
-                                timpy.killEnemy();
+                                timpy.killEnemy(state);
                                 state.abilitiesKills++;
                                 timpy.changeXP(it->getDifficulty());
                                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());

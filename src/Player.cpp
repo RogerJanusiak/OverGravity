@@ -118,9 +118,12 @@ void Player::setDirection(bool direction) {
     }
 }
 
-void Player::killEnemy() {
+void Player::killEnemy(State& state) {
     combo++;
-    shield += combo;
+    double mutiplier = state.playerLevels[PlayerUpgrades::shield] == 0 ? 1 : state.playerProperties[PlayerUpgrades::shield][state.playerLevels[PlayerUpgrades::shield]-1][1];
+    shield += combo*mutiplier;
+    SDL_Log("Shield: %f", shield);
+    SDL_Log("Multiplier: %f", mutiplier);
     shield = shield >= maxShield ? maxShield : shield;
 }
 

@@ -58,7 +58,7 @@ public:
     void fillShield() { shield = maxShield; }
     void reset();
 
-    void killEnemy();
+    void killEnemy(State& state);
     void zeroCombo() { combo = 0;}
     int getCombo() const { return combo; }
 
@@ -108,7 +108,7 @@ private:
 
     int health = 200;
     const int maxHealth = 200;
-    int shield = 0;
+    double shield = 0;
     const int maxShield = 200;
 
     int xp = 0;

@@ -23,8 +23,6 @@ void showWeaponUpgradeMenu(State& state, int attr1, int attr2);
 void showAbilityUpgradeMenu(State& state, int attr1, int attr2);
 void showPlayerUpgradeMenu(State& state, int attr1, int attr2);
 
-
-
 void UI_init(SDL_Renderer* renderer, State& state, Player* _player);
 void UI_close();
 

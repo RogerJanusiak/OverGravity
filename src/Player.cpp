@@ -67,7 +67,9 @@ void Player::render() const {
     }
 }
 
-int Player::move(float dt,const std::list<Platform*> &platforms,int camY) {
+int Player::move(float dt,const std::list<Platform*> &platforms, State& state) {
+    double speedIncrease = state.playerLevels[speed] == 0 ? 0 : defaultXSpeed*state.playerProperties[speed][state.playerLevels[speed]-1][1]/100;
+    getEntity()->setXVelocity(xNormalVelocity*(defaultXSpeed+speedIncrease));
 
     if(c4Placed) {
         c4Entity.move(dt,platforms);
@@ -167,9 +169,7 @@ void Player::useAbility(State& state) {
 }
 
 bool Player::damage(State& state) {
-    int shieldDecrease = state.playerLevels[armor] == 0 ? 50 : 50 - 50*state.playerProperties[armor][state.playerLevels[armor]-1][1]/100;
-    shield -= shieldDecrease;
-    SDL_Log("Damage: %i",shieldDecrease);
+    shield -= state.playerLevels[armor] == 0 ? 50 : 50 - 50*state.playerProperties[armor][state.playerLevels[armor]-1][1]/100;
     if(shield <= 0) {
         health += shield;
         if (health <= 0) {

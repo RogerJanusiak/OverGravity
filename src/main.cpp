@@ -53,7 +53,6 @@ void moveCamera(std::list<Entity*>& allCharacterEntities, std::list<Platform*>& 
 bool pauseEnemy = false;
 
 Player* timpyPointer = nullptr;
-const int timpyXVelocity = scale(350);
 
 SDL_Rect fullScreenRect = {0,0,WINDOW_WIDTH,WINDOW_HEIGHT};
 
@@ -399,7 +398,7 @@ int main( int argc, char* args[] ) {
                     SDL_RenderPresent(gameRenderer);
 
                 }
-                timpy.getEntity()->setXVelocity(0);
+                timpy.setXNormalV(0);
                 switch(state.weapon1) {
                     case 0:
                         timpy.setPrimaryWeapon(&revolver);
@@ -487,11 +486,11 @@ int main( int argc, char* args[] ) {
                                 state.menu = pause;
                             }
                             if(e.key.keysym.sym == SDLK_d) {
-                                timpy.getEntity()->setXVelocity(timpyXVelocity);
+                                timpy.setXNormalV(1);
                                 rightMovement = true;
                             }
                             if(e.key.keysym.sym == SDLK_a) {
-                                timpy.getEntity()->setXVelocity(-timpyXVelocity);
+                                timpy.setXNormalV(-1);
                                 leftMovement = true;
                             }
                             if(e.key.keysym.sym == SDLK_l) {
@@ -539,11 +538,11 @@ int main( int argc, char* args[] ) {
                             if(e.key.keysym.sym == SDLK_a)
                                 leftMovement = false;
                             if(!leftMovement && !rightMovement) {
-                                timpy.getEntity()->setXVelocity(0);
+                                timpy.setXNormalV(0);
                             } else if (leftMovement) {
-                                timpy.getEntity()->setXVelocity(-timpyXVelocity);
+                                timpy.setXNormalV(-1);
                             } else {
-                                timpy.getEntity()->setXVelocity(timpyXVelocity);
+                                timpy.setXNormalV(1);
                             }
 
                             if(e.key.keysym.sym == SDLK_l) {
@@ -618,11 +617,11 @@ int main( int argc, char* args[] ) {
                             }
 
                             if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
-                                timpy.getEntity()->setXVelocity(timpyXVelocity);
+                                timpy.setXNormalV(1);
                             } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) < -JOYSTICK_DEAD_ZONE) {
-                                timpy.getEntity()->setXVelocity(-timpyXVelocity);
+                                timpy.setXNormalV(-1);
                             } else {
-                                timpy.getEntity()->setXVelocity(0);
+                                timpy.setXNormalV(0);
                             }
                         } else if(e.type == SDL_JOYDEVICEADDED ) {
                             loadController();
@@ -880,7 +879,7 @@ int main( int argc, char* args[] ) {
 
                     if(timpy.getEntity()->isSpawned()) {
                         if(waveStarted) {
-                            timpy.move(dt, platforms,state.camY);
+                            timpy.move(dt, platforms,state);
                         }
                         timpy.render();
                         state.playerX = timpy.getEntity()->getRect().x;

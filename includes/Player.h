@@ -31,7 +31,7 @@ class Player {
 public:
     Player(Entity* entity, Weapon* primaryWeapon);
 
-    int move(float dt,const std::list<Platform*> &platforms, int camY);
+    int move(float dt,const std::list<Platform*> &platforms, State& state);
     void render() const;
 
     const SDL_Rect &getWeaponRect() const { return weaponRect; }
@@ -77,6 +77,8 @@ public:
 
     Entity* getC4Entity() { return &c4Entity; }
 
+    void setXNormalV(int vx) { xNormalVelocity = vx; }
+
     SDL_Rect getHitRect() { return playerHitRect; }
     SDL_Rect* getWheelRect() { return &wheelRect; }
     void updateWheelRect() {
@@ -112,6 +114,9 @@ private:
     int xp = 0;
 
     int combo = 0;
+
+    const int defaultXSpeed = scale(300);
+    int xNormalVelocity = 0;
 
     bool charged = true;
     bool justCharged = false;

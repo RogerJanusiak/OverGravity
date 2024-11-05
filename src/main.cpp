@@ -308,7 +308,7 @@ int main( int argc, char* args[] ) {
                 launchUpgradeMenu();
 
                 loadUpgradeMenu(state);
-                while((waveNumber-1) % 5 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
+                while((waveNumber-1) % 1 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
@@ -726,12 +726,16 @@ int main( int argc, char* args[] ) {
                                             it->getEntity()->damage(5);
                                             timpy.setInvincible(true);
                                         } else if(!timpy.isInvincible()) {
-                                            if(timpy.damage(state)) {
-                                                playerAlive = false;
-                                                waveNumber = 0;
-                                                timpy.zeroCombo();
+                                            int randomNumber = rand() % 100;
+                                            int dodgeChance = state.playerLevels[dodge] == 0 ? 0 : state.playerProperties[dodge][state.playerLevels[dodge]-1][1];
+                                            if(randomNumber >= dodgeChance) {
+                                                if(timpy.damage(state)) {
+                                                    playerAlive = false;
+                                                    waveNumber = 0;
+                                                    timpy.zeroCombo();
+                                                }
+                                                playerDamaged = true;
                                             }
-                                            playerDamaged = true;
                                             it->getEntity()->damage(5);
                                         }
 
@@ -799,12 +803,16 @@ int main( int argc, char* args[] ) {
                                         it->getEntity()->damage(5);
                                         timpy.setInvincible(true);
                                     } else if(!timpy.isInvincible()) {
-                                        if(timpy.damage(state)) {
-                                            playerAlive = false;
-                                            waveNumber = 0;
-                                            timpy.zeroCombo();
+                                        int randomNumber = rand() % 100;
+                                        int dodgeChance = state.playerLevels[dodge] == 0 ? 0 : state.playerProperties[dodge][state.playerLevels[dodge]-1][1];
+                                        if(randomNumber >= dodgeChance) {
+                                            if(timpy.damage(state)) {
+                                                playerAlive = false;
+                                                waveNumber = 0;
+                                                timpy.zeroCombo();
+                                            }
+                                            playerDamaged = true;
                                         }
-                                        playerDamaged = true;
                                         it->getEntity()->damage(5);
                                     }
 

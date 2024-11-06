@@ -62,6 +62,8 @@ SDL_Rect shieldRect;
 Texture ammoLeftText;
 Texture gamePausedText;
 Texture xpText;
+Texture rbText;
+Texture lbText;
 
 SDL_Rect upgradeHealth1;
 SDL_Rect upgradeHealth2;
@@ -423,6 +425,11 @@ void initMenus(State& state) {
     gamePausedText.loadFromRenderedText("Game Paused", white, title);
     pauseMenu.addTitle((WINDOW_WIDTH-gamePausedText.getWidth())/2,scale(100),gamePausedText);
 
+    rbText.setup(scale(40),scale(40),renderer);
+    lbText.setup(scale(40),scale(40),renderer);
+    rbText.loadFromFile("upgrade-menu/rb.png");
+    lbText.loadFromFile("upgrade-menu/lb.png");
+
     initWeaponUpgradeMenu(state);
     initAbilityUpgradeMenu(state);
     initPlayerUpgradeMenu(state);
@@ -577,7 +584,6 @@ void initPlayerUpgradeMenu(State& state) {
         } else {
             start = 0;
         }
-        playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,start+i*6,-1, &noAction, state,3,i);
         for(int j = 0; j < 5; j++) {
             std::string path;
             if(i == 0) {
@@ -591,9 +597,17 @@ void initPlayerUpgradeMenu(State& state) {
             }
 
             if(i == 0) {
-                playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                if(j==0) {
+                    playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,2,2,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                } else {
+                    playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,5+j,2,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                }
             } else {
-                playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                if(j==0) {
+                    playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,2,6+(i-1)*5+j,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                } else {
+                    playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,5+i*5+j,6+(i-1)*5+j,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                }
             }
             playerUpgradeMenu.getButtons()->back().setupHover(3);
 
@@ -617,7 +631,7 @@ void initPlayerUpgradeMenu(State& state) {
 
         }
     }
-    (*abilityUpgradeMenu.getButtons())[2].linkButtons(&(*abilityUpgradeMenu.getButtons())[1],&(*abilityUpgradeMenu.getButtons())[6],nullptr,&(*abilityUpgradeMenu.getButtons())[6]);
+    (*playerUpgradeMenu.getButtons())[2].linkButtons(&(*playerUpgradeMenu.getButtons())[1],&(*playerUpgradeMenu.getButtons())[6],nullptr,&(*playerUpgradeMenu.getButtons())[6]);
 
 }
 
@@ -703,30 +717,29 @@ void loadUpgradeMenu(State& state) {
         button.deactivate();
     }
     for(int i = 0; i < 5;i++) {
-        (*playerUpgradeMenu.getButtons())[7 + i].enable();
-        (*playerUpgradeMenu.getButtons())[13 + i].enable();
-        (*playerUpgradeMenu.getButtons())[19 + i].enable();
-        (*playerUpgradeMenu.getButtons())[25 + i].enable();
-        (*playerUpgradeMenu.getButtons())[31 + i].enable();
+        (*playerUpgradeMenu.getButtons())[6 + i].enable();
+        (*playerUpgradeMenu.getButtons())[11 + i].enable();
+        (*playerUpgradeMenu.getButtons())[16 + i].enable();
+        (*playerUpgradeMenu.getButtons())[21 + i].enable();
         if(i>state.playerLevels[armor]) {
-            (*playerUpgradeMenu.getButtons())[7 + i].disable();
+            (*playerUpgradeMenu.getButtons())[6 + i].disable();
         } else if(i != state.playerLevels[armor]) {
-            (*playerUpgradeMenu.getButtons())[7 + i].activate();
+            (*playerUpgradeMenu.getButtons())[6 + i].activate();
         }
         if(i>state.playerLevels[shield]) {
-            (*playerUpgradeMenu.getButtons())[13 + i].disable();
+            (*playerUpgradeMenu.getButtons())[11 + i].disable();
         } else if(i != state.playerLevels[shield]) {
-            (*playerUpgradeMenu.getButtons())[13 + i].activate();
+            (*playerUpgradeMenu.getButtons())[11 + i].activate();
         }
         if(i>state.playerLevels[speed]) {
-            (*playerUpgradeMenu.getButtons())[19 + i].disable();
+            (*playerUpgradeMenu.getButtons())[16 + i].disable();
         } else if(i != state.playerLevels[speed]) {
-            (*playerUpgradeMenu.getButtons())[19 + i].activate();
+            (*playerUpgradeMenu.getButtons())[16 + i].activate();
         }
         if(i>state.playerLevels[dodge]) {
-            (*playerUpgradeMenu.getButtons())[25 + i].disable();
+            (*playerUpgradeMenu.getButtons())[21 + i].disable();
         } else if(i != state.playerLevels[dodge]) {
-            (*playerUpgradeMenu.getButtons())[25 + i].activate();
+            (*playerUpgradeMenu.getButtons())[21 + i].activate();
         }
     }
 
@@ -763,7 +776,8 @@ UI_Menu* getCurrentMenu(State& state) {
 
 void renderUpgradeMenu(State& state) {
     xpText.render(scale(37),scale(37));
-
+    lbText.render(scale(245),scale(5));
+    rbText.render(scale(675),scale(5));
 }
 
 void renderMenu(State& state) {

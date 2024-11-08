@@ -1,52 +1,5 @@
 #include "../includes/Roborto.h"
 
-Roborto::Roborto(Entity *entity) {
-    roborEntity = entity;
-    roborEntity->setDimensions(enemyWidth,enemyHeight);
-    roborEntity->getTexture()->setup(enemyWidth,enemyHeight,entity->getRenderer());
-    if(!roborEntity->getTexture()->loadFromFile("roborto.png")) {
-        SDL_Log("Could not load enemy texture!");
-    }
-}
-
-int findEdgeRight(int startX, int startY, State state) {
-    bool lookingRight = true;
-    int numberTilesRight = 1;
-    while(lookingRight) {
-        int rightProbe = startX+numberTilesRight;
-        if(rightProbe > 11) {
-            numberTilesRight = -1;
-            lookingRight = false;
-        } else {
-            if(state.levelMap[startY][rightProbe] != -1) {
-                numberTilesRight++;
-            } else {
-                lookingRight = false;
-            }
-        }
-    }
-    return numberTilesRight;
-}
-
-int findEdgeLeft(int startX, int startY, State state) {
-    bool lookingLeft = true;
-    int numberTilesLeft = 1;
-    while(lookingLeft) {
-        int leftProbe = startX-numberTilesLeft;
-        if(leftProbe < 0) {
-            numberTilesLeft = -1;
-            lookingLeft = false;
-        } else {
-            if(state.levelMap[startY][leftProbe] != -1) {
-                numberTilesLeft++;
-            } else {
-                lookingLeft = false;
-            }
-        }
-    }
-    return numberTilesLeft;
-}
-
 void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State state, bool firstCall = false) {
     if(y < state.playerTileY) {
         // Find right weight
@@ -106,7 +59,7 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
             }
         }
     } else if(y == state.playerTileY) {
-        int xDifference = firstCall ? state.playerX - roborEntity->getRect().x : state.playerTileX-x;
+        int xDifference = firstCall ? state.playerX - entity->getRect().x : state.playerTileX-x;
         int direction = 1;
         if(xDifference != 0) {
             direction = xDifference/abs(xDifference);
@@ -140,11 +93,11 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
 }
 
 void Roborto::move(float dt,const std::list<Platform*> &platforms, State& state) {
-    roborEntity->move(dt,platforms);
+    entity->move(dt,platforms);
 
     //Path Finding
-    int tileX = roborEntity->getRect().x/TILE_SIZE_SCALED+1;
-    int tileY = (roborEntity->getRect().y-state.camY)/TILE_SIZE_SCALED;
+    int tileX = entity->getRect().x/TILE_SIZE_SCALED+1;
+    int tileY = (entity->getRect().y-state.camY)/TILE_SIZE_SCALED;
     if(tileY < state.levelMap.size() && state.levelMap[tileY][tileX] != -1) {
         int leftWeight;
         int rightWeight;
@@ -157,32 +110,32 @@ void Roborto::move(float dt,const std::list<Platform*> &platforms, State& state)
             numberTilesLeft = numberTilesLeft > 0 ? numberTilesLeft : 1000;
 
             if(numberTilesLeft > numberTilesRight) {
-                roborEntity->setXVelocity(xVelocity);
+                entity->setXVelocity(xVelocity);
             } else if(numberTilesLeft < numberTilesRight) {
-                roborEntity->setXVelocity(xVelocity*-1);
-            } else if(roborEntity->getXVelocity() == 0) {
-                roborEntity->setXVelocity(xVelocity);
+                entity->setXVelocity(xVelocity*-1);
+            } else if(entity->getXVelocity() == 0) {
+                entity->setXVelocity(xVelocity);
             }
         } else {
             if(leftWeight > rightWeight) {
-                roborEntity->setXVelocity(xVelocity);
+                entity->setXVelocity(xVelocity);
             } else if(leftWeight < rightWeight) {
-                roborEntity->setXVelocity(-xVelocity);
-            } else if(roborEntity->getXVelocity() == 0) {
-                roborEntity->setXVelocity(xVelocity);
+                entity->setXVelocity(-xVelocity);
+            } else if(entity->getXVelocity() == 0) {
+                entity->setXVelocity(xVelocity);
             }
         }
     }
 
-    if(roborEntity->getRect().y >= scale(state.levelHeight)+state.camY) {
-        roborEntity->despawn();
+    if(entity->getRect().y >= scale(state.levelHeight)+state.camY) {
+        entity->despawn();
     }
 
     //TODO: Move to entity
-    if(roborEntity->getRect().x >= WINDOW_WIDTH) {
-        roborEntity->setPosition(scale(10),roborEntity->getRect().y);
-    } else if(roborEntity->getRect().x <= 0) {
-        roborEntity->setPosition(WINDOW_WIDTH-scale(10), roborEntity->getRect().y);
+    if(entity->getRect().x >= WINDOW_WIDTH) {
+        entity->setPosition(scale(10),entity->getRect().y);
+    } else if(entity->getRect().x <= 0) {
+        entity->setPosition(WINDOW_WIDTH-scale(10), entity->getRect().y);
     }
 
 

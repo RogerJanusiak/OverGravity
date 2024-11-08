@@ -308,7 +308,7 @@ int main( int argc, char* args[] ) {
                 launchUpgradeMenu();
 
                 loadUpgradeMenu(state);
-                while((waveNumber-1) % 1 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
+                while((waveNumber-1) % 5 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
@@ -710,7 +710,7 @@ int main( int argc, char* args[] ) {
                         }
                         if(it->getEntity()->isAlive() && it->getEntity()->isSpawned()) {
                             if(!firstLoop && waveStarted && !pauseEnemy && state.menu != weaponUpgrade) {
-                                it->move(dt, platforms,state.camY,state.levelHeight);
+                                it->move(dt, platforms,state);
                             }
                             it->render();
                             if(!it->didAlreadyCollide() && timpy.getWeapon()->getType() == Weapon_Type::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
@@ -772,9 +772,9 @@ int main( int argc, char* args[] ) {
                                 explosion.play();
                                 timpy.changeXP(it->getDifficulty());
                                 if(!abilityDamgage) {
-                                    timpy.killEnemy(state);
                                     state.abilitiesKills++;
                                 }
+                                timpy.killEnemy(state);
                                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
                             }
                         }
@@ -853,9 +853,9 @@ int main( int argc, char* args[] ) {
                                 explosion.play();
                                 explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                 if(!abilityDamage) {
-                                    timpy.killEnemy(state);
                                     state.abilitiesKills++;
                                 }
+                                timpy.killEnemy(state);
                                 timpy.changeXP(it->getDifficulty());
                                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
                             }
@@ -966,7 +966,7 @@ int main( int argc, char* args[] ) {
 }
 
 void resetState() {
-    timpyPointer->setXP(200);
+    timpyPointer->setXP(0);
     state.c4Placed = false;
     state.currentRevolverLevel = 1;
     state.currentRifleLevel = 0;

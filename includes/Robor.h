@@ -1,34 +1,22 @@
-#ifndef ENEMY_H
-#define ENEMY_H
+#ifndef ROBOR_H
+#define ROBOR_H
 #include <list>
+
 #include "Entity.h"
 #include "Platform.h"
+#include "Enemy.h"
 
-
-class Robor {
+class Robor : public Enemy {
 
 public:
-    explicit Robor(Entity* entity);
+	explicit Robor(Entity* _entity) : Enemy(_entity) {
+		if(!entity->getTexture()->loadFromFile("robor.png")) {
+			SDL_Log("Could not load enemy texture!");
+		}
+	}
 
-    void move(float dt,const std::list<Platform*> &platformsm, int levelY, int levelHeight) const;
-    void render() const { roborEntity->render(); }
-    Entity* getEntity() const { return roborEntity; }
+	int getDifficulty() override { return 1; }
 
-    void knifeColliding() { knifeCollision = true; }
-    void knifeNotColliding() { knifeCollision = false; }
-    [[nodiscard]] bool didAlreadyCollide() const { return knifeCollision; }
-
-    static int getDifficulty() { return 1; }
-
-private:
-    const int enemyWidth = scale(24);
-    const int enemyHeight = scale(50);
-
-    const int xVelocity = scale(250);
-
-    bool knifeCollision = false;
-
-    Entity* roborEntity;
 };
 
-#endif //ENEMY_H
+#endif

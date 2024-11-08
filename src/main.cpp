@@ -743,7 +743,12 @@ int main( int argc, char* args[] ) {
                                 }
                             }
                             for(auto bit = bullets.begin(); bit != bullets.end();) {
-                                if(Entity::isColliding((*it)->getEntity()->getRect(),bit->getEntity()->getRect())) {
+                                if(state.developerMode) {
+                                    SDL_SetRenderDrawColor(gameRenderer,0,0,255,255);
+                                    SDL_Rect temp = bit->getTrailingRect();
+                                    SDL_RenderFillRect(gameRenderer, &temp);
+                                }
+                                if(Entity::isColliding((*it)->getEntity()->getRect(),bit->getTrailingRect())) {
                                     if(bit->decreaseStrength()) {
                                         eBullets.erase(bit->getIterator());
                                         bit = bullets.erase(bit);
@@ -885,7 +890,7 @@ int main( int argc, char* args[] ) {
 void resetState() {
     timpyPointer->setXP(0);
     state.c4Placed = false;
-    state.currentRevolverLevel = 1;
+    state.currentRevolverLevel = 4;
     state.currentRifleLevel = 0;
     state.currentShotgunLevel = 0;
     state.currentKnifeLevel = 0;
@@ -967,13 +972,13 @@ void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::list<
     int totalDifficulty = 0;
     while(totalDifficulty < waveNumber) {
         int enemyType = rand() % 2;
-        if(enemyType == 0 && totalDifficulty+Robor::getDifficulty() <= waveNumber) {
-            totalDifficulty += Robor::getDifficulty();
-            eRobors.emplace_back(spawns, gameRenderer, Robor::getDifficulty());
+        if(enemyType == 0 && totalDifficulty+Robor::difficulty <= waveNumber) {
+            totalDifficulty += Robor::difficulty;
+            eRobors.emplace_back(spawns, gameRenderer, Robor::difficulty);
             robors.emplace_back(&eRobors.back());
-        } else if(enemyType == 1 && totalDifficulty+Roborto::getDifficulty() <= waveNumber) {
-            totalDifficulty += Roborto::getDifficulty();
-            eRobortos.emplace_back(spawns, gameRenderer, Roborto::getDifficulty());
+        } else if(enemyType == 1 && totalDifficulty+Roborto::difficulty <= waveNumber) {
+            totalDifficulty += Roborto::difficulty;
+            eRobortos.emplace_back(spawns, gameRenderer, Roborto::difficulty);
             robortos.emplace_back(&eRobortos.back());
         }
     }

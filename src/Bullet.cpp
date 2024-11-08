@@ -22,6 +22,8 @@ Bullet::Bullet(Entity* tempEntity, BULLET_TYPE type, int durability, int strengt
 }
 
 bool Bullet::move(float dt, const std::list<Platform*> &platforms, bool developerMode) {
+    trailingRect.x = getEntity()->getRect().x;
+    trailingRect.y = getEntity()->getRect().y;
     if(type == BULLET_TYPE::normal) {
         if(!entity->move(dt, platforms)) {
             if(platformStatus == 0) {
@@ -38,6 +40,8 @@ bool Bullet::move(float dt, const std::list<Platform*> &platforms, bool develope
     } else if(type == BULLET_TYPE::laser) {
         entity->setPosition(entity->getRect().x + entity->getXVelocity()*dt,entity->getRect().y);
     }
+    trailingRect.w = abs(trailingRect.x - getEntity()->getRect().x) + getEntity()->getRect().w;
+    trailingRect.h = abs(trailingRect.y - getEntity()->getRect().y) + getEntity()->getRect().h;
 
     if(entity->getRect().x > WINDOW_WIDTH || entity->getRect().x < 0) {
         return true;

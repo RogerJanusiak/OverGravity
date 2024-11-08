@@ -11,7 +11,7 @@ public:
 	explicit Enemy(Entity* _entity);
 
 	virtual void move(float dt,const std::list<Platform*> &platforms, State& state);
-	static int getDifficulty() { return 1; }
+	virtual int getDifficulty() { return 1; }
 
 	void render() const { entity->render(); }
 	[[nodiscard]] Entity* getEntity() const { return entity; }

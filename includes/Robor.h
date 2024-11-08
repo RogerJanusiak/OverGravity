@@ -14,7 +14,9 @@ public:
 		}
 	}
 
-	static int getDifficulty() { return 1; }
+	int getDifficulty() override { return difficulty; }
+
+	static constexpr int difficulty = 1;
 
 };
 

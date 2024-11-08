@@ -19,7 +19,9 @@ public:
 
     void pathFind(int x, int y, int& leftWeight, int& rightWeight, State state, bool firstCall);
 
-	static int getDifficulty() { return 2; }
+	int getDifficulty() override { return difficulty; }
+
+	static constexpr int difficulty = 2;
 
 };
 

@@ -19,6 +19,7 @@ public:
     bool move(float dt, const std::list<Platform*> &platforms, bool developerMode);
 
     Entity* getEntity() const { return entity; }
+    [[nodiscard]] SDL_Rect getTrailingRect() const { return trailingRect; }
 
     [[nodiscard]] bool decreaseStrength() { strength--; return strength == 0; }
 
@@ -42,6 +43,8 @@ private:
     BULLET_TYPE type;
 
     std::list<Entity>::iterator iterator;
+
+    SDL_Rect trailingRect;
 
     Entity* entity;
 

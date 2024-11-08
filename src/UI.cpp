@@ -454,7 +454,7 @@ void genericUpgradeMenuLayout(State& state, UI_Menu* menu) {
     menu->getButtons()->back().setupHover(1);
     menu->getButtons()->back().addLine("Cost: ", removeTrailingZeros(15), verySmall, white);
 
-    menu->addButton(scale(37),scale(180),"Accept Changes", &white,small,1,-1,-1,-1, &closeUpgradeMenu, state,1);
+    menu->addButton(scale(37),scale(180),"Close Menu", &white,small,1,-1,-1,-1, &closeUpgradeMenu, state,1);
 
     menu->addButton(scale(160+128),scale(12),"Weapons", &white,small,-1,-1,-1,-1, &showWeaponUpgradeMenu, state,1);
     menu->addButton(scale(160+256),scale(12),"Abilities", &white,small,-1,-1,-1,-1, &showAbilityUpgradeMenu, state,1);

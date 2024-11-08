@@ -703,6 +703,7 @@ int main( int argc, char* args[] ) {
                     int enemiesAlive = 0;
                     for (auto it = robors.begin(); it != robors.end();++it) {
                         bool firstLoop = false;
+                        bool abilityDamgage = false;
                         if(!it->getEntity()->isSpawned()) {
                             it->getEntity()->spawn(state.enemiesAlive <= 5);
                             firstLoop = true;
@@ -725,6 +726,7 @@ int main( int argc, char* args[] ) {
                                             timpy.getEntity()->setYVelocity(-1800);
                                             it->getEntity()->damage(5);
                                             timpy.setInvincible(true);
+                                            abilityDamgage = true;
                                         } else if(!timpy.isInvincible()) {
                                             int randomNumber = rand() % 100;
                                             int dodgeChance = state.playerLevels[dodge] == 0 ? 0 : state.playerProperties[dodge][state.playerLevels[dodge]-1][1];
@@ -762,14 +764,17 @@ int main( int argc, char* args[] ) {
                                 int c4y = timpy.getC4Entity()->getRect().y;
                                 if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
                                     it->getEntity()->damage(state.abilityProperties[2][state.abilityLevels[2]][2]);
+                                    abilityDamgage = true;
                                 }
                             }
                             if(!it->getEntity()->isAlive()) {
                                 explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
                                 explosion.play();
                                 timpy.changeXP(it->getDifficulty());
-                                timpy.killEnemy(state);
-                                state.abilitiesKills++;
+                                if(!abilityDamgage) {
+                                    timpy.killEnemy(state);
+                                    state.abilitiesKills++;
+                                }
                                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
                             }
                         }
@@ -781,6 +786,7 @@ int main( int argc, char* args[] ) {
 
                     for (auto it = robortos.begin(); it != robortos.end();++it) {
                         bool firstLoop = false;
+                        bool abilityDamage = false;
                         if(!it->getEntity()->isSpawned()) {
                             it->getEntity()->spawn(state.enemiesAlive <= 5);
                             firstLoop = true;
@@ -802,6 +808,7 @@ int main( int argc, char* args[] ) {
                                         timpy.getEntity()->setYVelocity(-1800);
                                         it->getEntity()->damage(5);
                                         timpy.setInvincible(true);
+                                        abilityDamage = true;
                                     } else if(!timpy.isInvincible()) {
                                         int randomNumber = rand() % 100;
                                         int dodgeChance = state.playerLevels[dodge] == 0 ? 0 : state.playerProperties[dodge][state.playerLevels[dodge]-1][1];
@@ -839,13 +846,16 @@ int main( int argc, char* args[] ) {
                                 int c4y = timpy.getC4Entity()->getRect().y;
                                 if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
                                     it->getEntity()->damage(state.abilityProperties[2][state.abilityLevels[2]][2]);
+                                    abilityDamage = true;
                                 }
                             }
                             if(!it->getEntity()->isAlive()) {
                                 explosion.play();
                                 explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
-                                timpy.killEnemy(state);
-                                state.abilitiesKills++;
+                                if(!abilityDamage) {
+                                    timpy.killEnemy(state);
+                                    state.abilitiesKills++;
+                                }
                                 timpy.changeXP(it->getDifficulty());
                                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
                             }

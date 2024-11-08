@@ -14,7 +14,7 @@ public:
 	virtual int getDifficulty() { return 1; }
 
 	void render() const { entity->render(); }
-	Entity* getEntity() const { return entity; }
+	[[nodiscard]] Entity* getEntity() const { return entity; }
 	void knifeColliding() { knifeCollision = true; }
 	void knifeNotColliding() { knifeCollision = false; }
 	[[nodiscard]] bool didAlreadyCollide() const { return knifeCollision; }

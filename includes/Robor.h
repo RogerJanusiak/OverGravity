@@ -1,6 +1,5 @@
 #ifndef ROBOR_H
 #define ROBOR_H
-#include <list>
 
 #include "Entity.h"
 #include "Platform.h"

@@ -83,7 +83,6 @@ if(APPLE)
     set(SOURCE_FILES    src/Player.cpp
             src/Texture.cpp
             src/Platform.cpp
-            src/Robor.cpp
             includes/Robor.h
             src/Entity.cpp
             includes/Entity.h

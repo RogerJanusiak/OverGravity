@@ -122,8 +122,6 @@ void Player::killEnemy(State& state) {
     combo++;
     double mutiplier = state.playerLevels[PlayerUpgrades::shield] == 0 ? 1 : state.playerProperties[PlayerUpgrades::shield][state.playerLevels[PlayerUpgrades::shield]-1][1];
     shield += combo*mutiplier;
-    SDL_Log("Shield: %f", shield);
-    SDL_Log("Multiplier: %f", mutiplier);
     shield = shield >= maxShield ? maxShield : shield;
 }
 

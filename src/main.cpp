@@ -287,6 +287,7 @@ int main( int argc, char* args[] ) {
                 std::list<Roborto> robortos;
 
                 std::list<Entity*> allCharacterEntities;
+                std::list<Enemy*> allEnemies;
 
                 allCharacterEntities.push_back(timpy.getEntity());
 
@@ -294,12 +295,14 @@ int main( int argc, char* args[] ) {
                     eRobots.push_back(*it);
                     robors.emplace_back(&(*it));
                     allCharacterEntities.emplace_back(&(*it));
+                    allEnemies.emplace_back(&robors.back());
                 }
 
                 for (auto it = tempRobortos.begin(); it != tempRobortos.end(); ++it) {
                     eRobortos.push_back(*it);
                     robortos.emplace_back(&(*it));
                     allCharacterEntities.emplace_back(&(*it));
+                    allEnemies.emplace_back(&robortos.back());
                 }
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
@@ -701,30 +704,30 @@ int main( int argc, char* args[] ) {
                     bool playerDamaged = false;
                     SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
                     int enemiesAlive = 0;
-                    for (auto it = robors.begin(); it != robors.end();++it) {
+                    for (auto it = allEnemies.begin(); it != allEnemies.end();++it) {
                         bool firstLoop = false;
                         bool abilityDamgage = false;
-                        if(!it->getEntity()->isSpawned()) {
-                            it->getEntity()->spawn(state.enemiesAlive <= 5);
+                        if(!(*it)->getEntity()->isSpawned()) {
+                            (*it)->getEntity()->spawn(state.enemiesAlive <= 5);
                             firstLoop = true;
                         }
-                        if(it->getEntity()->isAlive() && it->getEntity()->isSpawned()) {
+                        if((*it)->getEntity()->isAlive() && (*it)->getEntity()->isSpawned()) {
                             if(!firstLoop && waveStarted && !pauseEnemy && state.menu != weaponUpgrade) {
-                                it->move(dt, platforms,state);
+                                (*it)->move(dt, platforms,state);
                             }
-                            it->render();
-                            if(!it->didAlreadyCollide() && timpy.getWeapon()->getType() == Weapon_Type::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
-                                it->getEntity()->damage(timpy.getWeapon()->getDamage());
-                                it->knifeColliding();
+                            (*it)->render();
+                            if(!(*it)->didAlreadyCollide() && timpy.getWeapon()->getType() == Weapon_Type::knife && Entity::isColliding((*it)->getEntity()->getRect(),timpy.getWeaponRect())) {
+                                (*it)->getEntity()->damage(timpy.getWeapon()->getDamage());
+                                (*it)->knifeColliding();
                             } else {
-                                if(timpy.getWeapon()->getType() == Weapon_Type::knife && !Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
-                                    it->knifeNotColliding();
+                                if(timpy.getWeapon()->getType() == Weapon_Type::knife && !Entity::isColliding((*it)->getEntity()->getRect(),timpy.getWeaponRect())) {
+                                    (*it)->knifeNotColliding();
                                 }
-                                if( Entity::isColliding(it->getEntity()->getRect(),timpy.getHitRect())) {
-                                    if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y
+                                if( Entity::isColliding((*it)->getEntity()->getRect(),timpy.getHitRect())) {
+                                    if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-(*it)->getEntity()->getRect().h) < (*it)->getEntity()->getRect().y
                                         && timpy.getAbility() == Ability::bounce && timpy.isCharged()) {
                                             timpy.getEntity()->setYVelocity(-1800);
-                                            it->getEntity()->damage(5);
+                                            (*it)->getEntity()->damage(5);
                                             timpy.setInvincible(true);
                                             abilityDamgage = true;
                                         } else if(!timpy.isInvincible()) {
@@ -738,39 +741,39 @@ int main( int argc, char* args[] ) {
                                                 }
                                                 playerDamaged = true;
                                             }
-                                            it->getEntity()->damage(5);
+                                            (*it)->getEntity()->damage(5);
                                         }
 
                                 }
                             }
                             for(auto bit = bullets.begin(); bit != bullets.end();) {
-                                if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
+                                if(Entity::isColliding((*it)->getEntity()->getRect(),bit->getEntity()->getRect())) {
                                     if(bit->decreaseStrength()) {
                                         eBullets.erase(bit->getIterator());
                                         bit = bullets.erase(bit);
                                     } else {
                                         ++bit;
                                     }
-                                    it->getEntity()->damage(timpy.getWeapon()->getDamage());
+                                    (*it)->getEntity()->damage(timpy.getWeapon()->getDamage());
                                     break;
                                 }
                                 ++bit;
                             }
                             if(state.developerMode) {
-                                SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
+                                SDL_RenderDrawRect(gameRenderer,&(*it)->getEntity()->getRect());
                             }
                             if(state.c4Exploded) {
                                 int c4x = timpy.getC4Entity()->getRect().x;
                                 int c4y = timpy.getC4Entity()->getRect().y;
-                                if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
-                                    it->getEntity()->damage(state.abilityProperties[2][state.abilityLevels[2]][2]);
+                                if(pow(pow(c4x - (*it)->getEntity()->getRect().x,2)+pow(c4y - (*it)->getEntity()->getRect().y,2),0.5) < scale(200)) {
+                                    (*it)->getEntity()->damage(state.abilityProperties[2][state.abilityLevels[2]][2]);
                                     abilityDamgage = true;
                                 }
                             }
-                            if(!it->getEntity()->isAlive()) {
-                                explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
+                            if(!(*it)->getEntity()->isAlive()) {
+                                explosions.emplace_back((*it)->getEntity()->getRect().x+(*it)->getEntity()->getRect().w/2,(*it)->getEntity()->getRect().y+(*it)->getEntity()->getRect().h/2,gameRenderer);
                                 explosion.play();
-                                timpy.changeXP(it->getDifficulty());
+                                timpy.changeXP((*it)->getDifficulty());
                                 if(!abilityDamgage) {
                                     state.abilitiesKills++;
                                 }
@@ -778,89 +781,7 @@ int main( int argc, char* args[] ) {
                                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
                             }
                         }
-                        if(it->getEntity()->isAlive()) {
-                            robotAlive = true;
-                            enemiesAlive++;
-                        }
-                    }
-
-                    for (auto it = robortos.begin(); it != robortos.end();++it) {
-                        bool firstLoop = false;
-                        bool abilityDamage = false;
-                        if(!it->getEntity()->isSpawned()) {
-                            it->getEntity()->spawn(state.enemiesAlive <= 5);
-                            firstLoop = true;
-                        }
-                        if(it->getEntity()->isAlive() && it->getEntity()->isSpawned()) {
-                            if(!firstLoop && waveStarted && !pauseEnemy) {
-                                it->move(dt, platforms,state);
-                            }
-                            it->render();
-                            if(!it->didAlreadyCollide() && timpy.getWeapon()->getType() == Weapon_Type::knife && Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
-                                it->getEntity()->damage(timpy.getWeapon()->getDamage());
-                                it->knifeColliding();
-                            } else {
-                                if(timpy.getWeapon()->getType() == Weapon_Type::knife && !Entity::isColliding(it->getEntity()->getRect(),timpy.getWeaponRect())) {
-                                    it->knifeNotColliding();
-                                }
-                                if( Entity::isColliding(it->getEntity()->getRect(),timpy.getHitRect())) {
-                                    if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-it->getEntity()->getRect().h) < it->getEntity()->getRect().y && timpy.getAbility() == Ability::bounce && timpy.isCharged()) {
-                                        timpy.getEntity()->setYVelocity(-1800);
-                                        it->getEntity()->damage(5);
-                                        timpy.setInvincible(true);
-                                        abilityDamage = true;
-                                    } else if(!timpy.isInvincible()) {
-                                        int randomNumber = rand() % 100;
-                                        int dodgeChance = state.playerLevels[dodge] == 0 ? 0 : state.playerProperties[dodge][state.playerLevels[dodge]-1][1];
-                                        if(randomNumber >= dodgeChance) {
-                                            if(timpy.damage(state)) {
-                                                playerAlive = false;
-                                                waveNumber = 0;
-                                                timpy.zeroCombo();
-                                            }
-                                            playerDamaged = true;
-                                        }
-                                        it->getEntity()->damage(5);
-                                    }
-
-                                }
-                            }
-                            for(auto bit = bullets.begin(); bit != bullets.end();) {
-                                if(Entity::isColliding(it->getEntity()->getRect(),bit->getEntity()->getRect())) {
-                                    if(bit->decreaseStrength()) {
-                                        eBullets.erase(bit->getIterator());
-                                        bit = bullets.erase(bit);
-                                    } else {
-                                        ++bit;
-                                    }
-                                    it->getEntity()->damage(timpy.getWeapon()->getDamage());
-                                    break;
-                                }
-                                ++bit;
-                            }
-                            if(state.developerMode) {
-                                SDL_RenderDrawRect(gameRenderer,&it->getEntity()->getRect());
-                            }
-                            if(state.c4Exploded) {
-                                int c4x = timpy.getC4Entity()->getRect().x;
-                                int c4y = timpy.getC4Entity()->getRect().y;
-                                if(pow(pow(c4x - it->getEntity()->getRect().x,2)+pow(c4y - it->getEntity()->getRect().y,2),0.5) < scale(200)) {
-                                    it->getEntity()->damage(state.abilityProperties[2][state.abilityLevels[2]][2]);
-                                    abilityDamage = true;
-                                }
-                            }
-                            if(!it->getEntity()->isAlive()) {
-                                explosion.play();
-                                explosions.emplace_back(it->getEntity()->getRect().x+it->getEntity()->getRect().w/2,it->getEntity()->getRect().y+it->getEntity()->getRect().h/2,gameRenderer);
-                                if(!abilityDamage) {
-                                    state.abilitiesKills++;
-                                }
-                                timpy.killEnemy(state);
-                                timpy.changeXP(it->getDifficulty());
-                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
-                            }
-                        }
-                        if(it->getEntity()->isAlive()) {
+                        if((*it)->getEntity()->isAlive()) {
                             robotAlive = true;
                             enemiesAlive++;
                         }

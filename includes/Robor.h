@@ -14,7 +14,7 @@ public:
 		}
 	}
 
-	int getDifficulty() override { return 1; }
+	static int getDifficulty() { return 1; }
 
 };
 

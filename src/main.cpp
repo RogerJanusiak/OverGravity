@@ -41,10 +41,12 @@ bool init();
 void close();
 void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& allCharacterEntities);
 void renderPlatforms(std::list<Platform*>& platforms);
-std::list<Entity> getWaveEnemyEntities(int waveNumber,int divisor, int notDiv, int hp, std::vector<Spawn>* spawns);
+
 void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
 void loadController();
 void resetState();
+
+void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::list<Entity>& eRobors, std::list<Entity>& eRobortos, std::list<Robor>& robors, std::list<Roborto>& robortos);
 
 void checkIfSpawnsAreOnScreen(std::vector<Spawn>& enemySpawns);
 
@@ -278,31 +280,29 @@ int main( int argc, char* args[] ) {
                 inWave = true;
                 waveNumber++;
 
-                std::list<Entity> tempRobors = getWaveEnemyEntities(waveNumber,1,3,1, &enemySpawns);
-                std::list<Entity> eRobots;
-                std::list<Robor> robors;
 
-                std::list<Entity> tempRobortos = getWaveEnemyEntities(waveNumber,3,-1,2, &enemySpawns);
+                std::list<Entity> eRobors;
                 std::list<Entity> eRobortos;
+
+                std::list<Robor> robors;
                 std::list<Roborto> robortos;
 
-                std::list<Entity*> allCharacterEntities;
                 std::list<Enemy*> allEnemies;
+
+                getWaveEnemyEntities(waveNumber,&enemySpawns,eRobors,eRobortos,robors,robortos);
+
+                std::list<Entity*> allCharacterEntities;
 
                 allCharacterEntities.push_back(timpy.getEntity());
 
-                for (auto it = tempRobors.begin(); it != tempRobors.end(); ++it) {
-                    eRobots.push_back(*it);
-                    robors.emplace_back(&(*it));
-                    allCharacterEntities.emplace_back(&(*it));
-                    allEnemies.emplace_back(&robors.back());
+                for (auto & robor : robors) {
+                    allEnemies.push_back(&robor);
+                    allCharacterEntities.push_back(robor.getEntity());
                 }
 
-                for (auto it = tempRobortos.begin(); it != tempRobortos.end(); ++it) {
-                    eRobortos.push_back(*it);
-                    robortos.emplace_back(&(*it));
-                    allCharacterEntities.emplace_back(&(*it));
-                    allEnemies.emplace_back(&robortos.back());
+                for (auto & roborto : robortos) {
+                    allEnemies.push_back(&roborto);
+                    allCharacterEntities.push_back(roborto.getEntity());
                 }
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
@@ -382,12 +382,8 @@ int main( int argc, char* args[] ) {
                         it->render();
                     }
 
-                    for (auto it = robors.begin(); it != robors.end();++it) {
-                        it->render();
-                    }
-
-                    for (auto it = robortos.begin(); it != robortos.end();++it) {
-                        it->render();
+                    for (auto it = allEnemies.begin(); it != allEnemies.end();++it) {
+                        (*it)->render();
                     }
 
                     renderPlatforms(platforms);
@@ -967,21 +963,20 @@ void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& a
     }
 }
 
-std::list<Entity> getWaveEnemyEntities(const int waveNumber,const int divisor,int notDiv, int hp, std::vector<Spawn>* spawns) {
-    std::list<Entity> entities;
-    for(int i = 1; i <= waveNumber; i++) {
-        if(notDiv != -1) {
-            if(i % divisor == 0 && i % notDiv != 0) {
-                entities.emplace_back(spawns,gameRenderer, hp);
-            }
-        } else {
-            if(i % divisor == 0) {
-                entities.emplace_back(spawns,gameRenderer, hp);
-            }
+void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::list<Entity>& eRobors, std::list<Entity>& eRobortos, std::list<Robor>& robors, std::list<Roborto>& robortos) {
+    int totalDifficulty = 0;
+    while(totalDifficulty < waveNumber) {
+        int enemyType = rand() % 2;
+        if(enemyType == 0 && totalDifficulty+Robor::getDifficulty() <= waveNumber) {
+            totalDifficulty += Robor::getDifficulty();
+            eRobors.emplace_back(spawns, gameRenderer, Robor::getDifficulty());
+            robors.emplace_back(&eRobors.back());
+        } else if(enemyType == 1 && totalDifficulty+Roborto::getDifficulty() <= waveNumber) {
+            totalDifficulty += Roborto::getDifficulty();
+            eRobortos.emplace_back(spawns, gameRenderer, Roborto::getDifficulty());
+            robortos.emplace_back(&eRobortos.back());
         }
-
     }
-    return entities;
 }
 
 void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns) {

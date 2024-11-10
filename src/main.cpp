@@ -965,19 +965,19 @@ void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::vecto
         int enemyType = rand() % 4;
         if(enemyType == 0 && totalDifficulty+Robor::difficulty <= waveNumber) {
             totalDifficulty += Robor::difficulty;
-            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Robor::difficulty));
+            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Robor::health));
             enemies.emplace_back(std::unique_ptr<Enemy>(new Robor(entities.back().get())));
         } else if(enemyType == 1 && totalDifficulty+Roborto::difficulty <= waveNumber) {
             totalDifficulty += Roborto::difficulty;
-            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Roborto::difficulty));
+            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Roborto::health));
             enemies.emplace_back(std::unique_ptr<Enemy>(new Roborto(entities.back().get())));
         } else if(enemyType == 2 && totalDifficulty+Robro::difficulty <= waveNumber) {
             totalDifficulty += Robro::difficulty;
-            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Robro::difficulty));
+            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Robro::health));
             enemies.emplace_back(std::unique_ptr<Enemy>(new Robro(entities.back().get())));
         } else if(enemyType == 3 && totalDifficulty+Romo::difficulty <= waveNumber) {
             totalDifficulty += Romo::difficulty;
-            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Romo::difficulty));
+            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Romo::health));
             enemies.emplace_back(std::unique_ptr<Enemy>(new Romo(entities.back().get())));
         }
     }

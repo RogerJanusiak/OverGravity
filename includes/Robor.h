@@ -19,6 +19,7 @@ public:
 	int getDifficulty() override { return difficulty; }
 
 	static constexpr int difficulty = 1;
+	static constexpr int health = 1;
 
 };
 

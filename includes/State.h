@@ -102,9 +102,9 @@ struct State {
     };
 
     //Enemy Weights
-    static constexpr int numberOfEnemies = 4;
-    int standardWeight[numberOfEnemies] = {40,70,90,100}; // Robor : Roborto : Robro : Romo
-    int (*currentWeight)[4] = &standardWeight;
+    static constexpr int numberOfEnemies = 5;
+    int standardWeight[numberOfEnemies] = {40,70,80,90,100}; // Robor : Roborto : Robro : Romo
+    int (*currentWeight)[numberOfEnemies] = &standardWeight;
 };
 
 #endif //STATE_H

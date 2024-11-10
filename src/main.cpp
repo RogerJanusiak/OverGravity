@@ -22,6 +22,7 @@
 #include "../includes/State.h"
 #include "../includes/Robro.h"
 #include "../includes/Romo.h"
+#include "../includes/Roo.h"
 
 #include <SDL_ttf.h>
 #include <thread>
@@ -881,7 +882,7 @@ int main( int argc, char* args[] ) {
 void resetState() {
     timpyPointer->setXP(0);
     state.c4Placed = false;
-    state.currentRevolverLevel = 4;
+    state.currentRevolverLevel = 1;
     state.currentRifleLevel = 0;
     state.currentShotgunLevel = 0;
     state.currentKnifeLevel = 0;
@@ -979,6 +980,10 @@ void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::vecto
             totalDifficulty += Romo::difficulty;
             entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Romo::health));
             enemies.emplace_back(std::unique_ptr<Enemy>(new Romo(entities.back().get())));
+        } else if(enemyType > (*state.currentWeight)[3] && enemyType <= (*state.currentWeight)[4] && totalDifficulty+Roo::difficulty <= waveNumber) {
+            totalDifficulty += Roo::difficulty;
+            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Roo::health));
+            enemies.emplace_back(std::unique_ptr<Enemy>(new Roo(entities.back().get())));
         }
     }
 }

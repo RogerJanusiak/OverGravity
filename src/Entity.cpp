@@ -20,8 +20,13 @@ Entity::Entity(const int x,const int y,const int Vx,const int Vy,SDL_Renderer *t
     gameRender = tempGameRenderer;
 }
 
-void Entity::render() const {
-    entityTexture.render(entityRect.x,entityRect.y);
+void Entity::render(bool faceVelocity) const {
+    if(faceVelocity && xVelocity < 0) {
+        entityTexture.render(entityRect.x,entityRect.y,SDL_FLIP_HORIZONTAL);
+    } else {
+        entityTexture.render(entityRect.x,entityRect.y);
+    }
+
 }
 
 Platform* Entity::onPlatform(const std::list<Platform*> &platforms, SDL_Rect& movementBox, SDL_Rect& hitBox) const {

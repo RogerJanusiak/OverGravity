@@ -16,7 +16,7 @@ public:
     Entity(std::vector<Spawn>* spawn, SDL_Renderer* renderer, const int hp) : hp(hp), spawns(spawn), gameRender(renderer) {}
     Entity(int x, int y, int Vx, int Vy,SDL_Renderer *tempGameRenderer);
 
-    void render() const;
+    void render(bool faceVelocity = false) const;
 
     void setPosition (int x,int y) { entityRect.x = x; entityRect.y = y; }
     void setXVelocity (const float Vx) { xVelocity = Vx; }

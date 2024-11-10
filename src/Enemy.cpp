@@ -2,17 +2,15 @@
 
 Enemy::Enemy(Entity *_entity) {
 	entity = _entity;
-	entity->setDimensions(enemyWidth,enemyHeight);
-	entity->getTexture()->setup(enemyWidth,enemyHeight,entity->getRenderer());
 }
 
 void Enemy::move(float dt,const std::list<Platform*> &platforms, State& state) {
 	if(entity->justSpawned) {
 		entity->justSpawned = false;
 		if(entity->getRect().x <=scale(400)) {
-			entity->setXVelocity(xVelocity);
+			entity->setXVelocity(getXVelocity());
 		} else {
-			entity->setXVelocity(-xVelocity);
+			entity->setXVelocity(-getXVelocity());
 		}
 	}
 	entity->move(dt,platforms);

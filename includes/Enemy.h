@@ -22,11 +22,12 @@ public:
 	static int findEdgeRight(int startX, int startY,  State& state);
 	static int findEdgeLeft(int startX, int startY, State& state);
 
-protected:
-	const int enemyWidth = scale(24);
-	const int enemyHeight = scale(50);
+	[[nodiscard]] virtual float getXVelocity() const { return scale(250); }
 
-	const int xVelocity = scale(250);
+	[[nodiscard]] virtual int getWidth() const { return scale(24); }
+	[[nodiscard]] virtual int getHeight() const { return scale(50); }
+
+protected:
 
 	bool knifeCollision = false;
 

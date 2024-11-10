@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <list>
+#include <memory>
 #include <sstream>
 #include <vector>
 
@@ -19,6 +20,8 @@
 #include "../includes/Player.h"
 #include "../includes/Spawn.h"
 #include "../includes/State.h"
+#include "../includes/Robro.h"
+#include "../includes/Romo.h"
 
 #include <SDL_ttf.h>
 #include <thread>
@@ -46,7 +49,7 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
 void loadController();
 void resetState();
 
-void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::list<Entity>& eRobors, std::list<Entity>& eRobortos, std::list<Robor>& robors, std::list<Roborto>& robortos);
+void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::vector<std::unique_ptr<Entity>>& entities, std::vector<std::unique_ptr<Enemy>>& enemies);
 
 void checkIfSpawnsAreOnScreen(std::vector<Spawn>& enemySpawns);
 
@@ -281,29 +284,17 @@ int main( int argc, char* args[] ) {
                 waveNumber++;
 
 
-                std::list<Entity> eRobors;
-                std::list<Entity> eRobortos;
+                std::vector<std::unique_ptr<Entity>> eEnemies;
+                std::vector<std::unique_ptr<Enemy>> enemies;
 
-                std::list<Robor> robors;
-                std::list<Roborto> robortos;
-
-                std::list<Enemy*> allEnemies;
-
-                getWaveEnemyEntities(waveNumber,&enemySpawns,eRobors,eRobortos,robors,robortos);
+                getWaveEnemyEntities(waveNumber,&enemySpawns, eEnemies, enemies);
 
                 std::list<Entity*> allCharacterEntities;
+                for (auto& eEnemy: eEnemies) {
+                    allCharacterEntities.push_back(eEnemy.get());
+                }
 
                 allCharacterEntities.push_back(timpy.getEntity());
-
-                for (auto & robor : robors) {
-                    allEnemies.push_back(&robor);
-                    allCharacterEntities.push_back(robor.getEntity());
-                }
-
-                for (auto & roborto : robortos) {
-                    allEnemies.push_back(&roborto);
-                    allCharacterEntities.push_back(roborto.getEntity());
-                }
 
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
@@ -382,7 +373,7 @@ int main( int argc, char* args[] ) {
                         it->render();
                     }
 
-                    for (auto it = allEnemies.begin(); it != allEnemies.end();++it) {
+                    for (auto it = enemies.begin(); it != enemies.end();++it) {
                         (*it)->render();
                     }
 
@@ -700,7 +691,7 @@ int main( int argc, char* args[] ) {
                     bool playerDamaged = false;
                     SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
                     int enemiesAlive = 0;
-                    for (auto it = allEnemies.begin(); it != allEnemies.end();++it) {
+                    for (auto it = enemies.begin(); it != enemies.end();++it) {
                         bool firstLoop = false;
                         bool abilityDamgage = false;
                         if(!(*it)->getEntity()->isSpawned()) {
@@ -968,18 +959,26 @@ void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& a
     }
 }
 
-void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::list<Entity>& eRobors, std::list<Entity>& eRobortos, std::list<Robor>& robors, std::list<Roborto>& robortos) {
+void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::vector<std::unique_ptr<Entity>>& entities, std::vector<std::unique_ptr<Enemy>>& enemies) {
     int totalDifficulty = 0;
     while(totalDifficulty < waveNumber) {
-        int enemyType = rand() % 2;
+        int enemyType = rand() % 4;
         if(enemyType == 0 && totalDifficulty+Robor::difficulty <= waveNumber) {
             totalDifficulty += Robor::difficulty;
-            eRobors.emplace_back(spawns, gameRenderer, Robor::difficulty);
-            robors.emplace_back(&eRobors.back());
+            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Robor::difficulty));
+            enemies.emplace_back(std::unique_ptr<Enemy>(new Robor(entities.back().get())));
         } else if(enemyType == 1 && totalDifficulty+Roborto::difficulty <= waveNumber) {
             totalDifficulty += Roborto::difficulty;
-            eRobortos.emplace_back(spawns, gameRenderer, Roborto::difficulty);
-            robortos.emplace_back(&eRobortos.back());
+            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Roborto::difficulty));
+            enemies.emplace_back(std::unique_ptr<Enemy>(new Roborto(entities.back().get())));
+        } else if(enemyType == 2 && totalDifficulty+Robro::difficulty <= waveNumber) {
+            totalDifficulty += Robro::difficulty;
+            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Robro::difficulty));
+            enemies.emplace_back(std::unique_ptr<Enemy>(new Robro(entities.back().get())));
+        } else if(enemyType == 3 && totalDifficulty+Romo::difficulty <= waveNumber) {
+            totalDifficulty += Romo::difficulty;
+            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Romo::difficulty));
+            enemies.emplace_back(std::unique_ptr<Enemy>(new Romo(entities.back().get())));
         }
     }
 }

@@ -110,19 +110,19 @@ void Roborto::move(float dt,const std::list<Platform*> &platforms, State& state)
             numberTilesLeft = numberTilesLeft > 0 ? numberTilesLeft : 1000;
 
             if(numberTilesLeft > numberTilesRight) {
-                entity->setXVelocity(xVelocity);
+                entity->setXVelocity(getXVelocity());
             } else if(numberTilesLeft < numberTilesRight) {
-                entity->setXVelocity(xVelocity*-1);
+                entity->setXVelocity(getXVelocity()*-1);
             } else if(entity->getXVelocity() == 0) {
-                entity->setXVelocity(xVelocity);
+                entity->setXVelocity(getXVelocity());
             }
         } else {
             if(leftWeight > rightWeight) {
-                entity->setXVelocity(xVelocity);
+                entity->setXVelocity(getXVelocity());
             } else if(leftWeight < rightWeight) {
-                entity->setXVelocity(-xVelocity);
+                entity->setXVelocity(-getXVelocity());
             } else if(entity->getXVelocity() == 0) {
-                entity->setXVelocity(xVelocity);
+                entity->setXVelocity(getXVelocity());
             }
         }
     }

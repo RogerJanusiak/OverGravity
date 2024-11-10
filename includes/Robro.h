@@ -16,8 +16,8 @@ public:
 
 	int getDifficulty() override { return difficulty; }
 
-	static constexpr int difficulty = 3;
-	static constexpr int health = 3;
+	static constexpr int difficulty = 2;
+	static constexpr int health = 1;
 
 	[[nodiscard]] float getXVelocity() const override { return scale(300); }
 

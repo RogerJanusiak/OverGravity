@@ -101,6 +101,10 @@ struct State {
         {{10,1},{20,2},{30,3},{40,4},{50,5}} // Dodge
     };
 
+    //Enemy Weights
+    static constexpr int numberOfEnemies = 4;
+    int standardWeight[numberOfEnemies] = {40,70,90,100}; // Robor : Roborto : Robro : Romo
+    int (*currentWeight)[4] = &standardWeight;
 };
 
 #endif //STATE_H

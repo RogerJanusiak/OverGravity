@@ -80,7 +80,7 @@ void Entity::spawn(bool spawnOnScreen) {
     if(!currentSpawnIt->getOccupied() && (!spawnOnScreen || currentSpawnIt->isOnScreen())) {
         offPlatform = false;
         spawned = true;
-        setPosition(currentSpawnIt->getX(),currentSpawnIt->getY());
+        setPosition(currentSpawnIt->getX(),currentSpawnIt->getY()+currentSpawnIt->getRect().h-entityRect.h);
         setYVelocity(0);
         currentSpawnIt->setOccupied(true);
     }
@@ -90,7 +90,7 @@ void Entity::forceSpawn() {
     for(auto it = spawns->begin(); it != spawns->end(); it++) {
         offPlatform = false;
         spawned = true;
-        setPosition(it->getX(),it->getY());
+        setPosition(it->getX(),it->getY()+it->getRect().h-entityRect.h);
         setYVelocity(0);
         it->setOccupied(true);
         break;

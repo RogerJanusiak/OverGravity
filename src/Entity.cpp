@@ -20,11 +20,12 @@ Entity::Entity(const int x,const int y,const int Vx,const int Vy,SDL_Renderer *t
     gameRender = tempGameRenderer;
 }
 
-void Entity::render(bool faceVelocity) const {
+void Entity::render(int spriteX, int spriteY, bool faceVelocity) const {
+    SDL_Rect sourceRect = {spriteX*srcWidth,spriteY*srcHeight,srcWidth,srcHeight};
     if(faceVelocity && xVelocity < 0) {
-        entityTexture.render(entityRect.x,entityRect.y,SDL_FLIP_HORIZONTAL);
+        entityTexture.render(entityRect.x,entityRect.y,SDL_FLIP_HORIZONTAL,&sourceRect);
     } else {
-        entityTexture.render(entityRect.x,entityRect.y);
+        entityTexture.render(entityRect.x,entityRect.y,SDL_FLIP_NONE,&sourceRect);
     }
 
 }

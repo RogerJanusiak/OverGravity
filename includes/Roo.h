@@ -9,6 +9,7 @@ public:
 	explicit Roo(Entity* _entity) : Enemy(_entity) {
 		entity->setDimensions(Roo::getWidth(),Roo::getHeight());
 		entity->getTexture()->setup(Roo::getWidth(),Roo::getHeight(),entity->getRenderer());
+		entity->setSource(23,32);
 		if(!entity->getTexture()->loadFromFile("roo.png")) {
 			SDL_Log("Could not load enemy texture!");
 		}

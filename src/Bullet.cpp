@@ -5,6 +5,7 @@ Bullet::Bullet(Entity* tempEntity, BULLET_TYPE type, int durability, int strengt
         case BULLET_TYPE::laser: {
             entity->setDimensions(lazerWidth,lazerHeight);
             entity->getTexture()->setup(lazerWidth,lazerHeight,entity->getRenderer());
+            entity->setSource(32,8);
             if(!entity->getTexture()->loadFromFile("laser.png")) {
                 SDL_Log("Could not load bullet texture!");
             }
@@ -12,6 +13,7 @@ Bullet::Bullet(Entity* tempEntity, BULLET_TYPE type, int durability, int strengt
         default: {
             entity->setDimensions(normalWidth,normalHeight);
             entity->getTexture()->setup(normalWidth,normalHeight,entity->getRenderer());
+            entity->setSource(4,4);
             if(!entity->getTexture()->loadFromFile("bullet.png")) {
                 SDL_Log("Could not load bullet texture!");
             }
@@ -50,6 +52,6 @@ bool Bullet::move(float dt, const std::list<Platform*> &platforms, bool develope
 }
 
 void Bullet::render() {
-    entity->render();
+    entity->render(0,0);
 }
 

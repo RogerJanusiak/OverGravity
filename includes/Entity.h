@@ -16,23 +16,24 @@ public:
     Entity(std::vector<Spawn>* spawn, SDL_Renderer* renderer, const int hp) : hp(hp), spawns(spawn), gameRender(renderer) {}
     Entity(int x, int y, int Vx, int Vy,SDL_Renderer *tempGameRenderer);
 
-    void render(bool faceVelocity = false) const;
+    void render(int spriteX, int spriteY, bool faceVelocity = false) const;
 
     void setPosition (int x,int y) { entityRect.x = x; entityRect.y = y; }
     void setXVelocity (const float Vx) { xVelocity = Vx; }
     void setYVelocity (const float Vy) { yVelocity = Vy; }
     void setDimensions (const int w, const int h) { entityRect.w = w; entityRect.h = h; }
     void setTexture (const Texture& texture) { entityTexture = texture; }
+    void setSource (const int w, const int h) { srcHeight = h; srcWidth = w; }
 
     void setPhysics(int x, int y, int Vx, int Vy) {  entityRect.x = x; entityRect.y = y; yVelocity = Vy; xVelocity = Vx; }
 
     SDL_Rect &getRect() { return entityRect; }
     Texture *getTexture() { return &entityTexture; }
-    float getXVelocity() const { return xVelocity; }
-    float getYVelocity() const { return yVelocity; }
-    SDL_Renderer* getRenderer() const { return gameRender; }
+    [[nodiscard]] float getXVelocity() const { return xVelocity; }
+    [[nodiscard]] float getYVelocity() const { return yVelocity; }
+    [[nodiscard]] SDL_Renderer* getRenderer() const { return gameRender; }
 
-    bool isSpawned() const { return spawned; }
+    [[nodiscard]] bool isSpawned() const { return spawned; }
     void spawn(bool spawnOnScreen = false);
     void forceSpawn();
     void despawn() { spawned = false;justSpawned = true;entityRect.x = -1000,entityRect.y = -1000; }
@@ -42,6 +43,7 @@ public:
     static bool isColliding(SDL_Rect& rectA, const SDL_Rect& rectB);
 
     bool damage(int damageAmount);
+    [[nodiscard]] int getHP() const { return hp; }
     [[nodiscard]] bool isAlive() const { return alive; }
 
     bool justSpawned = true;
@@ -49,6 +51,9 @@ public:
 private:
     float xVelocity = 0;
     float yVelocity = 0;
+
+    int srcWidth = 0;
+    int srcHeight = 0;
 
     bool alive = true;
     int hp = 1;

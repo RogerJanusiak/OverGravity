@@ -9,6 +9,7 @@ public:
 	explicit Robro(Entity* _entity) : Enemy(_entity) {
 		entity->setDimensions(Robro::getWidth(),Robro::getHeight());
 		entity->getTexture()->setup(Robro::getWidth(),Robro::getHeight(),entity->getRenderer());
+		entity->setSource(12,32);
 		if(!entity->getTexture()->loadFromFile("robro.png")) {
 			SDL_Log("Could not load robro texture!");
 		}

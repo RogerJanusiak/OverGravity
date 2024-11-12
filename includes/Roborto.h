@@ -12,6 +12,7 @@ public:
 	explicit Roborto(Entity* _entity) : Enemy(_entity) {
 		entity->setDimensions(Roborto::getWidth(),Roborto::getHeight());
 		entity->getTexture()->setup(Roborto::getWidth(),Roborto::getHeight(),entity->getRenderer());
+		entity->setSource(18,32);
 		if(!entity->getTexture()->loadFromFile("roborto.png")) {
 			SDL_Log("Could not load enemy texture!");
 		}

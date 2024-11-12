@@ -13,7 +13,7 @@ public:
 	virtual void move(float dt,const std::list<Platform*> &platforms, State& state);
 	virtual int getDifficulty() { return 1; }
 
-	void render() const { entity->render(true); }
+	void render() const { entity->render(entity->getHP()-1,0,true); }
 	[[nodiscard]] Entity* getEntity() const { return entity; }
 	void knifeColliding() { knifeCollision = true; }
 	void knifeNotColliding() { knifeCollision = false; }

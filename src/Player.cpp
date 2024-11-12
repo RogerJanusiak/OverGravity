@@ -46,15 +46,16 @@ Player::Player(Entity* entity, Weapon* primaryWeapon) : playerEntity(entity), pr
     c4Entity.setTexture(c4Texture);
     c4Entity.setDimensions(scale(32),scale(32));
     playerEntity->setTexture(playerTextureLeft);
+    playerEntity->setSource(26,32);
 
 }
 
 void Player::render() const {
     if(c4Placed) {
-        c4Entity.render();
+        c4Entity.render(0,0);
     }
 
-    playerEntity->render();
+    playerEntity->render(0,0);
 
     if(!c4Placed) {
         currentWeapon->render(playerEntity->getRect().x,playerEntity->getRect().y,playerDirection);

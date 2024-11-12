@@ -8,6 +8,7 @@ public:
 	explicit Romo(Entity* _entity) : Enemy(_entity) {
 		entity->setDimensions(Romo::getWidth(),Romo::getHeight());
 		entity->getTexture()->setup(Romo::getWidth(),Romo::getHeight(),entity->getRenderer());
+		entity->setSource(20,13);
 		if(!entity->getTexture()->loadFromFile("romo.png")) {
 			SDL_Log("Could not load enemy texture!");
 		}

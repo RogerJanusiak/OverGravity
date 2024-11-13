@@ -16,6 +16,8 @@ public:
 
 	int getDifficulty() override { return difficulty; }
 
+	ENEMY_TYPE getType() override { return romo; }
+
 	static constexpr int difficulty = 2;
 	static constexpr int health = 1;
 

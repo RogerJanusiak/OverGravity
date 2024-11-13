@@ -18,6 +18,8 @@ public:
 		}
 	}
 
+	ENEMY_TYPE getType() override { return roborto; }
+
     void move(float dt,const std::list<Platform*> &platforms, State& state) override;
 
     void pathFind(int x, int y, int& leftWeight, int& rightWeight, State state, bool firstCall);

@@ -65,11 +65,10 @@ Texture xpText;
 Texture rbText;
 Texture lbText;
 
-SDL_Rect upgradeHealth1;
-SDL_Rect upgradeHealth2;
-SDL_Rect upgradeHealth3;
-SDL_Rect upgradeShield1;
-SDL_Rect upgradeShield2;
+SDL_Rect upgradeHealth;
+SDL_Rect upgradeHealthBack;
+SDL_Rect upgradeShield;
+SDL_Rect upgradeShieldBack;
 
 UI_Menu mainMenu(4);
 UI_Menu levelSelect(2);
@@ -554,11 +553,10 @@ void initWeaponUpgradeMenu(State& state) {
     xpText.setup(renderer);
     xpText.loadFromRenderedText("XP: 0", white, counter);
 
-    upgradeHealth1 = {scale(37),scale(72),scale(15),scale(15)};
-    upgradeHealth2 = {scale(57),scale(72),scale(15),scale(15)};
-    upgradeHealth3 = {scale(77),scale(72),scale(15),scale(15)};
-    upgradeShield1 = {scale(97),scale(72),scale(15),scale(15)};
-    upgradeShield2 = {scale(117),scale(72),scale(15),scale(15)};
+    upgradeHealth = {scale(50),scale(55),scale(102),scale(15)};
+    upgradeHealthBack = {scale(50),scale(55),scale(102),scale(15)};
+    upgradeShield = {scale(50),scale(75),scale(102),scale(15)};
+    upgradeShieldBack = {scale(50),scale(75),scale(102),scale(15)};
 }
 
 void initAbilityUpgradeMenu(State& state) {
@@ -821,9 +819,24 @@ UI_Menu* getCurrentMenu(State& state) {
 }
 
 void renderUpgradeMenu(State& state) {
-    xpText.render(scale(37),scale(37));
+    xpText.render(scale(37),scale(23));
     lbText.render(scale(245),scale(5));
     rbText.render(scale(675),scale(5));
+
+    upgradeHealth.w = scale(player->getHealthPercentage()*102);
+
+    upgradeShield.w = scale(player->getShieldPercentage()*102);
+
+    SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+    SDL_RenderFillRect(renderer,&upgradeHealthBack);
+    SDL_RenderFillRect(renderer,&upgradeShieldBack);
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(renderer,&upgradeHealth);
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    SDL_RenderFillRect(renderer,&upgradeShield);
+
 }
 
 void renderMenu(State& state) {

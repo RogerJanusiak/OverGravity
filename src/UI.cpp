@@ -397,6 +397,9 @@ void closeUpgradeMenu(State& state, int attr1, int attr2) {
 }
 
 void showWeaponUpgradeMenu(State& state, int attr1, int attr2) {
+    (*weaponUpgradeMenu.getButtons())[3].activate();
+    (*abilityUpgradeMenu.getButtons())[4].deactivate();
+    (*playerUpgradeMenu.getButtons())[5].deactivate();
     closeUpgradeMenu(state,attr1,attr2);
     state.menu = weaponUpgrade;
     currentButton = &(*weaponUpgradeMenu.getButtons())[2];
@@ -406,6 +409,9 @@ void showWeaponUpgradeMenu(State& state, int attr1, int attr2) {
 }
 
 void showAbilityUpgradeMenu(State& state, int attr1, int attr2) {
+    (*weaponUpgradeMenu.getButtons())[3].deactivate();
+    (*abilityUpgradeMenu.getButtons())[4].activate();
+    (*playerUpgradeMenu.getButtons())[5].deactivate();
     closeUpgradeMenu(state,attr1,attr2);
     state.menu = abilityUpgrade;
     currentButton = &(*abilityUpgradeMenu.getButtons())[2];
@@ -415,6 +421,9 @@ void showAbilityUpgradeMenu(State& state, int attr1, int attr2) {
 }
 
 void showPlayerUpgradeMenu(State& state, int attr1, int attr2) {
+    (*weaponUpgradeMenu.getButtons())[3].deactivate();
+    (*abilityUpgradeMenu.getButtons())[4].deactivate();
+    (*playerUpgradeMenu.getButtons())[5].activate();
     closeUpgradeMenu(state,attr1,attr2);
     state.menu = playerUpgrade;
     currentButton = &(*playerUpgradeMenu.getButtons())[2];
@@ -767,10 +776,23 @@ void loadUpgradeMenu(State& state) {
         }
     }
 
+    switch(state.menu) {
+        default:
+            (*weaponUpgradeMenu.getButtons())[3].activate();
+            break;
+        case abilityUpgrade:
+            (*abilityUpgradeMenu.getButtons())[4].activate();
+            break;
+        case playerUpgrade:
+            (*playerUpgradeMenu.getButtons())[5].activate();
+            break;
+
+    }
+
     xpText.loadFromRenderedText("Current XP: " + std::to_string(player->getXP()), white, counter);
 }
 
-void launchUpgradeMenu() {
+void launchUpgradeMenu(State& state) {
     currentButton = &(*weaponUpgradeMenu.getButtons())[2];
     if(currentButton != nullptr) {
         currentButton->select();

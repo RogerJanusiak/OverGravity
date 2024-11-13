@@ -20,6 +20,9 @@ void UI_Button::setType(int type, SDL_Renderer* _renderer) {
 
         hoverTexture.setup(w,h,renderer);
         hoverTexture.loadFromFile("upgrade-menu/small-selected.png");
+
+        activeTexture.setup(w,h,renderer);
+        activeTexture.loadFromFile("upgrade-menu/small-active.png");
     } else if(type == 2) {
         w = weaponWidth;
         h = weaponWidth;

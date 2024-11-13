@@ -16,7 +16,7 @@ void initPlayerUpgradeMenu(State& state);
 void initWeaponUpgradeMenu(State& state);
 
 void loadUpgradeMenu(State& state);
-void launchUpgradeMenu();
+void launchUpgradeMenu(State& state);
 void closeUpgradeMenu(State& state, int attr1, int attr2);
 
 void showWeaponUpgradeMenu(State& state, int attr1, int attr2);

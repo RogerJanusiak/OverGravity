@@ -315,9 +315,9 @@ int main( int argc, char* args[] ) {
                 checkIfSpawnsOccupied(allSpawns,allCharacterEntities);
 
                 state.menu = weaponUpgrade;
-                launchUpgradeMenu();
 
                 loadUpgradeMenu(state);
+                launchUpgradeMenu(state);
                 while((waveNumber-1) % 1 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {

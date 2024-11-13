@@ -73,7 +73,9 @@ struct State {
     int weapon1 = 0;
     int weapon2 = -1;
 
-    int numberOfAbilities = 4;
+    int upgradeIncreaseFactor = 0;
+
+    int numberOfAbilities = 3;
     int abilityLevels[4] = {0,0,0,0};
     int playerLevels[4] = {0,0,0,0};
     int abilitiesKills = 0;

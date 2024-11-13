@@ -146,6 +146,9 @@ public:
     int above, int below, int left, int right, void (*action)(State& state, int attr1, int attr2),State& state, int type = 0, int attribute = 0,int attribute2 = 0);
   int addButton(int x, int y, const std::string& path, int above, int below, int left, int right, void (*action)(State& state, int attr1, int attr2),State& state, int type = 0, int attribute = 0,int attribute2 = 0, const std::string& secondaryPath = "no");
   std::vector<UI_Button>* getButtons() {return &buttons;}
+
+  void reset() { buttons.clear(); };
+
   [[nodiscard]] UI_Button* loadMenu();
   void addRenderer(SDL_Renderer* _renderer) { renderer = _renderer; }
 

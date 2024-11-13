@@ -318,7 +318,7 @@ int main( int argc, char* args[] ) {
                 launchUpgradeMenu();
 
                 loadUpgradeMenu(state);
-                while((waveNumber-1) % 5 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
+                while((waveNumber-1) % 1 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
@@ -895,7 +895,7 @@ int main( int argc, char* args[] ) {
 }
 
 void resetState() {
-    timpyPointer->setXP(0);
+    timpyPointer->setXP(200);
     state.c4Placed = false;
     state.currentRevolverLevel = 1;
     state.currentRifleLevel = 0;

@@ -131,6 +131,20 @@ void renderInGameText(bool developerMode, float lastFPS,bool waveStarted) {
     }
 }
 
+void resetMenus(State& state) {
+    weaponUpgradeMenu.reset();
+    abilityUpgradeMenu.reset();
+    playerUpgradeMenu.reset();
+
+    initWeaponUpgradeMenu(state);
+    initAbilityUpgradeMenu(state);
+    initPlayerUpgradeMenu(state);
+}
+
+void purchaseUpgrade(State& state) {
+    state.upgradeIncreaseFactor += 5;
+}
+
 //Button Action Functions
 void showLevelSelect(State& state, int attr1, int attr2) {
     state.menu = level;
@@ -207,7 +221,7 @@ void selectWeapon(State& state, int attr1, int attr2) {
 }
 
 void upgradeWeapon(State& state, int attr1, int attr2) {
-    if(player->getXP() >= state.weaponProperties[attr1][attr2][0]) {
+    if(player->getXP() >= state.weaponProperties[attr1][attr2][0] + state.upgradeIncreaseFactor) {
         bool upgraded = false;
         switch(attr1) {
         case 1: {
@@ -242,7 +256,9 @@ void upgradeWeapon(State& state, int attr1, int attr2) {
         } break;
         }
         if(upgraded) {
-            player->changeXP(-state.weaponProperties[attr1][attr2][0]);
+            player->changeXP(-(state.weaponProperties[attr1][attr2][0]+ state.upgradeIncreaseFactor));
+            purchaseUpgrade(state);
+            resetMenus(state);
             loadUpgradeMenu(state);
         }
     }
@@ -276,7 +292,7 @@ void selectAbility(State& state, int attr1, int attr2) {
 }
 
 void upgradeAbility(State& state, int attr1, int attr2) {
-    if(player->getXP() >= state.abilityProperties[attr1][attr2][0]) {
+    if(player->getXP() >= state.abilityProperties[attr1][attr2][0]+ state.upgradeIncreaseFactor) {
         bool upgraded = false;
         switch(attr1) {
         case 1: {
@@ -305,14 +321,16 @@ void upgradeAbility(State& state, int attr1, int attr2) {
         } break;
         }
         if(upgraded) {
-            player->changeXP(-state.abilityProperties[attr1][attr2][0]);
+            player->changeXP(-(state.abilityProperties[attr1][attr2][0] + state.upgradeIncreaseFactor));
+            purchaseUpgrade(state);
+            resetMenus(state);
             loadUpgradeMenu(state);
         }
     }
 }
 
 void upgradePlayer(State& state, int attr1, int attr2) {
-    if(player->getXP() >= state.playerProperties[attr1][attr2][0]) {
+    if(player->getXP() >= state.playerProperties[attr1][attr2][0] + state.upgradeIncreaseFactor) {
         bool upgraded = false;
         switch(attr1) {
         case 1: {
@@ -341,24 +359,30 @@ void upgradePlayer(State& state, int attr1, int attr2) {
         } break;
         }
         if(upgraded) {
-            player->changeXP(-state.playerProperties[attr1][attr2][0]);
+            player->changeXP(-(state.playerProperties[attr1][attr2][0] + state.upgradeIncreaseFactor));
+            purchaseUpgrade(state);
+            resetMenus(state);
             loadUpgradeMenu(state);
         }
     }
 }
 
 void fullHealth(State& state, int attr1, int attr2) {
-    if(player->getXP() >= 15) {
-        player->changeXP(-15);
+    if(player->getXP() >= 15 + state.upgradeIncreaseFactor) {
+        player->changeXP(-(15 + state.upgradeIncreaseFactor));
         player->fullHealth();
+        purchaseUpgrade(state);
+        resetMenus(state);
         loadUpgradeMenu(state);
     }
 }
 
 void fullShield(State& state, int attr1, int attr2) {
-    if(player->getXP() >= 15) {
-        player->changeXP(-15);
+    if(player->getXP() >= 15 + state.upgradeIncreaseFactor) {
+        player->changeXP(-(15+ state.upgradeIncreaseFactor));
         player->fillShield();
+        purchaseUpgrade(state);
+        resetMenus(state);
         loadUpgradeMenu(state);
     }
 }
@@ -448,11 +472,11 @@ void genericUpgradeMenuLayout(State& state, UI_Menu* menu) {
     menu->addRenderer(renderer);
     menu->addButton(scale(37),scale(100),"Max HP", &white,small,-1,-1,-1,-1, &fullHealth, state,1);
     menu->getButtons()->back().setupHover(1);
-    menu->getButtons()->back().addLine("Cost: ", removeTrailingZeros(15), verySmall, white);
+    menu->getButtons()->back().addLine("Cost: ", removeTrailingZeros(15 + state.upgradeIncreaseFactor), verySmall, white);
 
     menu->addButton(scale(37),scale(140),"Max Shield", &white,small,0,-1,-1,-1, &fullShield, state,1);
     menu->getButtons()->back().setupHover(1);
-    menu->getButtons()->back().addLine("Cost: ", removeTrailingZeros(15), verySmall, white);
+    menu->getButtons()->back().addLine("Cost: ", removeTrailingZeros(15 + state.upgradeIncreaseFactor), verySmall, white);
 
     menu->addButton(scale(37),scale(180),"Close Menu", &white,small,1,-1,-1,-1, &closeUpgradeMenu, state,1);
 
@@ -494,7 +518,7 @@ void initWeaponUpgradeMenu(State& state) {
             }
 
             weaponUpgradeMenu.getButtons()->back().setupHover(6);
-            weaponUpgradeMenu.getButtons()->back().addLine("Cost: ", removeTrailingZeros(state.weaponProperties[i][j][0]), verySmall, white);
+            weaponUpgradeMenu.getButtons()->back().addLine("Cost: ", removeTrailingZeros(state.weaponProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
             if(i == 0 || i == 1) {
                 weaponUpgradeMenu.getButtons()->back().addLine("Clip Size: ", removeTrailingZeros(state.weaponProperties[i][j][1]), verySmall, white);
                 weaponUpgradeMenu.getButtons()->back().addLine("Reload Speed : ", removeTrailingZeros(state.weaponProperties[i][j][2]), verySmall, white);
@@ -557,7 +581,7 @@ void initAbilityUpgradeMenu(State& state) {
                 abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
             }
             abilityUpgradeMenu.getButtons()->back().setupHover(3);
-            abilityUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.abilityProperties[i][j][0]), verySmall, white);
+            abilityUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.abilityProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
             abilityUpgradeMenu.getButtons()->back().addLine("Refresh: ",removeTrailingZeros(state.abilityProperties[i][j][1]), verySmall, white);
 
             if(i == 1) {
@@ -613,7 +637,7 @@ void initPlayerUpgradeMenu(State& state) {
 
             if(i == 0) {
                 playerUpgradeMenu.getButtons()->back().addLine("Armor: "," ", verySmall, white);
-                playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
                 playerUpgradeMenu.getButtons()->back().addLine("Damage Reduction: ",removeTrailingZeros(state.playerProperties[i][j][1]) + "%", verySmall, white);
             } else if(i == 1) {
                 playerUpgradeMenu.getButtons()->back().addLine("Shield Charge: "," ", verySmall, white);

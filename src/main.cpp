@@ -271,6 +271,11 @@ int main( int argc, char* args[] ) {
 
             timpy.getEntity()->forceSpawn();
 
+            std::vector<std::vector<std::unique_ptr<Entity>>> waveSetEEnemies;
+            waveSetEEnemies.reserve(5);
+            std::vector<std::vector<std::unique_ptr<Enemy>>> waveSetEnemies;
+            waveSetEnemies.reserve(5);
+
             while(state.started && !state.quit) {
 
                 bool leftMovement = false;
@@ -281,17 +286,27 @@ int main( int argc, char* args[] ) {
                     timpy.setSecondaryWeapon(nullptr);
                     timpy.setAbility(none);
                 }
+
                 inWave = true;
                 waveNumber++;
 
+                int waveSetLocation = (waveNumber-1) % 5;
+                if(waveSetLocation == 0) {
+                    waveSetEEnemies.clear();
+                    waveSetEnemies.clear();
+                    for(int i = 0; i < 5; i++) {
+                        std::vector<std::unique_ptr<Entity>> eEnemies;
+                        std::vector<std::unique_ptr<Enemy>> enemies;
 
-                std::vector<std::unique_ptr<Entity>> eEnemies;
-                std::vector<std::unique_ptr<Enemy>> enemies;
+                        getWaveEnemyEntities(waveNumber + i,&enemySpawns, eEnemies, enemies);
 
-                getWaveEnemyEntities(waveNumber,&enemySpawns, eEnemies, enemies);
+                        waveSetEEnemies.push_back(std::move(eEnemies));
+                        waveSetEnemies.push_back(std::move(enemies));
+                    }
+                }
 
                 std::list<Entity*> allCharacterEntities;
-                for (auto& eEnemy: eEnemies) {
+                for (auto& eEnemy: waveSetEEnemies[waveSetLocation]) {
                     allCharacterEntities.push_back(eEnemy.get());
                 }
 
@@ -374,7 +389,7 @@ int main( int argc, char* args[] ) {
                         it->render();
                     }
 
-                    for (auto it = enemies.begin(); it != enemies.end();++it) {
+                    for (auto it =  waveSetEnemies[waveSetLocation].begin(); it !=  waveSetEnemies[waveSetLocation].end();++it) {
                         (*it)->render();
                     }
 
@@ -692,7 +707,7 @@ int main( int argc, char* args[] ) {
                     bool playerDamaged = false;
                     SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
                     int enemiesAlive = 0;
-                    for (auto it = enemies.begin(); it != enemies.end();++it) {
+                    for (auto it =  waveSetEnemies[waveSetLocation].begin(); it !=  waveSetEnemies[waveSetLocation].end();++it) {
                         bool firstLoop = false;
                         bool abilityDamgage = false;
                         if(!(*it)->getEntity()->isSpawned()) {

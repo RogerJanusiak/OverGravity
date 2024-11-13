@@ -3,6 +3,13 @@
 #include "Entity.h"
 #include "State.h"
 
+enum ENEMY_TYPE {
+	robor,
+	roborto,
+	robro,
+	romo,
+	roo
+};
 
 class Enemy {
 

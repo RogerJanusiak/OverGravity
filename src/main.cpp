@@ -194,40 +194,47 @@ int main( int argc, char* args[] ) {
 
         SDL_Rect backgroundRect = {0,0,WINDOW_WIDTH,WINDOW_HEIGHT};
 
+        std::vector<Spawn> playerSpawns;
+        playerSpawns.reserve(2);
+
+        Weapon revolver(Weapon_Type::revolver,gameRenderer, state);
+        Weapon rifle(Weapon_Type::rifle,gameRenderer, state);
+        Weapon shotgun(Weapon_Type::shotgun,gameRenderer, state);
+        Weapon knife(Weapon_Type::knife,gameRenderer, state);
+        Weapon laserPistol(Weapon_Type::laserPistol,gameRenderer, state);
+
+        Entity eTimpy = Entity(&playerSpawns,gameRenderer,10);
+        Player timpy = Player(&eTimpy,&revolver);
+        Texture teleportCursor = Texture();
+        teleportCursor.setup(scale(50),scale(60),gameRenderer);
+        teleportCursor.loadFromFile("Timpy.png");
+        timpyPointer = &timpy;
+
+        UI_init(gameRenderer, state, &timpy);
+
         //Game Loop
         while(!state.quit) {
 
-            if(controller != nullptr) {
-                controllerEvent(state,MENU_CONTROL::connect);
-            }
+            resetState();
+            playerSpawns.clear();
 
             std::list<Platform> ePlatforms;
             std::vector<Spawn> enemySpawns;
             enemySpawns.reserve(15);
-            std::vector<Spawn> playerSpawns;
-            playerSpawns.reserve(2);
 
             std::vector<Spawn*> allSpawns;
             allSpawns.reserve(15);
+
             std::list<Platform*> platforms;
 
             std::list<Entity> eBullets;
             std::list<Bullet> bullets;
 
-            Weapon revolver(Weapon_Type::revolver,gameRenderer, state);
-            Weapon rifle(Weapon_Type::rifle,gameRenderer, state);
-            Weapon shotgun(Weapon_Type::shotgun,gameRenderer, state);
-            Weapon knife(Weapon_Type::knife,gameRenderer, state);
-            Weapon laserPistol(Weapon_Type::laserPistol,gameRenderer, state);
+            if(controller != nullptr) {
+                controllerEvent(state,MENU_CONTROL::connect);
+            }
 
-            Entity eTimpy = Entity(&playerSpawns,gameRenderer,10);
-            Player timpy = Player(&eTimpy,&revolver);
-            Texture teleportCursor = Texture();
-            teleportCursor.setup(scale(50),scale(60),gameRenderer);
-            teleportCursor.loadFromFile("Timpy.png");
-            timpyPointer = &timpy;
 
-            UI_init(gameRenderer, state, &timpy);
 
             while(!state.started && !state.quit) {
                 startScreen();
@@ -904,7 +911,7 @@ int main( int argc, char* args[] ) {
 }
 
 void resetState() {
-    timpyPointer->setXP(200);
+    timpyPointer->setXP(0);
     state.c4Placed = false;
     state.currentRevolverLevel = 1;
     state.currentRifleLevel = 0;

@@ -303,6 +303,11 @@ int main( int argc, char* args[] ) {
                         waveSetEEnemies.push_back(std::move(eEnemies));
                         waveSetEnemies.push_back(std::move(enemies));
                     }
+                    for(auto& set : waveSetEnemies) {
+                        for(auto& enemies : set) {
+                            state.setEnemies[enemies->getType()]++;
+                        }
+                    }
                 }
 
                 std::list<Entity*> allCharacterEntities;
@@ -318,7 +323,7 @@ int main( int argc, char* args[] ) {
 
                 loadUpgradeMenu(state);
                 launchUpgradeMenu(state);
-                while((waveNumber-1) % 1 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
+                while((waveNumber-1) % 5 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;

@@ -5,6 +5,7 @@
 #include <SDL_ttf.h>
 #include <string>
 
+#include "../includes/Enemy.h"
 #include "../includes/Texture.h"
 
 SDL_Color white = { 255, 255, 255 };
@@ -64,6 +65,21 @@ Texture gamePausedText;
 Texture xpText;
 Texture rbText;
 Texture lbText;
+
+Texture roborTexture;
+Texture robortoTexture;
+Texture robroTexture;
+Texture romoTexture;
+Texture rooTexture;
+
+Texture roborText;
+Texture robortoText;
+Texture robroText;
+Texture romoText;
+Texture rooText;
+
+SDL_Rect robortoSource;
+SDL_Rect rooSource;
 
 SDL_Rect upgradeHealth;
 SDL_Rect upgradeHealthBack;
@@ -462,6 +478,30 @@ void initMenus(State& state) {
     rbText.loadFromFile("upgrade-menu/rb.png");
     lbText.loadFromFile("upgrade-menu/lb.png");
 
+    roborTexture.setup(scale(24),scale(50),renderer);
+    roborTexture.loadFromFile("robor.png");
+
+    robortoTexture.setup(scale(28),scale(50),renderer);
+    robortoTexture.loadFromFile("roborto.png");
+
+    robroTexture.setup(scale(19),scale(50),renderer);
+    robroTexture.loadFromFile("robro.png");
+
+    romoTexture.setup(scale(31),scale(20),renderer);
+    romoTexture.loadFromFile("romo.png");
+
+    rooTexture.setup(scale(36),scale(50),renderer);
+    rooTexture.loadFromFile("roo.png");
+
+    roborText.setup(renderer);
+    robortoText.setup(renderer);
+    robroText.setup(renderer);
+    romoText.setup(renderer);
+    rooText.setup(renderer);
+
+    robortoSource = {18,0,18,32};
+    rooSource = {92,0,23,32};
+
     initWeaponUpgradeMenu(state);
     initAbilityUpgradeMenu(state);
     initPlayerUpgradeMenu(state);
@@ -791,6 +831,12 @@ void loadUpgradeMenu(State& state) {
 }
 
 void launchUpgradeMenu(State& state) {
+    roborText.loadFromRenderedText("x" + std::to_string(state.setEnemies[robor]),white,counter);
+    robortoText.loadFromRenderedText("x" + std::to_string(state.setEnemies[roborto]),white,counter);
+    robroText.loadFromRenderedText("x" + std::to_string(state.setEnemies[robro]),white,counter);
+    romoText.loadFromRenderedText("x" + std::to_string(state.setEnemies[romo]),white,counter);
+    rooText.loadFromRenderedText("x" + std::to_string(state.setEnemies[roo]),white,counter);
+
     currentButton = &(*weaponUpgradeMenu.getButtons())[2];
     if(currentButton != nullptr) {
         currentButton->select();
@@ -822,6 +868,18 @@ void renderUpgradeMenu(State& state) {
     xpText.render(scale(37),scale(23));
     lbText.render(scale(245),scale(5));
     rbText.render(scale(675),scale(5));
+
+    roborTexture.render(scale(50-roborTexture.getWidth()/2),scale(250));
+    robortoTexture.render(scale(120-robortoTexture.getWidth()/2),scale(290),SDL_FLIP_NONE,&robortoSource);
+    robroTexture.render(scale(50-robroTexture.getWidth()/2),scale(330));
+    romoTexture.render(scale(120-romoTexture.getWidth()/2),scale(400));
+    rooTexture.render(scale(50-rooTexture.getWidth()/2),scale(410),SDL_FLIP_NONE,&rooSource);
+
+    roborText.render(scale(50-roborTexture.getWidth()/2)+roborTexture.getWidth()+scale(5),scale(250)+roborTexture.getHeight()-roborText.getHeight()+scale(5));
+    robortoText.render(scale(120-robortoTexture.getWidth()/2)+robortoTexture.getWidth()+scale(5),scale(290)+robortoTexture.getHeight()-roborText.getHeight()+scale(5));
+    robroText.render(scale(50-robroTexture.getWidth()/2)+robroTexture.getWidth()+scale(5),scale(330)+robroTexture.getHeight()-roborText.getHeight()+scale(5));
+    romoText.render(scale(120-romoTexture.getWidth()/2)+romoTexture.getWidth()+scale(5),scale(400)+romoTexture.getHeight()-roborText.getHeight()+scale(5));
+    rooText.render(scale(50-rooTexture.getWidth()/2)+rooTexture.getWidth()+scale(5),scale(410)+rooTexture.getHeight()-roborText.getHeight()+scale(5));
 
     upgradeHealth.w = scale(player->getHealthPercentage()*102);
 

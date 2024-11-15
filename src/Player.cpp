@@ -196,7 +196,13 @@ void Player::changeWeapon() {
 
 }
 
-void Player::reset() {
+void Player::reset(State& state) {
     health = 200;
     shield = 0;
+    xp = 0;
+    setAbility(none);
+    state.weapon1 = 0;
+    state.weapon2 = -1;
+    state.abilitiesKills = 0;
+    charge(state);
 }

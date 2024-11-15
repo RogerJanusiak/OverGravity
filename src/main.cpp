@@ -234,8 +234,6 @@ int main( int argc, char* args[] ) {
                 controllerEvent(state,MENU_CONTROL::connect);
             }
 
-
-
             while(!state.started && !state.quit) {
                 startScreen();
             }
@@ -301,6 +299,9 @@ int main( int argc, char* args[] ) {
                 if(waveSetLocation == 0) {
                     waveSetEEnemies.clear();
                     waveSetEnemies.clear();
+                    for(auto& enemy : state.setEnemies) {
+                        enemy = 0;
+                    }
                     for(int i = 0; i < 5; i++) {
                         std::vector<std::unique_ptr<Entity>> eEnemies;
                         std::vector<std::unique_ptr<Enemy>> enemies;
@@ -911,27 +912,26 @@ int main( int argc, char* args[] ) {
 }
 
 void resetState() {
-    timpyPointer->setXP(0);
     state.c4Placed = false;
     state.currentRevolverLevel = 1;
     state.currentRifleLevel = 0;
     state.currentShotgunLevel = 0;
     state.currentKnifeLevel = 0;
     state.currentLaserPistolLevel = 0;
-    state.abilityLevels[grenade] = 0;
-    state.abilityLevels[teleport] = 0;
-    state.abilityLevels[c4] = 0;
-    state.abilityLevels[bounce] = 0;
-    state.playerLevels[armor] = 0;
-    state.playerLevels[speed] = 0;
-    state.playerLevels[shield] = 0;
-    state.playerLevels[dodge] = 0;
-    timpyPointer->setAbility(none);
-    state.weapon1 = 0;
-    state.weapon2 = -1;
+
+    for(auto& enemy : state.setEnemies) {
+        enemy = 0;
+    }
+
+    for(auto& level : state.abilityLevels) {
+        level = 0;
+    }
+
+    for(auto& level : state.playerLevels) {
+        level = 0;
+    }
+    timpyPointer->reset(state);
     loadUpgradeMenu(state);
-    timpyPointer->charge(state);
-    state.abilitiesKills = 0;
 }
 
 void checkIfSpawnsAreOnScreen(std::vector<Spawn>& enemySpawns) {

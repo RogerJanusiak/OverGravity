@@ -56,7 +56,7 @@ public:
 
     void fullHealth() { health = maxHealth; }
     void fillShield() { shield = maxShield; }
-    void reset();
+    void reset(State& state);
 
     void killEnemy(State& state);
     void zeroCombo() { combo = 0;}

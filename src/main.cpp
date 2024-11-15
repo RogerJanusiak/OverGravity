@@ -786,11 +786,13 @@ int main( int argc, char* args[] ) {
                             if(!(*it)->getEntity()->isAlive()) {
                                 explosions.emplace_back((*it)->getEntity()->getRect().x+(*it)->getEntity()->getRect().w/2,(*it)->getEntity()->getRect().y+(*it)->getEntity()->getRect().h/2,gameRenderer);
                                 explosion.play();
-                                timpy.changeXP((*it)->getDifficulty());
                                 if(!abilityDamgage) {
                                     state.abilitiesKills++;
                                 }
-                                timpy.killEnemy(state);
+                                if(!playerDamaged) {
+                                    timpy.changeXP((*it)->getDifficulty());
+                                    timpy.killEnemy(state);
+                                }
                                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
                             }
                         }

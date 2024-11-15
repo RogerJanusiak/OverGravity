@@ -45,6 +45,7 @@ Player::Player(Entity* entity, Weapon* primaryWeapon) : playerEntity(entity), pr
 
     c4Entity.setTexture(c4Texture);
     c4Entity.setDimensions(scale(32),scale(32));
+    c4Entity.setSource(32,32);
     playerEntity->setTexture(playerTextureLeft);
     playerEntity->setSource(26,32);
 

@@ -787,7 +787,7 @@ int main( int argc, char* args[] ) {
                                 int c4x = timpy.getC4Entity()->getRect().x;
                                 int c4y = timpy.getC4Entity()->getRect().y;
                                 if(pow(pow(c4x - (*it)->getEntity()->getRect().x,2)+pow(c4y - (*it)->getEntity()->getRect().y,2),0.5) < scale(200)) {
-                                    (*it)->getEntity()->damage(state.abilityProperties[2][state.abilityLevels[2]][2]);
+                                    (*it)->getEntity()->damage(state.abilityProperties[c4][state.abilityLevels[c4]-1][2]);
                                     abilityDamgage = true;
                                 }
                             }

@@ -50,9 +50,10 @@ class UI_Button {
 
 public:
 
-  UI_Button(int x, int y, const std::string& text, SDL_Renderer* renderer,
+  UI_Button(int x, int y, const std::string& text, SDL_Renderer* renderer, Sound* sound,
             const SDL_Color * color, TTF_Font* font, void (*action)(State& state, int attr1, int attr2),State& state, int type = 0, int attribute = 0,int attribute2 = 0);
-  UI_Button(int x, int y, const std::string& path, SDL_Renderer* renderer, void (*action)(State& state, int attr1, int attr2),State& state, int type = 0, int attribute = 0,int attribute2 = 0, const std::string& secondaryPath = "no");
+  UI_Button(int x, int y, const std::string& path, SDL_Renderer* renderer, Sound* sound, void (*action)(State& state, int attr1, int attr2),State& state, int type = 0, int attribute = 0,int attribute2 = 0, const std::string& secondaryPath = "no");
+
 
   void render() const;
   [[nodiscard]] int getWidth() const { return w; }
@@ -127,7 +128,7 @@ private:
   Texture textTexture;
   Texture activeTexture;
 
-  Sound buttonClick;
+  Sound* buttonClick;
 
   bool selected = false;
   bool secondaryImage = false;
@@ -150,7 +151,8 @@ public:
   void reset() { buttons.clear(); };
 
   [[nodiscard]] UI_Button* loadMenu();
-  void addRenderer(SDL_Renderer* _renderer) { renderer = _renderer; }
+
+  void setup(SDL_Renderer* _renderer, Sound* _buttonSound) { renderer = _renderer;buttonSound = _buttonSound; }
 
   void addTitle(const int x, const int y, const Texture & texture) { titleX = x, titleY = y, titleTexture = texture; }
 
@@ -160,6 +162,8 @@ private:
 
   TTF_Font* font = nullptr;
   SDL_Color* color = nullptr;
+
+  Sound* buttonSound;
 
   SDL_Renderer* renderer = nullptr;
   Texture titleTexture;

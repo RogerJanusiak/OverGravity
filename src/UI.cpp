@@ -93,6 +93,8 @@ UI_Menu weaponUpgradeMenu(36);
 UI_Menu abilityUpgradeMenu(36);
 UI_Menu playerUpgradeMenu(36);
 
+Sound buttonSound;
+
 Player* player;
 
 void UI_init(SDL_Renderer* _renderer, State& state, Player* _player) {
@@ -451,7 +453,9 @@ void showPlayerUpgradeMenu(State& state, int attr1, int attr2) {
 void initMenus(State& state) {
     const int centeredX = (WINDOW_WIDTH-UI_Button::width)/2;
 
-    mainMenu.addRenderer(renderer);
+    buttonSound.init("resources/sounds/buttonClick.wav", 0,-1);
+
+    mainMenu.setup(renderer, &buttonSound);
     const int arcadeModeButton = mainMenu.addButton(centeredX,scale(215),"Arcade Mode",&white, counter,-1,-1,-1,-1,&showLevelSelect,state);
     const int storyModeButton = mainMenu.addButton(centeredX,scale(280),"Story Mode",&white, counter,arcadeModeButton,-1,-1,-1,&noAction, state);
     const int settingsButton = mainMenu.addButton(centeredX,scale(345),"Settings",&white, counter,storyModeButton,-1,-1,-1, &noAction, state);
@@ -460,12 +464,12 @@ void initMenus(State& state) {
     logoTexture.loadFromFile("logo.png");
     mainMenu.addTitle((WINDOW_WIDTH-scale(454))/2,scale(100), logoTexture);
 
-    levelSelect.addRenderer(renderer);
+    levelSelect.setup(renderer, &buttonSound);
     const int level1Button = levelSelect.addButton(centeredX,scale(225),"Level 1",&white, counter,-1,-1,-1,-1, &selectLevel1, state);
     levelSelect.addButton(centeredX,scale(290),"Level 2",&white, counter,level1Button,-1,-1,-1, &selectLevel2, state);
     levelSelect.addTitle((WINDOW_WIDTH-scale(454))/2,scale(100), logoTexture);
 
-    pauseMenu.addRenderer(renderer);
+    pauseMenu.setup(renderer, &buttonSound);
     const int resumeButton = pauseMenu.addButton(centeredX,scale(215),"Resume Game", &white, counter, -1,-1,-1,-1, &unpause, state);
     const int quitToMenuButton = pauseMenu.addButton(centeredX,scale(280),"Quit To Menu", &white, counter,resumeButton,-1,-1,-1,&quitToMenu, state);
     pauseMenu.addButton(centeredX,scale(345), "Quit To Desktop", &white, counter, quitToMenuButton,-1,-1,-1,&quitToDesktop, state);
@@ -517,7 +521,7 @@ std::string removeTrailingZeros(double i) {
 }
 
 void genericUpgradeMenuLayout(State& state, UI_Menu* menu) {
-    menu->addRenderer(renderer);
+    menu->setup(renderer, &buttonSound);
     menu->addButton(scale(37),scale(100),"Max HP", &white,small,-1,-1,-1,-1, &fullHealth, state,1);
     menu->getButtons()->back().setupHover(1);
     menu->getButtons()->back().addLine("Cost: ", removeTrailingZeros(15 + state.upgradeIncreaseFactor), verySmall, white);

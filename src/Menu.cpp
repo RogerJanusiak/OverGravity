@@ -50,19 +50,20 @@ void UI_Button::setType(int type, SDL_Renderer* _renderer) {
     }
 }
 
-UI_Button::UI_Button(const int x, const int y, const std::string& text, SDL_Renderer* renderer, const SDL_Color * color, TTF_Font* font, void (*action)(State& state, int attr1, int attr2),State& state, const int type, int attribute, int attribute2) : x(x), y(y), type(type), action(action), state(state), attribute(attribute), attribute2(attribute2) {
+
+
+UI_Button::UI_Button(const int x, const int y, const std::string& text, SDL_Renderer* renderer, Sound* sound, const SDL_Color * color, TTF_Font* font, void (*action)(State& state, int attr1, int attr2),State& state, const int type, int attribute, int attribute2) :
+x(x), y(y), type(type), buttonClick(sound), action(action), state(state), attribute(attribute), attribute2(attribute2) {
     setType(type, renderer);
     usingText = true;
-
-    buttonClick.init("resources/sounds/buttonClick.wav", 0,-1);
 
     textTexture.setup(0,0,renderer);
     textTexture.loadFromRenderedText(text, *color, font);
 }
 
-UI_Button::UI_Button(const int x, const int y, const std::string& path, SDL_Renderer* renderer, void (*action)(State& state, int attr1, int attr2),State& state, const int type, int attribute, int attribute2, const std::string& secondaryPath) : x(x), y(y), type(type), action(action), state(state), attribute(attribute), attribute2(attribute2) {
+UI_Button::UI_Button(const int x, const int y, const std::string& path, SDL_Renderer* renderer, Sound* sound, void (*action)(State& state, int attr1, int attr2),State& state, const int type, int attribute, int attribute2, const std::string& secondaryPath) : x
+(x), y(y), type(type), buttonClick(sound), action(action), state(state), attribute(attribute), attribute2(attribute2) {
     setType(type, renderer);
-    buttonClick.init("resources/sounds/buttonClick.wav", 0,-1);
 
     usingText = false;
 
@@ -162,7 +163,7 @@ void UI_Button::link(const RELATIVE_DIRECTION direction, UI_Button* button) {
 
 int UI_Menu::addButton(int x, int y, const std::string &text, SDL_Color* color, TTF_Font* font,
     const int above, const int below, const int left, const int right, void (*action)(State& state, int attr1, int attr2),State& state, int type, int attribute, int attribute2) {
-        buttons.emplace_back(x, y, text, renderer, color, font, action,state, type, attribute, attribute2);
+        buttons.emplace_back(x, y, text, renderer, buttonSound, color, font, action,state, type, attribute, attribute2);
         if(above != -1) {
             buttons.back().link(RELATIVE_DIRECTION::above, &buttons[above]);
             buttons[above].link(RELATIVE_DIRECTION::below, &buttons.back());
@@ -183,7 +184,7 @@ int UI_Menu::addButton(int x, int y, const std::string &text, SDL_Color* color, 
     }
 
 int UI_Menu::addButton(int x, int y, const std::string &path, const int above, const int below, const int left, const int right, void (*action)(State& state, int attr1, int attr2),State& state, int type, int attribute, int attribute2, const std::string& secondaryPath) {
-    buttons.emplace_back(x, y, path, renderer,action,state, type, attribute, attribute2, secondaryPath);
+    buttons.emplace_back(x, y, path, renderer,buttonSound,action,state, type, attribute, attribute2, secondaryPath);
     if(above != -1) {
         buttons.back().link(RELATIVE_DIRECTION::above, &buttons[above]);
         buttons[above].link(RELATIVE_DIRECTION::below, &buttons.back());
@@ -225,7 +226,7 @@ UI_Button *UI_Menu::loadMenu() {
 
 void UI_Button::click() {
     action(state, attribute, attribute2);
-    buttonClick.play();
+    buttonClick->play();
 }
 
 

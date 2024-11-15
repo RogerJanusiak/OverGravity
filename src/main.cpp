@@ -919,6 +919,8 @@ void resetState() {
     state.currentKnifeLevel = 0;
     state.currentLaserPistolLevel = 0;
 
+    state.upgradeIncreaseFactor = 0;
+
     for(auto& enemy : state.setEnemies) {
         enemy = 0;
     }

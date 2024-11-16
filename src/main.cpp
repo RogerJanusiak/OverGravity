@@ -259,6 +259,8 @@ int main( int argc, char* args[] ) {
                 levelPath = currentPath + "resources/levels/level1.csv";
             } else if(state.level == 2) {
                 levelPath = currentPath + "resources/levels/level2.csv";
+            } else if(state.level == 3) {
+                levelPath = currentPath + "resources/levels/level3.csv";
             }
 
             loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns);
@@ -1092,7 +1094,7 @@ bool init() {
         SDL_Log( "TTF could not initialize! SDL Error: %s\n", SDL_GetError() );
         success = false;
     } else {
-        gameWindow = SDL_CreateWindow("OverGravity", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+        gameWindow = SDL_CreateWindow("Hyper_Gravity 0.4", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
         if (gameWindow == nullptr) {
             SDL_Log( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
             success = false;

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 if(WIN32)
-project(Over_Gravity)
+project(Hyper_Gravity)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -73,7 +73,7 @@ if(APPLE)
     Message( STATUS "CMAKE_PROJECT_NAME: " ${CMAKE_PROJECT_NAME} )
     Message( STATUS "CMAKE_FINDCMAKE: " ${CMAKE_SOURCE_DIR}/CMAKE )
 
-    project(Over_Gravity)
+    project(Hyper_Gravity)
 
     # ------- Set Vars ------- #
 
@@ -120,7 +120,7 @@ if(APPLE)
 
     # ------- Executable ----- #
 
-    ADD_EXECUTABLE(Over_Gravity ${SOURCE_FILES})
+    ADD_EXECUTABLE(Hyper_Gravity ${SOURCE_FILES})
 
     # ------- End Executable - #
 

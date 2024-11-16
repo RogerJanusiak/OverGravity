@@ -87,7 +87,7 @@ SDL_Rect upgradeShield;
 SDL_Rect upgradeShieldBack;
 
 UI_Menu mainMenu(4);
-UI_Menu levelSelect(2);
+UI_Menu levelSelect(3);
 UI_Menu pauseMenu(3);
 UI_Menu weaponUpgradeMenu(36);
 UI_Menu abilityUpgradeMenu(36);
@@ -180,6 +180,12 @@ void selectLevel1(State& state, int attr1, int attr2) {
 
 void selectLevel2(State& state, int attr1, int attr2) {
     state.level = 2;
+    state.menu = notInMenu;
+    state.started = true;
+}
+
+void selectLevel3(State& state, int attr1, int attr2) {
+    state.level = 3;
     state.menu = notInMenu;
     state.started = true;
 }
@@ -457,7 +463,7 @@ void initMenus(State& state) {
 
     mainMenu.setup(renderer, &buttonSound);
     const int arcadeModeButton = mainMenu.addButton(centeredX,scale(215),"Arcade Mode",&white, counter,-1,-1,-1,-1,&showLevelSelect,state);
-    const int storyModeButton = mainMenu.addButton(centeredX,scale(280),"Story Mode",&white, counter,arcadeModeButton,-1,-1,-1,&noAction, state);
+    const int storyModeButton = mainMenu.addButton(centeredX,scale(280),"Campaign Mode",&white, counter,arcadeModeButton,-1,-1,-1,&noAction, state);
     const int settingsButton = mainMenu.addButton(centeredX,scale(345),"Settings",&white, counter,storyModeButton,-1,-1,-1, &noAction, state);
     mainMenu.addButton(centeredX,scale(410),"Quit To Desktop",&white, counter,settingsButton,-1,-1,-1,&quitToDesktop,state);
     logoTexture.setup(scale(454),scale(92),renderer);
@@ -466,7 +472,8 @@ void initMenus(State& state) {
 
     levelSelect.setup(renderer, &buttonSound);
     const int level1Button = levelSelect.addButton(centeredX,scale(225),"Level 1",&white, counter,-1,-1,-1,-1, &selectLevel1, state);
-    levelSelect.addButton(centeredX,scale(290),"Level 2",&white, counter,level1Button,-1,-1,-1, &selectLevel2, state);
+    const int level2Button = levelSelect.addButton(centeredX,scale(290),"Level 2",&white, counter,level1Button,-1,-1,-1, &selectLevel2, state);
+    levelSelect.addButton(centeredX,scale(355),"Level 3",&white, counter,level2Button,-1,-1,-1, &selectLevel3, state);
     levelSelect.addTitle((WINDOW_WIDTH-scale(454))/2,scale(100), logoTexture);
 
     pauseMenu.setup(renderer, &buttonSound);

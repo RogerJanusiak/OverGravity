@@ -472,8 +472,8 @@ void initMenus(State& state) {
 
     levelSelect.setup(renderer, &buttonSound);
     const int level1Button = levelSelect.addButton(centeredX,scale(225),"Level 1",&white, counter,-1,-1,-1,-1, &selectLevel1, state);
-    const int level2Button = levelSelect.addButton(centeredX,scale(290),"Level 2",&white, counter,level1Button,-1,-1,-1, &selectLevel2, state);
-    levelSelect.addButton(centeredX,scale(355),"Level 3",&white, counter,level2Button,-1,-1,-1, &selectLevel3, state);
+    //const int level2Button = levelSelect.addButton(centeredX,scale(290),"Level 2",&white, counter,level1Button,-1,-1,-1, &selectLevel3, state);
+    //levelSelect.addButton(centeredX,scale(355),"Level 3",&white, counter,level2Button,-1,-1,-1, &selectLevel3, state);
     levelSelect.addTitle((WINDOW_WIDTH-scale(454))/2,scale(100), logoTexture);
 
     pauseMenu.setup(renderer, &buttonSound);

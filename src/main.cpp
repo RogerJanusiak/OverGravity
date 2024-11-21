@@ -771,6 +771,7 @@ int main( int argc, char* args[] ) {
                                     SDL_RenderFillRect(gameRenderer, &temp);
                                 }
                                 if(Entity::isColliding((*it)->getEntity()->getRect(),bit->getTrailingRect())) {
+                                    explosion.play();
                                     if(bit->decreaseStrength()) {
                                         eBullets.erase(bit->getIterator());
                                         bit = bullets.erase(bit);
@@ -795,8 +796,6 @@ int main( int argc, char* args[] ) {
                             }
                             if(!(*it)->getEntity()->isAlive()) {
                                 explosions.emplace_back((*it)->getEntity()->getRect().x+(*it)->getEntity()->getRect().w/2,(*it)->getEntity()->getRect().y+(*it)->getEntity()->getRect().h/2,gameRenderer);
-                                explosion.play();
-
                                 if(!playerDamaged) {
                                     timpy.changeXP((*it)->getDifficulty());
                                     timpy.killEnemy(state);

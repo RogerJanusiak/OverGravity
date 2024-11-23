@@ -345,8 +345,8 @@ int main( int argc, char* args[] ) {
 
                 state.menu = weaponUpgrade;
 
-                loadUpgradeMenu(state);
                 launchUpgradeMenu(state);
+                loadUpgradeMenu(state);
                 while((waveNumber-1) % 5 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
@@ -936,17 +936,17 @@ int main( int argc, char* args[] ) {
 
 void resetState() {
     state.c4Placed = false;
-    state.currentRevolverLevel = 1;
-    state.currentRifleLevel = 0;
-    state.currentShotgunLevel = 0;
-    state.currentKnifeLevel = 0;
-    state.currentLaserPistolLevel = 0;
 
     state.upgradeIncreaseFactor = 0;
 
     for(auto& enemy : state.setEnemies) {
         enemy = 0;
     }
+
+    for(auto& level : state.weaponLevels) {
+        level = 0;
+    }
+    state.weaponLevels[0] = 1;
 
     for(auto& level : state.abilityLevels) {
         level = 0;

@@ -206,19 +206,19 @@ void selectWeapon(State& state, int attr1, int attr2) {
    int weaponLevel;
     switch(attr1) {
         case 1:
-            weaponLevel = state.currentRifleLevel;
+            weaponLevel = state.weaponLevels[rifle];
             break;
         case 2:
-            weaponLevel = state.currentShotgunLevel;
+            weaponLevel = state.weaponLevels[shotgun];
             break;
         case 3:
-            weaponLevel = state.currentKnifeLevel;
+            weaponLevel = state.weaponLevels[knife];
             break;
         case 4:
-            weaponLevel = state.currentLaserPistolLevel;
+            weaponLevel = state.weaponLevels[laserPistol];
             break;
         default:
-            weaponLevel = state.currentRevolverLevel;
+            weaponLevel = state.weaponLevels[revolver];
             break;
     }
     if(weaponLevel > 0) {
@@ -248,32 +248,32 @@ void upgradeWeapon(State& state, int attr1, int attr2) {
         bool upgraded = false;
         switch(attr1) {
         case 1: {
-            if(attr2 == state.currentRifleLevel) {
-                state.currentRifleLevel++;
+            if(attr2 == state.weaponLevels[rifle]) {
+                state.weaponLevels[rifle]++;
                 upgraded = true;
             }
         } break;
         case 2: {
-            if(attr2 == state.currentShotgunLevel) {
-                state.currentShotgunLevel++;
+            if(attr2 == state.weaponLevels[shotgun]) {
+                state.weaponLevels[shotgun]++;
                 upgraded = true;
             }
         } break;
         case 3: {
-            if(attr2 == state.currentKnifeLevel) {
-                state.currentKnifeLevel++;
+            if(attr2 == state.weaponLevels[knife]) {
+                state.weaponLevels[knife]++;
                 upgraded = true;
             }
         } break;
         case 4: {
-            if(attr2 == state.currentLaserPistolLevel) {
-                state.currentLaserPistolLevel++;
+            if(attr2 == state.weaponLevels[laserPistol]) {
+                state.weaponLevels[laserPistol]++;
                 upgraded = true;
             }
         } break;
         default: {
-            if(attr2 == state.currentRevolverLevel) {
-                state.currentRevolverLevel++;
+            if(attr2 == state.weaponLevels[revolver]) {
+                state.weaponLevels[revolver]++;
                 upgraded = true;
             }
         } break;
@@ -556,6 +556,7 @@ void initWeaponUpgradeMenu(State& state) {
             start = 0;
         }
         weaponUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,start+i*6,-1, &selectWeapon, state,3,i);
+
         for(int j = 0; j < 5; j++) {
             std::string path;
             if(i == 0) {
@@ -577,8 +578,10 @@ void initWeaponUpgradeMenu(State& state) {
             }
 
             weaponUpgradeMenu.getButtons()->back().setupHover(6);
-            weaponUpgradeMenu.getButtons()->back().addLine("Cost: ", removeTrailingZeros(state.weaponProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
-            if(i == 0 || i == 1) {
+            if(state.weaponLevels[i] < j+1) {
+                weaponUpgradeMenu.getButtons()->back().addLine("Cost: ", removeTrailingZeros(state.weaponProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
+            }
+             if(i == 0 || i == 1) {
                 weaponUpgradeMenu.getButtons()->back().addLine("Clip Size: ", removeTrailingZeros(state.weaponProperties[i][j][1]), verySmall, white);
                 weaponUpgradeMenu.getButtons()->back().addLine("Reload Speed : ", removeTrailingZeros(state.weaponProperties[i][j][2]), verySmall, white);
                 weaponUpgradeMenu.getButtons()->back().addLine("Bullet Durability: ", removeTrailingZeros(state.weaponProperties[i][j][3]), verySmall, white);
@@ -639,7 +642,9 @@ void initAbilityUpgradeMenu(State& state) {
                 abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
             }
             abilityUpgradeMenu.getButtons()->back().setupHover(3);
-            abilityUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.abilityProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
+            if(state.abilityLevels[i] < j+1) {
+                abilityUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.abilityProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
+            }
             abilityUpgradeMenu.getButtons()->back().addLine("Refresh: ",removeTrailingZeros(state.abilityProperties[i][j][1]), verySmall, white);
 
             if(i == 1) {
@@ -695,19 +700,27 @@ void initPlayerUpgradeMenu(State& state) {
 
             if(i == 0) {
                 playerUpgradeMenu.getButtons()->back().addLine("Armor: "," ", verySmall, white);
-                playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
+                if(state.playerLevels[i] < j+1) {
+                    playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
+                }
                 playerUpgradeMenu.getButtons()->back().addLine("Damage Reduction: ",removeTrailingZeros(state.playerProperties[i][j][1]) + "%", verySmall, white);
             } else if(i == 1) {
                 playerUpgradeMenu.getButtons()->back().addLine("Shield Charge: "," ", verySmall, white);
-                playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                if(state.playerLevels[i] < j+1) {
+                    playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                }
                 playerUpgradeMenu.getButtons()->back().addLine("Multiplier: ",removeTrailingZeros(state.playerProperties[i][j][1]), verySmall, white);
             } else if(i == 2) {
                 playerUpgradeMenu.getButtons()->back().addLine("Player Speed: "," ", verySmall, white);
-                playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                if(state.playerLevels[i] < j+1) {
+                    playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                }
                 playerUpgradeMenu.getButtons()->back().addLine("Speed Increase: ",removeTrailingZeros(state.playerProperties[i][j][1])+ "%", verySmall, white);
             } else if(i == 3) {
                 playerUpgradeMenu.getButtons()->back().addLine("Dodge: "," ", verySmall, white);
-                playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                if(state.playerLevels[i] < j+1) {
+                    playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                }
                 playerUpgradeMenu.getButtons()->back().addLine("Dodge Chance: ",removeTrailingZeros(state.playerProperties[i][j][1])+ "%", verySmall, white);
             }
 
@@ -734,29 +747,29 @@ void loadUpgradeMenu(State& state) {
         (*weaponUpgradeMenu.getButtons())[19 + i].enable();
         (*weaponUpgradeMenu.getButtons())[25 + i].enable();
         (*weaponUpgradeMenu.getButtons())[31 + i].enable();
-        if(i>state.currentRevolverLevel) {
+        if(i>state.weaponLevels[revolver]) {
             (*weaponUpgradeMenu.getButtons())[7 + i].disable();
-        } else if(i != state.currentRevolverLevel) {
+        } else if(i != state.weaponLevels[revolver]) {
             (*weaponUpgradeMenu.getButtons())[7 + i].activate();
         }
-        if(i>state.currentRifleLevel) {
+        if(i>state.weaponLevels[rifle]) {
             (*weaponUpgradeMenu.getButtons())[13 + i].disable();
-        } else if(i != state.currentRifleLevel) {
+        } else if(i != state.weaponLevels[rifle]) {
             (*weaponUpgradeMenu.getButtons())[13 + i].activate();
         }
-        if(i>state.currentShotgunLevel) {
+        if(i>state.weaponLevels[shotgun]) {
             (*weaponUpgradeMenu.getButtons())[19 + i].disable();
-        } else if(i != state.currentShotgunLevel) {
+        } else if(i != state.weaponLevels[shotgun]) {
             (*weaponUpgradeMenu.getButtons())[19 + i].activate();
         }
-        if(i>state.currentKnifeLevel) {
+        if(i>state.weaponLevels[knife]) {
             (*weaponUpgradeMenu.getButtons())[25 + i].disable();
-        } else if(i != state.currentKnifeLevel) {
+        } else if(i != state.weaponLevels[knife]) {
             (*weaponUpgradeMenu.getButtons())[25 + i].activate();
         }
-        if(i>state.currentLaserPistolLevel) {
+        if(i>state.weaponLevels[laserPistol]) {
             (*weaponUpgradeMenu.getButtons())[31 + i].disable();
-        } else if(i != state.currentLaserPistolLevel) {
+        } else if(i != state.weaponLevels[laserPistol]) {
             (*weaponUpgradeMenu.getButtons())[31 + i].activate();
         }
     }
@@ -847,6 +860,8 @@ void launchUpgradeMenu(State& state) {
     robroText.loadFromRenderedText("x" + std::to_string(state.setEnemies[robro]),white,counter);
     romoText.loadFromRenderedText("x" + std::to_string(state.setEnemies[romo]),white,counter);
     rooText.loadFromRenderedText("x" + std::to_string(state.setEnemies[roo]),white,counter);
+
+    resetMenus(state);
 
     currentButton = &(*weaponUpgradeMenu.getButtons())[2];
     if(currentButton != nullptr) {

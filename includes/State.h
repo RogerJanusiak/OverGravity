@@ -65,19 +65,17 @@ struct State {
 
     bool c4Placed = false;
     int numberOfWeapons = 5;
-    int currentRevolverLevel = 1;
-    int currentRifleLevel = 0;
-    int currentShotgunLevel = 0;
-    int currentKnifeLevel = 0;
-    int currentLaserPistolLevel = 0;
     int weapon1 = 0;
     int weapon2 = -1;
 
     int upgradeIncreaseFactor = 0;
 
     int numberOfAbilities = 3;
+
+    int weaponLevels[5] = {1,0,0,0,0};
     int abilityLevels[4] = {0,0,0,0};
     int playerLevels[4] = {0,0,0,0};
+
     int abilitiesKills = 0;
 
     int numberOfPlayerUpgrades = 4;

@@ -183,31 +183,31 @@ bool Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, cons
 
 void Weapon::upgrade(const State& state) {
     if(type == revolver) {
-        int level = state.currentRevolverLevel == 0 ? 0 : state.currentRevolverLevel - 1;
+        int level = state.weaponLevels[revolver] == 0 ? 0 : state.weaponLevels[revolver] - 1;
         clipSize = state.weaponProperties[0][level][1];
         reloadSpeed = state.weaponProperties[0][level][2];
         bulletDurability = state.weaponProperties[0][level][3];
         bulletStrength = state.weaponProperties[0][level][4];
         bulletDamage = state.weaponProperties[0][level][5];
     } else if(type == rifle) {
-      int level = state.currentRifleLevel == 0 ? 0 : state.currentRifleLevel - 1;
+      int level = state.weaponLevels[rifle] == 0 ? 0 : state.weaponLevels[rifle] - 1;
       clipSize = state.weaponProperties[1][level][1];
       reloadSpeed = state.weaponProperties[1][level][2];
       bulletDurability = state.weaponProperties[1][level][3];
       bulletStrength = state.weaponProperties[1][level][4];
       bulletDamage = state.weaponProperties[1][level][5];
     } else if(type == shotgun) {
-      int level = state.currentShotgunLevel == 0 ? 0 : state.currentShotgunLevel - 1;
+      int level = state.weaponLevels[shotgun] == 0 ? 0 : state.weaponLevels[shotgun] - 1;
       clipSize = state.weaponProperties[2][level][1];
       reloadSpeed = state.weaponProperties[2][level][2];
       bulletDurability = state.weaponProperties[2][level][3];
       bulletDamage = state.weaponProperties[2][level][4];
       bulletsPerShot = state.weaponProperties[2][level][5];
     } else if(type == knife) {
-      int level = state.currentKnifeLevel == 0 ? 0 : state.currentKnifeLevel - 1;
+      int level = state.weaponLevels[knife] == 0 ? 0 : state.weaponLevels[knife] - 1;
       bulletDamage = state.weaponProperties[3][level][1];
     } else if(type == laserPistol) {
-      int level = state.currentLaserPistolLevel == 0 ? 0 : state.currentLaserPistolLevel - 1;
+      int level = state.weaponLevels[laserPistol] == 0 ? 0 : state.weaponLevels[laserPistol] - 1;
       clipSize = state.weaponProperties[4][level][1];
       reloadSpeed = state.weaponProperties[4][level][2];
       coolFireRate = state.weaponProperties[4][level][3];

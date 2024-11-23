@@ -81,6 +81,14 @@ void startScreen() {
                 controllerEvent(state,MENU_CONTROL::select);
             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
                 controllerEvent(state,MENU_CONTROL::back);
+            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP) == 1) {
+                controllerEvent(state,MENU_CONTROL::up);
+            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN) == 1) {
+                controllerEvent(state,MENU_CONTROL::down);
+            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT) == 1) {
+                controllerEvent(state,MENU_CONTROL::left);
+            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT) == 1) {
+                controllerEvent(state,MENU_CONTROL::right);
             }
         } else if(e.type == SDL_JOYDEVICEADDED ) {
             controllerEvent(state,MENU_CONTROL::connect);
@@ -132,6 +140,14 @@ void pauseScreen() {
                 controllerEvent(state,MENU_CONTROL::select);
             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
                 state.menu = notInMenu;
+            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP) == 1) {
+                controllerEvent(state,MENU_CONTROL::up);
+            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN) == 1) {
+                controllerEvent(state,MENU_CONTROL::down);
+            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT) == 1) {
+                controllerEvent(state,MENU_CONTROL::left);
+            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT) == 1) {
+                controllerEvent(state,MENU_CONTROL::right);
             }
         } else if(e.type == SDL_JOYDEVICEADDED ) {
             controllerEvent(state,MENU_CONTROL::connect);
@@ -179,8 +195,6 @@ int main( int argc, char* args[] ) {
         Sound song("resources/sounds/song.wav", -1,0);
 
         std::list<Explosion> explosions;
-
-        //song.play();
 
         if(controller != nullptr) {
             controllerEvent(state,MENU_CONTROL::connect);
@@ -386,6 +400,14 @@ int main( int argc, char* args[] ) {
                                 } else if(state.menu == playerUpgrade) {
                                     showAbilityUpgradeMenu(state,0,0);
                                 }
+                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP) == 1) {
+                                controllerEvent(state,MENU_CONTROL::up);
+                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN) == 1) {
+                                controllerEvent(state,MENU_CONTROL::down);
+                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT) == 1) {
+                                controllerEvent(state,MENU_CONTROL::left);
+                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT) == 1) {
+                                controllerEvent(state,MENU_CONTROL::right);
                             }
                         }
                     }

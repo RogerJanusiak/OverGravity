@@ -95,7 +95,6 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
 void Roborto::move(float dt,const std::list<Platform*> &platforms, State& state) {
     if(!entity->move(dt,platforms)) {
         if(!justHitPlatform) {
-            SDL_Log("Test");
             //Path Finding
             int tileX = entity->getRect().x/TILE_SIZE_SCALED+1;
             int tileY = (entity->getRect().y-state.camY)/TILE_SIZE_SCALED;

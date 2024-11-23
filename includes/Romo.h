@@ -24,7 +24,7 @@ public:
 	[[nodiscard]] int getWidth() const override { return scale(31); }
 	[[nodiscard]] int getHeight() const override { return scale(20); }
 
-	[[nodiscard]] float getXVelocity() const override { return scale(400); }
+	[[nodiscard]] float getXVelocity() const override { return scale(300); }
 
 };
 

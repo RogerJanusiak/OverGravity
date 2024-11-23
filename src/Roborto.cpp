@@ -93,38 +93,45 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
 }
 
 void Roborto::move(float dt,const std::list<Platform*> &platforms, State& state) {
-    entity->move(dt,platforms);
+    if(!entity->move(dt,platforms)) {
+        if(!justHitPlatform) {
+            SDL_Log("Test");
+            //Path Finding
+            int tileX = entity->getRect().x/TILE_SIZE_SCALED+1;
+            int tileY = (entity->getRect().y-state.camY)/TILE_SIZE_SCALED;
+            if(tileY < state.levelMap.size() && state.levelMap[tileY][tileX] != -1) {
+                int leftWeight;
+                int rightWeight;
+                pathFind(tileX,tileY,leftWeight,rightWeight,state, true);
+                if(leftWeight >= 1000 && rightWeight >= 1000) {
+                    int numberTilesRight = findEdgeRight(tileX,tileY,state);
+                    int numberTilesLeft = findEdgeLeft(tileX,tileY,state);
 
-    //Path Finding
-    int tileX = entity->getRect().x/TILE_SIZE_SCALED+1;
-    int tileY = (entity->getRect().y-state.camY)/TILE_SIZE_SCALED;
-    if(tileY < state.levelMap.size() && state.levelMap[tileY][tileX] != -1) {
-        int leftWeight;
-        int rightWeight;
-        pathFind(tileX,tileY,leftWeight,rightWeight,state, true);
-        if(leftWeight >= 1000 && rightWeight >= 1000) {
-            int numberTilesRight = findEdgeRight(tileX,tileY,state);
-            int numberTilesLeft = findEdgeLeft(tileX,tileY,state);
+                    numberTilesRight = numberTilesRight > 0 ? numberTilesRight : 1000;
+                    numberTilesLeft = numberTilesLeft > 0 ? numberTilesLeft : 1000;
 
-            numberTilesRight = numberTilesRight > 0 ? numberTilesRight : 1000;
-            numberTilesLeft = numberTilesLeft > 0 ? numberTilesLeft : 1000;
-
-            if(numberTilesLeft > numberTilesRight) {
-                entity->setXVelocity(getXVelocity());
-            } else if(numberTilesLeft < numberTilesRight) {
-                entity->setXVelocity(getXVelocity()*-1);
-            } else if(entity->getXVelocity() == 0) {
-                entity->setXVelocity(getXVelocity());
+                    if(numberTilesLeft > numberTilesRight) {
+                        entity->setXVelocity(getXVelocity());
+                    } else if(numberTilesLeft < numberTilesRight) {
+                        entity->setXVelocity(getXVelocity()*-1);
+                    } else if(entity->getXVelocity() == 0) {
+                        entity->setXVelocity(getXVelocity());
+                    }
+                } else {
+                    if(leftWeight > rightWeight) {
+                        entity->setXVelocity(getXVelocity());
+                    } else if(leftWeight < rightWeight) {
+                        entity->setXVelocity(-getXVelocity());
+                    } else if(entity->getXVelocity() == 0) {
+                        entity->setXVelocity(getXVelocity());
+                    }
+                }
             }
-        } else {
-            if(leftWeight > rightWeight) {
-                entity->setXVelocity(getXVelocity());
-            } else if(leftWeight < rightWeight) {
-                entity->setXVelocity(-getXVelocity());
-            } else if(entity->getXVelocity() == 0) {
-                entity->setXVelocity(getXVelocity());
-            }
+
+            justHitPlatform = true;
         }
+    } else {
+        justHitPlatform = false;
     }
 
     if(entity->getRect().y >= scale(state.levelHeight)+state.camY) {

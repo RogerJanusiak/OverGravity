@@ -29,6 +29,10 @@ public:
 	static constexpr int difficulty = 2;
 	static constexpr int health = 2;
 
+	bool justHitPlatform = false;
+
+	[[nodiscard]] float getXVelocity() const override { return scale(230); }
+
 	[[nodiscard]] int getWidth() const override { return scale(28); }
 	[[nodiscard]] int getHeight() const override { return scale(50); }
 

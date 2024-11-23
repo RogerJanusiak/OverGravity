@@ -18,7 +18,7 @@ public:
 	int getDifficulty() override { return difficulty; }
 	ENEMY_TYPE getType() override { return roo; }
 
-	static constexpr int difficulty = 4;
+	static constexpr int difficulty = 5;
 	static constexpr int health = 5;
 
 	[[nodiscard]] int getWidth() const override { return scale(36); }

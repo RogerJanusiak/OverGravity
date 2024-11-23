@@ -115,7 +115,7 @@ private:
 
     int combo = 0;
 
-    const int defaultXSpeed = scale(300);
+    const int defaultXSpeed = scale(400);
     int xNormalVelocity = 0;
 
     bool charged = true;

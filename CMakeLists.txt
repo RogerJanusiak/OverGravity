@@ -3,12 +3,11 @@ cmake_minimum_required(VERSION 3.22)
 if(WIN32)
 project(Hyper_Gravity)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 add_executable(${PROJECT_NAME} src/Player.cpp
         src/Texture.cpp
         src/Platform.cpp
-        src/Robor.cpp
         includes/Robor.h
         src/Entity.cpp
         includes/Entity.h
@@ -29,7 +28,14 @@ add_executable(${PROJECT_NAME} src/Player.cpp
         src/Animations.cpp
         includes/Animations.h
         src/Weapon.cpp
-        includes/Weapon.h)
+        includes/Weapon.h
+        src/Menu.cpp
+        includes/Menu.h
+        src/Enemy.cpp
+        includes/Enemy.h
+        includes/Robro.h
+        includes/Romo.h
+        includes/Roo.h)
 
 # --- SDL2 SETUP ---
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMAKE/cmakepc )

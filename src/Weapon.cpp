@@ -184,33 +184,33 @@ bool Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, cons
 void Weapon::upgrade(const State& state) {
     if(type == revolver) {
         int level = state.weaponLevels[revolver] == 0 ? 0 : state.weaponLevels[revolver] - 1;
-        clipSize = state.weaponProperties[0][level][1];
-        reloadSpeed = state.weaponProperties[0][level][2];
-        bulletDurability = state.weaponProperties[0][level][3];
-        bulletStrength = state.weaponProperties[0][level][4];
-        bulletDamage = state.weaponProperties[0][level][5];
+        clipSize = state.weaponProperties[revolver][level][1];
+        reloadSpeed = state.weaponProperties[revolver][level][2];
+        bulletDurability = state.weaponProperties[revolver][level][3];
+        bulletStrength = state.weaponProperties[revolver][level][4];
+        bulletDamage = state.weaponProperties[revolver][level][5];
     } else if(type == rifle) {
       int level = state.weaponLevels[rifle] == 0 ? 0 : state.weaponLevels[rifle] - 1;
-      clipSize = state.weaponProperties[1][level][1];
-      reloadSpeed = state.weaponProperties[1][level][2];
-      bulletDurability = state.weaponProperties[1][level][3];
-      bulletStrength = state.weaponProperties[1][level][4];
-      bulletDamage = state.weaponProperties[1][level][5];
+      clipSize = state.weaponProperties[rifle][level][1];
+      reloadSpeed = state.weaponProperties[rifle][level][2];
+      bulletDurability = state.weaponProperties[rifle][level][3];
+      bulletStrength = state.weaponProperties[rifle][level][4];
+      bulletDamage = state.weaponProperties[rifle][level][5];
     } else if(type == shotgun) {
       int level = state.weaponLevels[shotgun] == 0 ? 0 : state.weaponLevels[shotgun] - 1;
-      clipSize = state.weaponProperties[2][level][1];
-      reloadSpeed = state.weaponProperties[2][level][2];
-      bulletDurability = state.weaponProperties[2][level][3];
-      bulletDamage = state.weaponProperties[2][level][4];
-      bulletsPerShot = state.weaponProperties[2][level][5];
+      clipSize = state.weaponProperties[shotgun][level][1];
+      reloadSpeed = state.weaponProperties[shotgun][level][2];
+      bulletDurability = state.weaponProperties[shotgun][level][3];
+      bulletDamage = state.weaponProperties[shotgun][level][4];
+      bulletsPerShot = state.weaponProperties[shotgun][level][5];
     } else if(type == knife) {
       int level = state.weaponLevels[knife] == 0 ? 0 : state.weaponLevels[knife] - 1;
-      bulletDamage = state.weaponProperties[3][level][1];
+      bulletDamage = state.weaponProperties[knife][level][1];
     } else if(type == laserPistol) {
       int level = state.weaponLevels[laserPistol] == 0 ? 0 : state.weaponLevels[laserPistol] - 1;
-      clipSize = state.weaponProperties[4][level][1];
-      reloadSpeed = state.weaponProperties[4][level][2];
-      coolFireRate = state.weaponProperties[4][level][3];
+      clipSize = state.weaponProperties[laserPistol][level][2];
+      reloadSpeed = state.weaponProperties[laserPistol][level][2];
+      coolFireRate = state.weaponProperties[laserPistol][level][1];
       bulletsInClip = 0;
     }
 }

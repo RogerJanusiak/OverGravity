@@ -268,6 +268,7 @@ void upgradeWeapon(State& state, int attr1, int attr2) {
         case 4: {
             if(attr2 == state.weaponLevels[laserPistol]) {
                 state.weaponLevels[laserPistol]++;
+                SDL_Log("Laser UPgrade: %i", state.weaponLevels[laserPistol]);
                 upgraded = true;
             }
         } break;

@@ -347,7 +347,7 @@ int main( int argc, char* args[] ) {
 
                 launchUpgradeMenu(state);
                 loadUpgradeMenu(state);
-                while((waveNumber-1) % 5 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit && waveNumber != 1) {
+                while((waveNumber-1) % 5 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit) {
                     while(SDL_PollEvent(&e) != 0) {
                         if( e.type == SDL_QUIT ) {
                             state.quit = true;
@@ -521,7 +521,7 @@ int main( int argc, char* args[] ) {
                                 waveOverride = true;
                             }
                             if(e.key.keysym.sym == SDLK_3 && state.developerMode) {
-
+                                SDL_Log("Laser Pistol Level: %i", timpy.getWeapon()->getBulletsInClip());
                             }
                             if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
                                 pauseEnemy = !pauseEnemy;

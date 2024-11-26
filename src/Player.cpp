@@ -200,7 +200,7 @@ void Player::changeWeapon() {
 void Player::reset(State& state) {
     health = 200;
     shield = 0;
-    xp = 0;
+    xp = 50;
     setAbility(none);
     state.weapon1 = 0;
     state.weapon2 = -1;

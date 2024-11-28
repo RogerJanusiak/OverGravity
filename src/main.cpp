@@ -1050,7 +1050,7 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
         SDL_Log("Could not load level file!");
     }
     constexpr int MAX_ROWS = 100;
-    constexpr int MAX_COLS = 12;
+    constexpr int MAX_COLS = 18;
     std::string data[MAX_ROWS][MAX_COLS];
     std::string line;
     int row = 0;
@@ -1126,6 +1126,7 @@ bool init() {
                 success = false;
             }
         }
+        //SDL_SetWindowFullscreen(gameWindow,SDL_WINDOW_FULLSCREEN);
 
         loadController();
         if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {

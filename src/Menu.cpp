@@ -36,8 +36,8 @@ void UI_Button::setType(int type, SDL_Renderer* _renderer) {
         activeTexture.setup(w,h,renderer);
         activeTexture.loadFromFile("upgrade-menu/upgrade-active.png");
     } else if(type == 3) {
-        w = scale(60);
-        h = scale(30);
+        w = scaleUI(60);
+        h = scaleUI(30);
 
         texture.setup(w,h,renderer);
         texture.loadFromFile("upgrade-menu/weapon.png");
@@ -251,15 +251,15 @@ void UI_HoverText::render(const int x, const int y) const {
         }
     }
 
-    const SDL_Rect rect = {x,y,widestWidth,scale(15*text.size())};
+    const SDL_Rect rect = {x,y,widestWidth,scaleUI(15*text.size())};
     SDL_SetRenderDrawColor(renderer, 26, 26, 26, 255);
     SDL_RenderFillRect(renderer, &rect);
     SDL_SetRenderDrawColor(renderer, 220, 220, 220, 255);
     SDL_RenderDrawRect(renderer,&rect);
 
     for(int i = 0; i < text.size(); i++) {
-        text[i].render(x+breakPoint-text[i].getWidth(),y+scale(15*i));
-        values[i].render(x+breakPoint+2,y+scale(15*i));
+        text[i].render(x+breakPoint-text[i].getWidth(),y+scaleUI(15*i));
+        values[i].render(x+breakPoint+2,y+scaleUI(15*i));
     }
 }
 

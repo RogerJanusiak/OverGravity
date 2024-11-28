@@ -43,8 +43,8 @@ Weapon* weapon2;
 Ability ability1;
 Ability ability2;
 
-int selectWidth = scale(200);
-int selectSpacing = scale(50);
+int selectWidth = scaleUI(200);
+int selectSpacing = scaleUI(50);
 int selectY = (WINDOW_HEIGHT-selectWidth)/2;
 int select1X = WINDOW_WIDTH/2 - selectWidth - selectSpacing/2;
 int select2X = WINDOW_WIDTH/2 + selectSpacing/2;
@@ -98,10 +98,10 @@ Sound buttonSound;
 Player* player;
 
 void UI_init(SDL_Renderer* _renderer, State& state, Player* _player) {
-    counter = TTF_OpenFont("resources/sans.ttf",scale(18));
-    small = TTF_OpenFont("resources/sans.ttf",scale(12));
-    verySmall = TTF_OpenFont("resources/sans.ttf",scale(10));
-    title = TTF_OpenFont("resources/sans.ttf",scale(34));
+    counter = TTF_OpenFont("resources/sans.ttf",scaleUI(18));
+    small = TTF_OpenFont("resources/sans.ttf",scaleUI(12));
+    verySmall = TTF_OpenFont("resources/sans.ttf",scaleUI(10));
+    title = TTF_OpenFont("resources/sans.ttf",scaleUI(34));
 
     renderer = _renderer;
 
@@ -136,15 +136,15 @@ void updateInGameText(int playerCombo, int wave, int xp) {
 }
 
 void renderInGameText(bool developerMode, float lastFPS,bool waveStarted) {
-    waveNumberText.render(scale(10),scale(5));
-    comboNumberText.render(scale(10),scale(30));
-    playerXPText.render(scale(10),scale(55));
+    waveNumberText.render(scaleUI(10),scaleUI(5));
+    comboNumberText.render(scaleUI(10),scaleUI(30));
+    playerXPText.render(scaleUI(10),scaleUI(55));
     if(developerMode) {
         fpsText.loadFromRenderedText("FPS: " + std::to_string(lastFPS), white, counter);
-        fpsText.render(scale(10),scale(80));
+        fpsText.render(scaleUI(10),scaleUI(80));
     }
     if(!waveStarted) {
-        waveNumberTitle.render((WINDOW_WIDTH-waveNumberTitle.getWidth())/2,scale(200));
+        waveNumberTitle.render((WINDOW_WIDTH-waveNumberTitle.getWidth())/2,scaleUI(200));
     }
 }
 
@@ -463,46 +463,46 @@ void initMenus(State& state) {
     buttonSound.init("resources/sounds/buttonClick.wav", 0,-1);
 
     mainMenu.setup(renderer, &buttonSound);
-    const int arcadeModeButton = mainMenu.addButton(centeredX,scale(215),"Arcade Mode",&white, counter,-1,-1,-1,-1,&showLevelSelect,state);
-    const int storyModeButton = mainMenu.addButton(centeredX,scale(280),"Campaign Mode",&white, counter,arcadeModeButton,-1,-1,-1,&noAction, state);
-    const int settingsButton = mainMenu.addButton(centeredX,scale(345),"Settings",&white, counter,storyModeButton,-1,-1,-1, &noAction, state);
-    mainMenu.addButton(centeredX,scale(410),"Quit To Desktop",&white, counter,settingsButton,-1,-1,-1,&quitToDesktop,state);
-    logoTexture.setup(scale(454),scale(92),renderer);
+    const int arcadeModeButton = mainMenu.addButton(centeredX,scaleUI(215),"Arcade Mode",&white, counter,-1,-1,-1,-1,&showLevelSelect,state);
+    const int storyModeButton = mainMenu.addButton(centeredX,scaleUI(280),"Campaign Mode",&white, counter,arcadeModeButton,-1,-1,-1,&noAction, state);
+    const int settingsButton = mainMenu.addButton(centeredX,scaleUI(345),"Settings",&white, counter,storyModeButton,-1,-1,-1, &noAction, state);
+    mainMenu.addButton(centeredX,scaleUI(410),"Quit To Desktop",&white, counter,settingsButton,-1,-1,-1,&quitToDesktop,state);
+    logoTexture.setup(scaleUI(454),scaleUI(92),renderer);
     logoTexture.loadFromFile("logo.png");
-    mainMenu.addTitle((WINDOW_WIDTH-scale(454))/2,scale(100), logoTexture);
+    mainMenu.addTitle((WINDOW_WIDTH-scaleUI(454))/2,scaleUI(100), logoTexture);
 
     levelSelect.setup(renderer, &buttonSound);
-    const int level1Button = levelSelect.addButton(centeredX,scale(225),"Level 1",&white, counter,-1,-1,-1,-1, &selectLevel1, state);
-    //const int level2Button = levelSelect.addButton(centeredX,scale(290),"Level 2",&white, counter,level1Button,-1,-1,-1, &selectLevel3, state);
-    //levelSelect.addButton(centeredX,scale(355),"Level 3",&white, counter,level2Button,-1,-1,-1, &selectLevel3, state);
-    levelSelect.addTitle((WINDOW_WIDTH-scale(454))/2,scale(100), logoTexture);
+    const int level1Button = levelSelect.addButton(centeredX,scaleUI(225),"Level 1",&white, counter,-1,-1,-1,-1, &selectLevel1, state);
+    //const int level2Button = levelSelect.addButton(centeredX,scaleUI(290),"Level 2",&white, counter,level1Button,-1,-1,-1, &selectLevel3, state);
+    //levelSelect.addButton(centeredX,scaleUI(355),"Level 3",&white, counter,level2Button,-1,-1,-1, &selectLevel3, state);
+    levelSelect.addTitle((WINDOW_WIDTH-scaleUI(454))/2,scaleUI(100), logoTexture);
 
     pauseMenu.setup(renderer, &buttonSound);
-    const int resumeButton = pauseMenu.addButton(centeredX,scale(215),"Resume Game", &white, counter, -1,-1,-1,-1, &unpause, state);
-    const int quitToMenuButton = pauseMenu.addButton(centeredX,scale(280),"Quit To Menu", &white, counter,resumeButton,-1,-1,-1,&quitToMenu, state);
-    pauseMenu.addButton(centeredX,scale(345), "Quit To Desktop", &white, counter, quitToMenuButton,-1,-1,-1,&quitToDesktop, state);
+    const int resumeButton = pauseMenu.addButton(centeredX,scaleUI(215),"Resume Game", &white, counter, -1,-1,-1,-1, &unpause, state);
+    const int quitToMenuButton = pauseMenu.addButton(centeredX,scaleUI(280),"Quit To Menu", &white, counter,resumeButton,-1,-1,-1,&quitToMenu, state);
+    pauseMenu.addButton(centeredX,scaleUI(345), "Quit To Desktop", &white, counter, quitToMenuButton,-1,-1,-1,&quitToDesktop, state);
     gamePausedText.setup(renderer);
     gamePausedText.loadFromRenderedText("Game Paused", white, title);
-    pauseMenu.addTitle((WINDOW_WIDTH-gamePausedText.getWidth())/2,scale(100),gamePausedText);
+    pauseMenu.addTitle((WINDOW_WIDTH-gamePausedText.getWidth())/2,scaleUI(100),gamePausedText);
 
-    rbText.setup(scale(40),scale(40),renderer);
-    lbText.setup(scale(40),scale(40),renderer);
+    rbText.setup(scaleUI(40),scaleUI(40),renderer);
+    lbText.setup(scaleUI(40),scaleUI(40),renderer);
     rbText.loadFromFile("upgrade-menu/rb.png");
     lbText.loadFromFile("upgrade-menu/lb.png");
 
-    roborTexture.setup(scale(24),scale(50),renderer);
+    roborTexture.setup(scaleUI(24),scaleUI(50),renderer);
     roborTexture.loadFromFile("robor.png");
 
-    robortoTexture.setup(scale(28),scale(50),renderer);
+    robortoTexture.setup(scaleUI(28),scaleUI(50),renderer);
     robortoTexture.loadFromFile("roborto.png");
 
-    robroTexture.setup(scale(19),scale(50),renderer);
+    robroTexture.setup(scaleUI(19),scaleUI(50),renderer);
     robroTexture.loadFromFile("robro.png");
 
-    romoTexture.setup(scale(31),scale(20),renderer);
+    romoTexture.setup(scaleUI(31),scaleUI(20),renderer);
     romoTexture.loadFromFile("romo.png");
 
-    rooTexture.setup(scale(36),scale(50),renderer);
+    rooTexture.setup(scaleUI(36),scaleUI(50),renderer);
     rooTexture.loadFromFile("roo.png");
 
     roborText.setup(renderer);
@@ -530,19 +530,19 @@ std::string removeTrailingZeros(double i) {
 
 void genericUpgradeMenuLayout(State& state, UI_Menu* menu) {
     menu->setup(renderer, &buttonSound);
-    menu->addButton(scale(37),scale(100),"Max HP", &white,small,-1,-1,-1,-1, &fullHealth, state,1);
+    menu->addButton(scaleUI(37),scaleUI(100),"Max HP", &white,small,-1,-1,-1,-1, &fullHealth, state,1);
     menu->getButtons()->back().setupHover(1);
     menu->getButtons()->back().addLine("Cost: ", removeTrailingZeros(15 + state.upgradeIncreaseFactor), verySmall, white);
 
-    menu->addButton(scale(37),scale(140),"Max Shield", &white,small,0,-1,-1,-1, &fullShield, state,1);
+    menu->addButton(scaleUI(37),scaleUI(140),"Max Shield", &white,small,0,-1,-1,-1, &fullShield, state,1);
     menu->getButtons()->back().setupHover(1);
     menu->getButtons()->back().addLine("Cost: ", removeTrailingZeros(15 + state.upgradeIncreaseFactor), verySmall, white);
 
-    menu->addButton(scale(37),scale(180),"Close Menu", &white,small,1,-1,-1,-1, &closeUpgradeMenu, state,1);
+    menu->addButton(scaleUI(37),scaleUI(180),"Close Menu", &white,small,1,-1,-1,-1, &closeUpgradeMenu, state,1);
 
-    menu->addButton(scale(160+128),scale(12),"Weapons", &white,small,-1,-1,-1,-1, &showWeaponUpgradeMenu, state,1);
-    menu->addButton(scale(160+256),scale(12),"Abilities", &white,small,-1,-1,-1,-1, &showAbilityUpgradeMenu, state,1);
-    menu->addButton(scale(160+384),scale(12),"Player", &white,small,-1,-1,-1,-1, &showPlayerUpgradeMenu, state,1);
+    menu->addButton(scaleUI(160+128),scaleUI(12),"Weapons", &white,small,-1,-1,-1,-1, &showWeaponUpgradeMenu, state,1);
+    menu->addButton(scaleUI(160+256),scaleUI(12),"Abilities", &white,small,-1,-1,-1,-1, &showAbilityUpgradeMenu, state,1);
+    menu->addButton(scaleUI(160+384),scaleUI(12),"Player", &white,small,-1,-1,-1,-1, &showPlayerUpgradeMenu, state,1);
 }
 
 void initWeaponUpgradeMenu(State& state) {
@@ -556,7 +556,7 @@ void initWeaponUpgradeMenu(State& state) {
         } else {
             start = 0;
         }
-        weaponUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,start+i*6,-1, &selectWeapon, state,3,i);
+        weaponUpgradeMenu.addButton(scaleUI(200)+scaleUI(100*i),WINDOW_HEIGHT-scaleUI(30+16)," ", &white,small,-1,-1,start+i*6,-1, &selectWeapon, state,3,i);
 
         for(int j = 0; j < 5; j++) {
             std::string path;
@@ -573,9 +573,9 @@ void initWeaponUpgradeMenu(State& state) {
             }
 
             if(i == 0) {
-                weaponUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                weaponUpgradeMenu.addButton(scaleUI(200)+scaleUI(100*i),WINDOW_HEIGHT-scaleUI(30+16+60+16) - scaleUI((16+60)*j),path, -1,6+j,2,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
             } else {
-                weaponUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                weaponUpgradeMenu.addButton(scaleUI(200)+scaleUI(100*i),WINDOW_HEIGHT-scaleUI(30+16+60+16) - scaleUI((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeWeapon, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
             }
 
             weaponUpgradeMenu.getButtons()->back().setupHover(6);
@@ -608,10 +608,10 @@ void initWeaponUpgradeMenu(State& state) {
     xpText.setup(renderer);
     xpText.loadFromRenderedText("XP: 0", white, counter);
 
-    upgradeHealth = {scale(50),scale(55),scale(102),scale(15)};
-    upgradeHealthBack = {scale(50),scale(55),scale(102),scale(15)};
-    upgradeShield = {scale(50),scale(75),scale(102),scale(15)};
-    upgradeShieldBack = {scale(50),scale(75),scale(102),scale(15)};
+    upgradeHealth = {scaleUI(50),scaleUI(55),scaleUI(102),scaleUI(15)};
+    upgradeHealthBack = {scaleUI(50),scaleUI(55),scaleUI(102),scaleUI(15)};
+    upgradeShield = {scaleUI(50),scaleUI(75),scaleUI(102),scaleUI(15)};
+    upgradeShieldBack = {scaleUI(50),scaleUI(75),scaleUI(102),scaleUI(15)};
 }
 
 void initAbilityUpgradeMenu(State& state) {
@@ -624,7 +624,7 @@ void initAbilityUpgradeMenu(State& state) {
         } else {
             start = 0;
         }
-        abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16)," ", &white,small,-1,-1,start+i*6,-1, &selectAbility, state,3,i);
+        abilityUpgradeMenu.addButton(scaleUI(200)+scaleUI(100*i),WINDOW_HEIGHT-scaleUI(30+16)," ", &white,small,-1,-1,start+i*6,-1, &selectAbility, state,3,i);
         for(int j = 0; j < 5; j++) {
             std::string path;
             if(i == 0) {
@@ -638,9 +638,9 @@ void initAbilityUpgradeMenu(State& state) {
             }
 
             if(i == 0) {
-                abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+j,2,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                abilityUpgradeMenu.addButton(scaleUI(200)+scaleUI(100*i),WINDOW_HEIGHT-scaleUI(30+16+60+16) - scaleUI((16+60)*j),path, -1,6+j,2,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
             } else {
-                abilityUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                abilityUpgradeMenu.addButton(scaleUI(200)+scaleUI(100*i),WINDOW_HEIGHT-scaleUI(30+16+60+16) - scaleUI((16+60)*j),path, -1,6+i*6+j,7+(i-1)*6+j,-1, &upgradeAbility, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
             }
             abilityUpgradeMenu.getButtons()->back().setupHover(3);
             if(state.abilityLevels[i] < j+1) {
@@ -686,15 +686,15 @@ void initPlayerUpgradeMenu(State& state) {
 
             if(i == 0) {
                 if(j==0) {
-                    playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,2,2,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                    playerUpgradeMenu.addButton(scaleUI(200)+scaleUI(100*i),WINDOW_HEIGHT-scaleUI(30+16+60+16) - scaleUI((16+60)*j),path, -1,2,2,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
                 } else {
-                    playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,5+j,2,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                    playerUpgradeMenu.addButton(scaleUI(200)+scaleUI(100*i),WINDOW_HEIGHT-scaleUI(30+16+60+16) - scaleUI((16+60)*j),path, -1,5+j,2,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
                 }
             } else {
                 if(j==0) {
-                    playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,2,6+(i-1)*5+j,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                    playerUpgradeMenu.addButton(scaleUI(200)+scaleUI(100*i),WINDOW_HEIGHT-scaleUI(30+16+60+16) - scaleUI((16+60)*j),path, -1,2,6+(i-1)*5+j,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
                 } else {
-                    playerUpgradeMenu.addButton(scale(200)+scale(100*i),WINDOW_HEIGHT-scale(30+16+60+16) - scale((16+60)*j),path, -1,5+i*5+j,6+(i-1)*5+j,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
+                    playerUpgradeMenu.addButton(scaleUI(200)+scaleUI(100*i),WINDOW_HEIGHT-scaleUI(30+16+60+16) - scaleUI((16+60)*j),path, -1,5+i*5+j,6+(i-1)*5+j,-1, &upgradePlayer, state,2,i,j, "upgrade-menu/upgrade-" + std::to_string(j+1) + ".png");
                 }
             }
             playerUpgradeMenu.getButtons()->back().setupHover(3);
@@ -892,25 +892,25 @@ UI_Menu* getCurrentMenu(State& state) {
 }
 
 void renderUpgradeMenu(State& state) {
-    xpText.render(scale(37),scale(23));
-    lbText.render(scale(245),scale(5));
-    rbText.render(scale(675),scale(5));
+    xpText.render(scaleUI(37),scaleUI(23));
+    lbText.render(scaleUI(245),scaleUI(5));
+    rbText.render(scaleUI(675),scaleUI(5));
 
-    roborTexture.render(scale(50-roborTexture.getWidth()/2),scale(250));
-    robortoTexture.render(scale(120-robortoTexture.getWidth()/2),scale(290),SDL_FLIP_NONE,&robortoSource);
-    robroTexture.render(scale(50-robroTexture.getWidth()/2),scale(330));
-    romoTexture.render(scale(120-romoTexture.getWidth()/2),scale(400));
-    rooTexture.render(scale(50-rooTexture.getWidth()/2),scale(410),SDL_FLIP_NONE,&rooSource);
+    roborTexture.render(scaleUI(50-roborTexture.getWidth()/2),scaleUI(250));
+    robortoTexture.render(scaleUI(120-robortoTexture.getWidth()/2),scaleUI(290),SDL_FLIP_NONE,&robortoSource);
+    robroTexture.render(scaleUI(50-robroTexture.getWidth()/2),scaleUI(330));
+    romoTexture.render(scaleUI(120-romoTexture.getWidth()/2),scaleUI(400));
+    rooTexture.render(scaleUI(50-rooTexture.getWidth()/2),scaleUI(410),SDL_FLIP_NONE,&rooSource);
 
-    roborText.render(scale(50-roborTexture.getWidth()/2)+roborTexture.getWidth()+scale(5),scale(250)+roborTexture.getHeight()-roborText.getHeight()+scale(5));
-    robortoText.render(scale(120-robortoTexture.getWidth()/2)+robortoTexture.getWidth()+scale(5),scale(290)+robortoTexture.getHeight()-roborText.getHeight()+scale(5));
-    robroText.render(scale(50-robroTexture.getWidth()/2)+robroTexture.getWidth()+scale(5),scale(330)+robroTexture.getHeight()-roborText.getHeight()+scale(5));
-    romoText.render(scale(120-romoTexture.getWidth()/2)+romoTexture.getWidth()+scale(5),scale(400)+romoTexture.getHeight()-roborText.getHeight()+scale(5));
-    rooText.render(scale(50-rooTexture.getWidth()/2)+rooTexture.getWidth()+scale(5),scale(410)+rooTexture.getHeight()-roborText.getHeight()+scale(5));
+    roborText.render(scaleUI(50-roborTexture.getWidth()/2)+roborTexture.getWidth()+scaleUI(5),scaleUI(250)+roborTexture.getHeight()-roborText.getHeight()+scaleUI(5));
+    robortoText.render(scaleUI(120-robortoTexture.getWidth()/2)+robortoTexture.getWidth()+scaleUI(5),scaleUI(290)+robortoTexture.getHeight()-roborText.getHeight()+scaleUI(5));
+    robroText.render(scaleUI(50-robroTexture.getWidth()/2)+robroTexture.getWidth()+scaleUI(5),scaleUI(330)+robroTexture.getHeight()-roborText.getHeight()+scaleUI(5));
+    romoText.render(scaleUI(120-romoTexture.getWidth()/2)+romoTexture.getWidth()+scaleUI(5),scaleUI(400)+romoTexture.getHeight()-roborText.getHeight()+scaleUI(5));
+    rooText.render(scaleUI(50-rooTexture.getWidth()/2)+rooTexture.getWidth()+scaleUI(5),scaleUI(410)+rooTexture.getHeight()-roborText.getHeight()+scaleUI(5));
 
-    upgradeHealth.w = scale(player->getHealthPercentage()*102);
+    upgradeHealth.w = scaleUI(player->getHealthPercentage()*102);
 
-    upgradeShield.w = scale(player->getShieldPercentage()*102);
+    upgradeShield.w = scaleUI(player->getShieldPercentage()*102);
 
     SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
     SDL_RenderFillRect(renderer,&upgradeHealthBack);
@@ -1001,45 +1001,45 @@ void controllerEvent(State& state, MENU_CONTROL control) {
 
 
 void initPlayerUI() {
-    timeToShootBack.x = WINDOW_WIDTH-scale(90);
-    timeToShootBack.y = WINDOW_HEIGHT-scale(50);
-    timeToShootBack.w = scale(75);
-    timeToShootBack.h = scale(15);
+    timeToShootBack.x = WINDOW_WIDTH-scaleUI(90);
+    timeToShootBack.y = WINDOW_HEIGHT-scaleUI(50);
+    timeToShootBack.w = scaleUI(75);
+    timeToShootBack.h = scaleUI(15);
 
-    timeToShoot.x = WINDOW_WIDTH-scale(90);
-    timeToShoot.y = WINDOW_HEIGHT-scale(50);
-    timeToShoot.w = scale(75);
-    timeToShoot.h = scale(15);
+    timeToShoot.x = WINDOW_WIDTH-scaleUI(90);
+    timeToShoot.y = WINDOW_HEIGHT-scaleUI(50);
+    timeToShoot.w = scaleUI(75);
+    timeToShoot.h = scaleUI(15);
 
-    timeToAbilityBack.x = WINDOW_WIDTH-scale(90);
-    timeToAbilityBack.y = WINDOW_HEIGHT-scale(75);
-    timeToAbilityBack.w = scale(75);
-    timeToAbilityBack.h = scale(15);
+    timeToAbilityBack.x = WINDOW_WIDTH-scaleUI(90);
+    timeToAbilityBack.y = WINDOW_HEIGHT-scaleUI(75);
+    timeToAbilityBack.w = scaleUI(75);
+    timeToAbilityBack.h = scaleUI(15);
 
-    timeToAbility.x = WINDOW_WIDTH-scale(90);
-    timeToAbility.y = WINDOW_HEIGHT-scale(75);
-    timeToAbility.w = scale(75);
-    timeToAbility.h = scale(15);
+    timeToAbility.x = WINDOW_WIDTH-scaleUI(90);
+    timeToAbility.y = WINDOW_HEIGHT-scaleUI(75);
+    timeToAbility.w = scaleUI(75);
+    timeToAbility.h = scaleUI(15);
 
-    shieldBackRect.x = scale(35);
-    shieldBackRect.y = WINDOW_HEIGHT-scale(80);
-    shieldBackRect.w = scale(15);
-    shieldBackRect.h = scale(75);
+    shieldBackRect.x = scaleUI(35);
+    shieldBackRect.y = WINDOW_HEIGHT-scaleUI(80);
+    shieldBackRect.w = scaleUI(15);
+    shieldBackRect.h = scaleUI(75);
 
-    shieldRect.x = scale(35);
-    shieldRect.y = WINDOW_HEIGHT-scale(80);
-    shieldRect.w = scale(15);
-    shieldRect.h = scale(75);
+    shieldRect.x = scaleUI(35);
+    shieldRect.y = WINDOW_HEIGHT-scaleUI(80);
+    shieldRect.w = scaleUI(15);
+    shieldRect.h = scaleUI(75);
 
-    healthBackRect.x = scale(10);
-    healthBackRect.y = WINDOW_HEIGHT-scale(80);
-    healthBackRect.w = scale(15);
-    healthBackRect.h = scale(75);
+    healthBackRect.x = scaleUI(10);
+    healthBackRect.y = WINDOW_HEIGHT-scaleUI(80);
+    healthBackRect.w = scaleUI(15);
+    healthBackRect.h = scaleUI(75);
 
-    healthRect.x = scale(10);
-    healthRect.y = WINDOW_HEIGHT-scale(80);
-    healthRect.w = scale(15);
-    healthRect.h = scale(75);
+    healthRect.x = scaleUI(10);
+    healthRect.y = WINDOW_HEIGHT-scaleUI(80);
+    healthRect.w = scaleUI(15);
+    healthRect.h = scaleUI(75);
 
     ammoLeftText.setup(renderer);
 
@@ -1068,11 +1068,11 @@ void renderPlayerUI(Player* player) {
         SDL_RenderFillRect(renderer,&timeToAbility);
     }
 
-    healthRect.h = scale(player->getHealthPercentage()*75);
-    healthRect.y = WINDOW_HEIGHT-scale(80-75)-healthRect.h;
+    healthRect.h = scaleUI(player->getHealthPercentage()*75);
+    healthRect.y = WINDOW_HEIGHT-scaleUI(80-75)-healthRect.h;
 
-    shieldRect.h = scale(player->getShieldPercentage()*75);
-    shieldRect.y = WINDOW_HEIGHT-scale(80-75)-shieldRect.h;
+    shieldRect.h = scaleUI(player->getShieldPercentage()*75);
+    shieldRect.y = WINDOW_HEIGHT-scaleUI(80-75)-shieldRect.h;
 
     SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
     SDL_RenderFillRect(renderer,&healthBackRect);
@@ -1091,10 +1091,10 @@ void renderPlayerUI(Player* player) {
             SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
         }
         SDL_Rect tempRect;
-        tempRect.x = WINDOW_WIDTH-scale(30)-scale(20*i);
-        tempRect.y = WINDOW_HEIGHT-scale(25);
-        tempRect.w = scale(15);
-        tempRect.h = scale(15);
+        tempRect.x = WINDOW_WIDTH-scaleUI(30)-scaleUI(20*i);
+        tempRect.y = WINDOW_HEIGHT-scaleUI(25);
+        tempRect.w = scaleUI(15);
+        tempRect.h = scaleUI(15);
         SDL_RenderFillRect(renderer,&tempRect);
     }
 

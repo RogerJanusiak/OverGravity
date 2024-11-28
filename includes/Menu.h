@@ -90,13 +90,13 @@ public:
 
   [[nodiscard]] bool mouseEvent(int mouseX, int mouseY) const;
 
-  static constexpr int width = 160*1.5*SCALE_FACTOR;
-  static constexpr int height = 32*1.5*SCALE_FACTOR;
+  static constexpr int width = 160*1.5*UI_SCALE_FACTOR;
+  static constexpr int height = 32*1.5*UI_SCALE_FACTOR;
 
-  static constexpr int smallWidth = 160*0.8*SCALE_FACTOR;
-  static constexpr int smallHeight = 32*0.8*SCALE_FACTOR;
+  static constexpr int smallWidth = 160*0.8*UI_SCALE_FACTOR;
+  static constexpr int smallHeight = 32*0.8*UI_SCALE_FACTOR;
 
-  static constexpr int weaponWidth = 60*SCALE_FACTOR;
+  static constexpr int weaponWidth = 60*UI_SCALE_FACTOR;
 
 private:
 

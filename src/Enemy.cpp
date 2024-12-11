@@ -32,7 +32,7 @@ int Enemy::findEdgeRight(int startX, int startY, State& state) {
 	int numberTilesRight = 1;
 	while(lookingRight) {
 		int rightProbe = startX+numberTilesRight;
-		if(rightProbe > 11) {
+		if(rightProbe > 16) {
 			numberTilesRight = -1;
 			lookingRight = false;
 		} else {

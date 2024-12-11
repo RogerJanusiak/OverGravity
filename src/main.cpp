@@ -203,7 +203,7 @@ int main( int argc, char* args[] ) {
         SDL_SetRenderDrawBlendMode(gameRenderer, SDL_BLENDMODE_BLEND);
 
         Texture background;
-        background.setup(scale(960),scale(480),gameRenderer);
+        background.setup(WINDOW_WIDTH,WINDOW_HEIGHT,gameRenderer);
         background.loadFromFile("background.png");
 
         SDL_Rect backgroundRect = {0,0,WINDOW_WIDTH,WINDOW_HEIGHT};
@@ -270,11 +270,11 @@ int main( int argc, char* args[] ) {
             std::string levelPath;
 
             if(state.level == 1) {
-                levelPath = currentPath + "resources/levels/level1.csv";
+                levelPath = currentPath + "resources/levels/airduct.csv";
             } else if(state.level == 2) {
-                levelPath = currentPath + "resources/levels/level2.csv";
+                levelPath = currentPath + "resources/levels/airport.csv";
             } else if(state.level == 3) {
-                levelPath = currentPath + "resources/levels/level3.csv";
+                //levelPath = currentPath + "resources/levels/level3.csv";
             }
 
             loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns);
@@ -414,7 +414,7 @@ int main( int argc, char* args[] ) {
 
                     SDL_RenderClear(gameRenderer);
 
-                    background.render(0,0);
+                    //background.render(0,0);
                     SDL_SetRenderDrawColor(gameRenderer,35,35,35,155);
                     SDL_RenderFillRect(gameRenderer,&backgroundRect);
 
@@ -521,7 +521,7 @@ int main( int argc, char* args[] ) {
                                 waveOverride = true;
                             }
                             if(e.key.keysym.sym == SDLK_3 && state.developerMode) {
-                                SDL_Log("Laser Pistol Level: %i", timpy.getWeapon()->getBulletsInClip());
+
                             }
                             if(e.key.keysym.sym == SDLK_4 && state.developerMode) {
                                 pauseEnemy = !pauseEnemy;
@@ -707,7 +707,7 @@ int main( int argc, char* args[] ) {
 
                     SDL_RenderClear(gameRenderer);
 
-                    background.render(0,0);
+                    //background.render(0,0);
                     SDL_SetRenderDrawColor(gameRenderer,55,55,55,105);
                     SDL_RenderFillRect(gameRenderer,&backgroundRect);
 
@@ -870,11 +870,11 @@ int main( int argc, char* args[] ) {
                         }
                         timpy.render();
                         state.playerX = timpy.getEntity()->getRect().x;
-                        state.playerTileX = state.playerX/TILE_SIZE_SCALED+1;
+                        state.playerTileX = state.playerX/TILE_SIZE_SCALED;
                         state.playerTileY = (timpy.getEntity()->getRect().y-state.camY)/TILE_SIZE_SCALED;
 
                         if(state.developerMode) {
-                            SDL_Rect playerTile = {(state.playerTileX-1)*TILE_SIZE_SCALED, state.playerTileY*TILE_SIZE_SCALED+state.camY,TILE_SIZE_SCALED,TILE_SIZE_SCALED};
+                            SDL_Rect playerTile = {(state.playerTileX)*TILE_SIZE_SCALED, state.playerTileY*TILE_SIZE_SCALED+state.camY,TILE_SIZE_SCALED,TILE_SIZE_SCALED};
                             SDL_SetRenderDrawColor(gameRenderer, 225, 225, 0, 255);
                             SDL_RenderDrawRect(gameRenderer, &playerTile);
                         }
@@ -1050,7 +1050,7 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
         SDL_Log("Could not load level file!");
     }
     constexpr int MAX_ROWS = 100;
-    constexpr int MAX_COLS = 18;
+    constexpr int MAX_COLS = 16;
     std::string data[MAX_ROWS][MAX_COLS];
     std::string line;
     int row = 0;
@@ -1075,11 +1075,11 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
     for (int i = 0; i < row; i++) {
         std::vector<int> mapRow;
         for(int j = 0; j < MAX_COLS; j++) {
-            int multiplier = j-1;
+            int multiplier = j;
             if(std::stoi(data[i][j]) == 0) {
                 platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
                 mapRow.push_back(0);
-            } else if(std::stoi(data[i][j]) == 1) {
+            } else if(std::stoi(data[i][j]) == 3) {
                 playerSpawns.emplace_back(scale(multiplier*TILE_SIZE-25),scale(i*TILE_SIZE+(TILE_SIZE-17-60)),scale(50),scale(60),1);
                 platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
                 mapRow.push_back(1);
@@ -1115,7 +1115,7 @@ bool init() {
         SDL_Log( "TTF could not initialize! SDL Error: %s\n", SDL_GetError() );
         success = false;
     } else {
-        gameWindow = SDL_CreateWindow("Hyper_Gravity 0.4", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+        gameWindow = SDL_CreateWindow("Hyper_Gravity 0.4.1 (Unstable)", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
         if (gameWindow == nullptr) {
             SDL_Log( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
             success = false;

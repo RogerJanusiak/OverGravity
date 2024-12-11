@@ -96,12 +96,14 @@ void Roborto::move(float dt,const std::list<Platform*> &platforms, State& state)
     if(!entity->move(dt,platforms)) {
         if(!justHitPlatform) {
             //Path Finding
-            int tileX = entity->getRect().x/TILE_SIZE_SCALED+1;
-            int tileY = (entity->getRect().y-state.camY)/TILE_SIZE_SCALED;
+            int tileX = entity->getRect().x/TILE_SIZE_SCALED;
+            int tileY = entity->getRect().y/TILE_SIZE_SCALED;
+            SDL_Log("Robor Location: %i,%i",tileX,tileY);
             if(tileY < state.levelMap.size() && state.levelMap[tileY][tileX] != -1) {
                 int leftWeight;
                 int rightWeight;
                 pathFind(tileX,tileY,leftWeight,rightWeight,state, true);
+                SDL_Log("Weights: %i,%i",leftWeight,rightWeight);
                 if(leftWeight >= 1000 && rightWeight >= 1000) {
                     int numberTilesRight = findEdgeRight(tileX,tileY,state);
                     int numberTilesLeft = findEdgeLeft(tileX,tileY,state);

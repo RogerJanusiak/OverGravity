@@ -13,6 +13,7 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
             while(fallingRight) {
                 if(y+numberTilesDownRight < state.levelMap.size() && state.levelMap[y+numberTilesDownRight][openTileRight] == -1) {
                     numberTilesDownRight++;
+                    openTileRight++;
                 } else {
                     fallingRight = false;
                 }
@@ -42,6 +43,8 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
             while(fallingLeft) {
                 if(y+numberTilesDownLeft < state.levelMap.size() && state.levelMap[y+numberTilesDownLeft][openTileLeft] == -1) {
                     numberTilesDownLeft++;
+                    openTileLeft--;
+                    //TODO: Replace these calculations with the physics equations
                 } else {
                     fallingLeft = false;
                 }

@@ -697,12 +697,12 @@ int main( int argc, char* args[] ) {
                     }
 
                     if(timpy.getWeapon()->isReloadable()) {
-                        updateTimeToShoot(scale(timpy.getWeapon()->reload(dt)));
+                        updateTimeToShoot(scaleUI(timpy.getWeapon()->reload(dt)));
                     } else {
-                        updateTimeToShoot(scale(75));
+                        updateTimeToShoot(scaleUI(75));
                     }
 
-                    updateTimeToAbility(scale(timpy.charge( state)));
+                    updateTimeToAbility(scaleUI(timpy.charge( state)));
                     if(timpy.getWeapon()->wasJustReloaded()) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 1 / 2, 0xFFFF * 1 / 2, 50 );
                     }

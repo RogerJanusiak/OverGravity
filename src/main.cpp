@@ -794,8 +794,9 @@ int main( int argc, char* args[] ) {
                                                 if(timpy.damage(state)) {
                                                     playerAlive = false;
                                                     waveNumber = 0;
-                                                    timpy.zeroCombo();
                                                 }
+                                                SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
+                                                updateInGameText(timpy.getCombo(),waveNumber,timpy.getXP());
                                                 playerDamaged = true;
                                             }
                                             (*it)->getEntity()->damage(5);
@@ -873,13 +874,6 @@ int main( int argc, char* args[] ) {
 
                     state.c4Exploded = false;
 
-                    if(playerDamaged) {
-                        SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
-                        timpy.zeroCombo();
-                        timpy.charge(state);
-                        timpy.getEntity()->forceSpawn();
-                    }
-
                     if(!playerAlive || waveOverride) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
                         inWave = false;
@@ -891,6 +885,12 @@ int main( int argc, char* args[] ) {
                     if(timpy.getEntity()->isSpawned()) {
                         if(waveStarted) {
                             timpy.move(dt, platforms,state);
+                        }
+                        if(timpy.isInvincible()) {
+                            SDL_SetTextureColorMod(timpy.getEntity()->getTexture()->getTexture(),0,150,255);
+                            timpy.tickInvicibilty(dt);
+                        } else {
+                            SDL_SetTextureColorMod(timpy.getEntity()->getTexture()->getTexture(),255,255,255);
                         }
                         timpy.render();
                         state.playerX = timpy.getEntity()->getRect().x;

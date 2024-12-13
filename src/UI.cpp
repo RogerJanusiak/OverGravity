@@ -716,19 +716,19 @@ void initPlayerUpgradeMenu(State& state) {
             } else if(i == 1) {
                 playerUpgradeMenu.getButtons()->back().addLine("Shield Charge: "," ", verySmall, white);
                 if(state.playerLevels[i] < j+1) {
-                    playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                    playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
                 }
                 playerUpgradeMenu.getButtons()->back().addLine("Multiplier: ",removeTrailingZeros(state.playerProperties[i][j][1]), verySmall, white);
             } else if(i == 2) {
                 playerUpgradeMenu.getButtons()->back().addLine("Player Speed: "," ", verySmall, white);
                 if(state.playerLevels[i] < j+1) {
-                    playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                    playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
                 }
                 playerUpgradeMenu.getButtons()->back().addLine("Speed Increase: ",removeTrailingZeros(state.playerProperties[i][j][1])+ "%", verySmall, white);
             } else if(i == 3) {
                 playerUpgradeMenu.getButtons()->back().addLine("Dodge: "," ", verySmall, white);
                 if(state.playerLevels[i] < j+1) {
-                    playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0]), verySmall, white);
+                    playerUpgradeMenu.getButtons()->back().addLine("Cost: ",removeTrailingZeros(state.playerProperties[i][j][0] + state.upgradeIncreaseFactor), verySmall, white);
                 }
                 playerUpgradeMenu.getButtons()->back().addLine("Dodge Chance: ",removeTrailingZeros(state.playerProperties[i][j][1])+ "%", verySmall, white);
             }

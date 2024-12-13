@@ -23,17 +23,13 @@ Player::Player(Entity* entity, Weapon* primaryWeapon) : playerEntity(entity), pr
     weaponRect.h = scale(10);
 
     playerEntity->setDimensions(playerWidth,playerHeight);
-    playerTextureLeft.setup(playerWidth,playerHeight,playerEntity->getRenderer());
-    playerTextureRight.setup(playerWidth,playerHeight,playerEntity->getRenderer());
+    playerTexture.setup(playerWidth,playerHeight,playerEntity->getRenderer());
 
     c4Texture.setup(scale(32),scale(32),playerEntity->getRenderer());
     detinatorTexture.setup(scale(32),scale(32),playerEntity->getRenderer());
 
-    if(!playerTextureRight.loadFromFile("Timpy.png")) {
-        SDL_Log("Could not load TimpyRight texture!");
-    }
-    if(!playerTextureLeft.loadFromFile("TimpyLeft.png")) {
-        SDL_Log("Could not load TimpyLeft texture!");
+    if(!playerTexture.loadFromFile("Timpy.png")) {
+        SDL_Log("Could not load Timpy texture!");
     }
 
     if(!c4Texture.loadFromFile("C4.png")) {
@@ -46,7 +42,7 @@ Player::Player(Entity* entity, Weapon* primaryWeapon) : playerEntity(entity), pr
     c4Entity.setTexture(c4Texture);
     c4Entity.setDimensions(scale(32),scale(32));
     c4Entity.setSource(32,32);
-    playerEntity->setTexture(playerTextureLeft);
+    playerEntity->setTexture(playerTexture);
     playerEntity->setSource(26,32);
 
 }
@@ -56,7 +52,7 @@ void Player::render() const {
         c4Entity.render(0,0);
     }
 
-    playerEntity->render(0,0);
+    playerEntity->render(0,0, false, playerDirection);
 
     if(!c4Placed) {
         currentWeapon->render(playerEntity->getRect().x,playerEntity->getRect().y,playerDirection);
@@ -78,7 +74,7 @@ int Player::move(float dt,const std::list<Platform*> &platforms, State& state) {
     }
 
     int amountFallen = 0;
-    if(!playerEntity->move(dt,platforms,&amountFallen,&wheelRect) && invincible) {
+    if(!playerEntity->move(dt,platforms,&amountFallen,&wheelRect) && invincible && !invicibleFromDeath) {
         invincible = false;
         charged = false;
     }
@@ -113,11 +109,6 @@ int Player::move(float dt,const std::list<Platform*> &platforms, State& state) {
 
 void Player::setDirection(bool direction) {
     playerDirection = direction;
-    if (direction == true) {
-        playerEntity->setTexture(playerTextureRight);
-    } else {
-        playerEntity->setTexture(playerTextureLeft);
-    }
 }
 
 void Player::killEnemy(State& state) {
@@ -171,7 +162,23 @@ void Player::useAbility(State& state) {
 
 }
 
+void Player::tickInvicibilty(float dt) {
+    postDamageInvincibleTime += dt;
+    if(postDamageInvincibleTime > 3 && invicibleFromDeath) {
+        invicibleFromDeath = false;
+        setInvincible(false);
+    }
+}
+
+
 bool Player::damage(State& state) {
+
+    zeroCombo();
+    charge(state);
+    setInvincible(true);
+    invicibleFromDeath = true;
+    postDamageInvincibleTime = 0;
+
     shield -= state.playerLevels[armor] == 0 ? 50 : 50 - 50*state.playerProperties[armor][state.playerLevels[armor]-1][1]/100;
     if(shield <= 0) {
         health += shield;

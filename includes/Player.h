@@ -74,6 +74,7 @@ public:
 
     [[nodiscard]] bool isInvincible() const { return invincible; }
     void setInvincible(bool _invincible) { invincible = _invincible; }
+    void tickInvicibilty(float dt);
 
     Entity* getC4Entity() { return &c4Entity; }
 
@@ -97,14 +98,16 @@ private:
     SDL_Rect playerHitRect;
     SDL_Rect wheelRect;
 
-    Texture playerTextureRight;
-    Texture playerTextureLeft;
+    Texture playerTexture;
 
     Weapon* currentWeapon = nullptr;
     Weapon* primaryWeapon = nullptr;
     Weapon* secondaryWeapon = nullptr;
 
     Ability currentAbility = Ability::none;
+
+    float postDamageInvincibleTime = 0;
+    bool invicibleFromDeath = false;
 
     int health = 200;
     const int maxHealth = 200;

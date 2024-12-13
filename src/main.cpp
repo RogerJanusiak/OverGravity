@@ -506,7 +506,7 @@ int main( int argc, char* args[] ) {
                 bool waveStarted = false;
                 Uint32 startWaveLoad = SDL_GetTicks();
 
-                updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
+                updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP(),timpy.getHealth(), timpy.getShield());
 
                 while(state.started && inWave && !state.quit) {
 
@@ -707,12 +707,12 @@ int main( int argc, char* args[] ) {
                     }
 
                     if(timpy.getWeapon()->isReloadable()) {
-                        updateTimeToShoot(scaleUI(timpy.getWeapon()->reload(dt)));
+                        updateTimeToShoot(scalePlayerUI(timpy.getWeapon()->reload(dt)));
                     } else {
-                        updateTimeToShoot(scaleUI(75));
+                        updateTimeToShoot(scalePlayerUI(75));
                     }
 
-                    updateTimeToAbility(scaleUI(timpy.charge( state)));
+                    updateTimeToAbility(scalePlayerUI(timpy.charge( state)));
                     if(timpy.getWeapon()->wasJustReloaded()) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 1 / 2, 0xFFFF * 1 / 2, 50 );
                     }
@@ -796,7 +796,7 @@ int main( int argc, char* args[] ) {
                                                     waveNumber = 0;
                                                 }
                                                 SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
-                                                updateInGameText(timpy.getCombo(),waveNumber,timpy.getXP());
+                                                updateInGameText(timpy.getCombo(),waveNumber,timpy.getXP(),timpy.getHealth(), timpy.getShield());
                                                 playerDamaged = true;
                                             }
                                             (*it)->getEntity()->damage(5);
@@ -844,7 +844,7 @@ int main( int argc, char* args[] ) {
                                             state.abilitiesKills++;
                                     }
                                 }
-                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
+                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP(),timpy.getHealth(), timpy.getShield());
                             } else {
                                 for(auto& teleport : teleports) {
                                     if(Entity::isColliding((*it)->getEntity()->getRect(),teleport)) {

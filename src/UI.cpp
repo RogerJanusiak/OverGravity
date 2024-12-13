@@ -9,6 +9,7 @@
 #include "../includes/Texture.h"
 
 SDL_Color white = { 255, 255, 255 };
+SDL_Color black = { 0, 0, 0 };
 SDL_Color gray = { 105, 105, 105 };
 TTF_Font *counter;
 TTF_Font *title;
@@ -59,6 +60,9 @@ SDL_Rect healthBackRect;
 SDL_Rect healthRect;
 SDL_Rect shieldBackRect;
 SDL_Rect shieldRect;
+
+Texture healthText;
+Texture shieldText;
 
 Texture ammoLeftText;
 Texture gamePausedText;
@@ -127,12 +131,13 @@ void UI_close() {
     TTF_CloseFont(title);
 }
 
-void updateInGameText(int playerCombo, int wave, int xp) {
+void updateInGameText(int playerCombo, int wave, int xp, int health, int shield) {
     comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, counter);
     waveNumberText.loadFromRenderedText("Wave: " + std::to_string(wave), white, counter);
     waveNumberTitle.loadFromRenderedText("Wave " + std::to_string(wave) + " Start!", white, title);
     playerXPText.loadFromRenderedText("XP: " + std::to_string(xp), white, counter);
-
+    healthText.loadFromRenderedText(std::to_string(health), black, verySmall);
+    shieldText.loadFromRenderedText(std::to_string(shield), black, verySmall);
 }
 
 void renderInGameText(bool developerMode, float lastFPS,bool waveStarted) {
@@ -1009,48 +1014,53 @@ void controllerEvent(State& state, MENU_CONTROL control) {
 
 
 void initPlayerUI() {
-    timeToShootBack.x = WINDOW_WIDTH-scaleUI(90);
-    timeToShootBack.y = WINDOW_HEIGHT-scaleUI(50);
-    timeToShootBack.w = scaleUI(75);
-    timeToShootBack.h = scaleUI(15);
+    timeToShootBack.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToShootBack.y = WINDOW_HEIGHT-scalePlayerUI(50);
+    timeToShootBack.w = scalePlayerUI(75);
+    timeToShootBack.h = scalePlayerUI(15);
 
-    timeToShoot.x = WINDOW_WIDTH-scaleUI(90);
-    timeToShoot.y = WINDOW_HEIGHT-scaleUI(50);
-    timeToShoot.w = scaleUI(75);
-    timeToShoot.h = scaleUI(15);
+    timeToShoot.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToShoot.y = WINDOW_HEIGHT-scalePlayerUI(50);
+    timeToShoot.w = scalePlayerUI(75);
+    timeToShoot.h = scalePlayerUI(15);
 
-    timeToAbilityBack.x = WINDOW_WIDTH-scaleUI(90);
-    timeToAbilityBack.y = WINDOW_HEIGHT-scaleUI(75);
-    timeToAbilityBack.w = scaleUI(75);
-    timeToAbilityBack.h = scaleUI(15);
+    timeToAbilityBack.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToAbilityBack.y = WINDOW_HEIGHT-scalePlayerUI(75);
+    timeToAbilityBack.w = scalePlayerUI(75);
+    timeToAbilityBack.h = scalePlayerUI(15);
 
-    timeToAbility.x = WINDOW_WIDTH-scaleUI(90);
-    timeToAbility.y = WINDOW_HEIGHT-scaleUI(75);
-    timeToAbility.w = scaleUI(75);
-    timeToAbility.h = scaleUI(15);
+    timeToAbility.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToAbility.y = WINDOW_HEIGHT-scalePlayerUI(75);
+    timeToAbility.w = scalePlayerUI(75);
+    timeToAbility.h = scalePlayerUI(15);
 
-    shieldBackRect.x = scaleUI(35);
-    shieldBackRect.y = WINDOW_HEIGHT-scaleUI(80);
-    shieldBackRect.w = scaleUI(15);
-    shieldBackRect.h = scaleUI(75);
+    shieldBackRect.x = scalePlayerUI(10);
+    shieldBackRect.y = WINDOW_HEIGHT-scalePlayerUI(40);
+    shieldBackRect.w = scalePlayerUI(75);
+    shieldBackRect.h = scalePlayerUI(15);
 
-    shieldRect.x = scaleUI(35);
-    shieldRect.y = WINDOW_HEIGHT-scaleUI(80);
-    shieldRect.w = scaleUI(15);
-    shieldRect.h = scaleUI(75);
+    shieldRect.x = scalePlayerUI(10);
+    shieldRect.y = WINDOW_HEIGHT-scalePlayerUI(40);
+    shieldRect.w = scalePlayerUI(75);
+    shieldRect.h = scalePlayerUI(15);
 
-    healthBackRect.x = scaleUI(10);
-    healthBackRect.y = WINDOW_HEIGHT-scaleUI(80);
-    healthBackRect.w = scaleUI(15);
-    healthBackRect.h = scaleUI(75);
+    healthBackRect.x = scalePlayerUI(10);
+    healthBackRect.y = WINDOW_HEIGHT-scalePlayerUI(20);
+    healthBackRect.w = scalePlayerUI(75);
+    healthBackRect.h = scalePlayerUI(15);
 
-    healthRect.x = scaleUI(10);
-    healthRect.y = WINDOW_HEIGHT-scaleUI(80);
-    healthRect.w = scaleUI(15);
-    healthRect.h = scaleUI(75);
+    healthRect.x = scalePlayerUI(10);
+    healthRect.y = WINDOW_HEIGHT-scalePlayerUI(20);
+    healthRect.w = scalePlayerUI(75);
+    healthRect.h = scalePlayerUI(15);
 
     ammoLeftText.setup(renderer);
 
+    healthText.setup(renderer);
+    healthText.loadFromRenderedText("200", black,verySmall);
+
+    shieldText.setup(renderer);
+    shieldText.loadFromRenderedText("0", black,verySmall);
 }
 
 void updateTimeToShoot(const double width) {
@@ -1076,11 +1086,9 @@ void renderPlayerUI(Player* player) {
         SDL_RenderFillRect(renderer,&timeToAbility);
     }
 
-    healthRect.h = scaleUI(player->getHealthPercentage()*75);
-    healthRect.y = WINDOW_HEIGHT-scaleUI(80-75)-healthRect.h;
+    healthRect.w = scalePlayerUI(player->getHealthPercentage()*75);
 
-    shieldRect.h = scaleUI(player->getShieldPercentage()*75);
-    shieldRect.y = WINDOW_HEIGHT-scaleUI(80-75)-shieldRect.h;
+    shieldRect.w = scalePlayerUI(player->getShieldPercentage()*75);
 
     SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
     SDL_RenderFillRect(renderer,&healthBackRect);
@@ -1092,6 +1100,9 @@ void renderPlayerUI(Player* player) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
     SDL_RenderFillRect(renderer,&shieldRect);
 
+    healthText.render(scalePlayerUI(12),WINDOW_HEIGHT-scalePlayerUI(19));
+    shieldText.render(scalePlayerUI(12),WINDOW_HEIGHT-scalePlayerUI(39));
+
     for(int i = 0; i < player->getWeapon()->getClipSize(); i++) {
         if(bulletsInClip>i) {
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
@@ -1099,10 +1110,10 @@ void renderPlayerUI(Player* player) {
             SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
         }
         SDL_Rect tempRect;
-        tempRect.x = WINDOW_WIDTH-scaleUI(30)-scaleUI(20*i);
-        tempRect.y = WINDOW_HEIGHT-scaleUI(25);
-        tempRect.w = scaleUI(15);
-        tempRect.h = scaleUI(15);
+        tempRect.x = WINDOW_WIDTH-scalePlayerUI(30)-scalePlayerUI(20*i);
+        tempRect.y = WINDOW_HEIGHT-scalePlayerUI(25);
+        tempRect.w = scalePlayerUI(15);
+        tempRect.h = scalePlayerUI(15);
         SDL_RenderFillRect(renderer,&tempRect);
     }
 

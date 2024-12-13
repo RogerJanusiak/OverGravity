@@ -271,8 +271,10 @@ int main( int argc, char* args[] ) {
 
             if(state.level == 1) {
                 levelPath = currentPath + "resources/levels/airduct.csv";
+                state.currentWeight = &state.ductWeight;
             } else if(state.level == 2) {
                 levelPath = currentPath + "resources/levels/airport.csv";
+                state.currentWeight = &state.airportWeight;
             } else if(state.level == 3) {
                 //levelPath = currentPath + "resources/levels/level3.csv";
             }

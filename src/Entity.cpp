@@ -66,7 +66,7 @@ bool Entity::move(float dt,const std::list<Platform*> &platforms, int* amountFal
 
     if(potentialPlatform == nullptr) {
         entityRect.y = nextYPosition;
-        if(yVelocity <= scale(550)) {
+        if(yVelocity <= TERMINAL_VELOCITY) {
             yVelocity += ACCELERATION*dt;
         }
     } else {

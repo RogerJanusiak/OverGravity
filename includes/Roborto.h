@@ -29,7 +29,7 @@ public:
 	static constexpr int difficulty = 2;
 	static constexpr int health = 2;
 
-	[[nodiscard]] float getXVelocity() const override { return scale(200); }
+	[[nodiscard]] float getXVelocity() const override { return scale(250); }
 
 	[[nodiscard]] int getWidth() const override { return scale(28); }
 	[[nodiscard]] int getHeight() const override { return scale(50); }

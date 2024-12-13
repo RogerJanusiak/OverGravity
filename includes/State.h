@@ -105,6 +105,8 @@ struct State {
     static constexpr int numberOfEnemies = 5;
     int setEnemies[5] = {};
     int standardWeight[numberOfEnemies] = {40,70,80,90,100}; // Robor : Roborto : Robro : Romo
+    int ductWeight[numberOfEnemies] = {1,97,98,99,100};
+    int airportWeight[numberOfEnemies] = {1,97,98,99,100};
     int (*currentWeight)[numberOfEnemies] = &standardWeight;
 };
 

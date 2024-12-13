@@ -9,11 +9,19 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
             rightWeight = 1000;
         } else {
             bool fallingRight = true;
-            int numberTilesDownRight = 1;
+            int numberTilesDownRight = 0;
+            int newX = openTileRight*TILE_SIZE_SCALED;
+            int newXTile;
+            float v = 0;
             while(fallingRight) {
-                if(y+numberTilesDownRight < state.levelMap.size() && state.levelMap[y+numberTilesDownRight][openTileRight] == -1) {
+                newXTile = newX/TILE_SIZE_SCALED;
+                if(y+numberTilesDownRight < state.levelMap.size() && state.levelMap[y+numberTilesDownRight][newXTile] == -1) {
                     numberTilesDownRight++;
-                    openTileRight++;
+                    float dt = (-v+sqrt(2*ACCELERATION*TILE_SIZE_SCALED+pow(v,2)))/ACCELERATION;
+                    if(v <= TERMINAL_VELOCITY) {
+                        v += ACCELERATION*dt;
+                    }
+                    newX += getXVelocity()*dt;
                 } else {
                     fallingRight = false;
                 }
@@ -22,7 +30,8 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
             int tempRRightWeight;
             int tempRLeftWeight;
 
-            pathFind(openTileRight,y+numberTilesDownRight, tempRRightWeight, tempRLeftWeight, state);
+            SDL_Log("Next Location Right: %i,%i",newXTile,y+numberTilesDownRight);
+            pathFind(newXTile,y+numberTilesDownRight, tempRRightWeight, tempRLeftWeight, state);
 
             if(tempRLeftWeight >= tempRRightWeight) {
                 rightWeight = tempRRightWeight + rightEdge;
@@ -39,12 +48,19 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
         } else {
             int openTileLeft = x - leftEdge;
             bool fallingLeft = true;
-            int numberTilesDownLeft = 1;
+            int numberTilesDownLeft = 0;
+            int newX = (openTileLeft+1)*TILE_SIZE_SCALED - getEntity()->getRect().w;
+            int newXTile;
+            float v = 0;
             while(fallingLeft) {
-                if(y+numberTilesDownLeft < state.levelMap.size() && state.levelMap[y+numberTilesDownLeft][openTileLeft] == -1) {
+                newXTile = newX/TILE_SIZE_SCALED;
+                if(y+numberTilesDownLeft < state.levelMap.size() && state.levelMap[y+numberTilesDownLeft][newXTile] == -1) {
                     numberTilesDownLeft++;
-                    openTileLeft--;
-                    //TODO: Replace these calculations with the physics equations
+                    float dt = (-v+sqrt(2*ACCELERATION*TILE_SIZE_SCALED+pow(v,2)))/ACCELERATION;
+                    if(v <= TERMINAL_VELOCITY) {
+                        v += ACCELERATION*dt;
+                    }
+                    newX -= getXVelocity()*dt;
                 } else {
                     fallingLeft = false;
                 }
@@ -53,7 +69,8 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
             int tempLRightWeight;
             int tempLLeftWeight;
 
-            pathFind(openTileLeft,y+numberTilesDownLeft, tempLLeftWeight, tempLRightWeight, state);
+            SDL_Log("Next Location Left: %i,%i",newXTile,y+numberTilesDownLeft);
+            pathFind(newXTile,y+numberTilesDownLeft, tempLLeftWeight, tempLRightWeight, state);
 
             if(tempLLeftWeight >= tempLRightWeight) {
                 leftWeight = tempLRightWeight + leftEdge;
@@ -62,7 +79,8 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
             }
         }
     } else if(y == state.playerTileY) {
-        int xDifference = firstCall ? state.playerX - entity->getRect().x : state.playerTileX-x;
+        int xTileDifference = state.playerTileX-x;
+        int xDifference = firstCall ? state.playerX - entity->getRect().x : xTileDifference;
         int direction = 1;
         if(xDifference != 0) {
             direction = xDifference/abs(xDifference);
@@ -79,11 +97,11 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
 
         if (allPlatforms) {
             if (direction > 0) {
-                rightWeight = 0;
+                rightWeight = abs(xTileDifference);
                 leftWeight = 1000;
             } else {
                 rightWeight = 1000;
-                leftWeight = 0;
+                leftWeight = abs(xTileDifference);
             }
         } else {
             rightWeight = 1000;

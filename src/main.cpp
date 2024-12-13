@@ -46,7 +46,7 @@ void close();
 void checkIfSpawnsOccupied(std::vector<Spawn*>& allSpawns, std::list<Entity*>& allCharacterEntities);
 void renderPlatforms(std::list<Platform*>& platforms);
 
-void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns);
+void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns, std::vector<SDL_Rect>& teleports);
 void loadController();
 void resetState();
 
@@ -234,6 +234,8 @@ int main( int argc, char* args[] ) {
 
             std::list<Platform> ePlatforms;
             std::vector<Spawn> enemySpawns;
+            std::vector<SDL_Rect> teleports;
+            teleports.reserve(10);
             enemySpawns.reserve(15);
 
             std::vector<Spawn*> allSpawns;
@@ -279,7 +281,7 @@ int main( int argc, char* args[] ) {
                 //levelPath = currentPath + "resources/levels/level3.csv";
             }
 
-            loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns);
+            loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns, teleports);
 
             for(auto it = enemySpawns.begin(); it != enemySpawns.end(); ++it) {
                 allSpawns.push_back(&*it);
@@ -420,8 +422,13 @@ int main( int argc, char* args[] ) {
                     SDL_SetRenderDrawColor(gameRenderer,35,35,35,155);
                     SDL_RenderFillRect(gameRenderer,&backgroundRect);
 
-                    for(auto spawn : allSpawns) {
+                    for(auto& spawn : allSpawns) {
                         spawn->render(gameRenderer);
+                    }
+
+                    for(auto& teleport : teleports) {
+                        SDL_SetRenderDrawColor(gameRenderer, 106, 13, 173, 200);
+                        SDL_RenderFillRect(gameRenderer, &teleport);
                     }
 
                     for (auto it = bullets.begin(); it != bullets.end();++it) {
@@ -728,6 +735,11 @@ int main( int argc, char* args[] ) {
                         }
                     }
 
+                    for(auto& teleport : teleports) {
+                        SDL_SetRenderDrawColor(gameRenderer, 106, 13, 173, 200);
+                        SDL_RenderFillRect(gameRenderer, &teleport);
+                    }
+
                     bool robotAlive = false;
                     bool playerAlive = true;
 
@@ -829,6 +841,13 @@ int main( int argc, char* args[] ) {
                                     }
                                 }
                                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP());
+                            } else {
+                                for(auto& teleport : teleports) {
+                                    if(Entity::isColliding((*it)->getEntity()->getRect(),teleport)) {
+                                        (*it)->getEntity()->despawn();
+                                    }
+                                }
+
                             }
                         }
                         if((*it)->getEntity()->isAlive()) {
@@ -879,6 +898,12 @@ int main( int argc, char* args[] ) {
                             SDL_Rect playerTile = {(state.playerTileX)*TILE_SIZE_SCALED, state.playerTileY*TILE_SIZE_SCALED+state.camY,TILE_SIZE_SCALED,TILE_SIZE_SCALED};
                             SDL_SetRenderDrawColor(gameRenderer, 225, 225, 0, 255);
                             SDL_RenderDrawRect(gameRenderer, &playerTile);
+                        }
+
+                        for(auto& teleport : teleports) {
+                            if(Entity::isColliding(timpy.getEntity()->getRect(),teleport)) {
+                                timpy.getEntity()->forceSpawn();
+                            }
                         }
                     }
 
@@ -1046,7 +1071,7 @@ void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::vecto
     }
 }
 
-void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns) {
+void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std::vector<Spawn>& enemySpawns, std::vector<Spawn>& playerSpawns, std::vector<SDL_Rect>& teleports) {
     std::ifstream file((filePath).c_str());
     if (!file.is_open()) {
         SDL_Log("Could not load level file!");
@@ -1089,6 +1114,10 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
                 enemySpawns.emplace_back(scale(multiplier*TILE_SIZE+(TILE_SIZE-50)/2),scale(i*TILE_SIZE+(TILE_SIZE-17-50)),scale(50),scale(50),2);
                 platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
                 mapRow.push_back(2);
+            }else if(std::stoi(data[i][j]) == 4) {
+                teleports.emplace_back(scale(multiplier*TILE_SIZE+(TILE_SIZE-50)/2),scale(i*TILE_SIZE+(TILE_SIZE-17-50)),scale(50),scale(50));
+                platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
+                mapRow.push_back(3);
             } else {
                 mapRow.push_back(-1);
             }

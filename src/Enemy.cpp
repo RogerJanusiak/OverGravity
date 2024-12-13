@@ -23,8 +23,6 @@ void Enemy::move(float dt,const std::list<Platform*> &platforms, State& state) {
 	} else if(entity->getRect().x <= 0) {
 		entity->setPosition(WINDOW_WIDTH-scale(10), entity->getRect().y);
 	}
-
-
 }
 
 int Enemy::findEdgeRight(int startX, int startY, State& state) {

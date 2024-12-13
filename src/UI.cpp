@@ -87,7 +87,7 @@ SDL_Rect upgradeShield;
 SDL_Rect upgradeShieldBack;
 
 UI_Menu mainMenu(4);
-UI_Menu levelSelect(3);
+UI_Menu levelSelect(4);
 UI_Menu pauseMenu(3);
 UI_Menu weaponUpgradeMenu(36);
 UI_Menu abilityUpgradeMenu(36);
@@ -172,6 +172,7 @@ void quitToDesktop(State& state, int attr1, int attr2) {
     state.quit = true;
 }
 
+//TODO: Make these use the attr1
 void selectLevel1(State& state, int attr1, int attr2) {
     state.level = 1;
     state.menu = notInMenu;
@@ -186,6 +187,12 @@ void selectLevel2(State& state, int attr1, int attr2) {
 
 void selectLevel3(State& state, int attr1, int attr2) {
     state.level = 3;
+    state.menu = notInMenu;
+    state.started = true;
+}
+
+void selectLevel4(State& state, int attr1, int attr2) {
+    state.level = 4;
     state.menu = notInMenu;
     state.started = true;
 }
@@ -474,7 +481,8 @@ void initMenus(State& state) {
     levelSelect.setup(renderer, &buttonSound);
     const int level1Button = levelSelect.addButton(centeredX,scaleUI(225),"The Ducts",&white, counter,-1,-1,-1,-1, &selectLevel1, state);
     const int level2Button = levelSelect.addButton(centeredX,scaleUI(290),"Air Port",&white, counter,level1Button,-1,-1,-1, &selectLevel2, state);
-    //levelSelect.addButton(centeredX,scaleUI(355),"Level 3",&white, counter,level2Button,-1,-1,-1, &selectLevel3, state);
+    const int level3Button = levelSelect.addButton(centeredX,scaleUI(355),"Labratory",&white, counter,level2Button,-1,-1,-1, &selectLevel3, state);
+    levelSelect.addButton(centeredX,scaleUI(420),"Lobby",&white, counter,level3Button,-1,-1,-1, &selectLevel4, state);
     levelSelect.addTitle((WINDOW_WIDTH-scaleUI(454))/2,scaleUI(100), logoTexture);
 
     pauseMenu.setup(renderer, &buttonSound);

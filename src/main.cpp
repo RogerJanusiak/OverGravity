@@ -228,7 +228,6 @@ int main( int argc, char* args[] ) {
 
         //Game Loop
         while(!state.quit) {
-
             resetState();
             playerSpawns.clear();
 
@@ -278,7 +277,11 @@ int main( int argc, char* args[] ) {
                 levelPath = currentPath + "resources/levels/airport.csv";
                 state.currentWeight = &state.airportWeight;
             } else if(state.level == 3) {
-                //levelPath = currentPath + "resources/levels/level3.csv";
+                levelPath = currentPath + "resources/levels/lab.csv";
+                state.currentWeight = &state.standardWeight;
+            } else if (state.level == 4) {
+                levelPath = currentPath + "resources/levels/lobby.csv";
+                state.currentWeight = &state.standardWeight;
             }
 
             loadLevelFromCSV((levelPath), ePlatforms, enemySpawns, playerSpawns, teleports);

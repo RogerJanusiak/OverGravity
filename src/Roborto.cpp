@@ -1,5 +1,7 @@
 #include "../includes/Roborto.h"
 
+#include <cmath>
+
 void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State state, bool firstCall = false) {
     if(y < state.playerTileY) {
         // Find right weight
@@ -17,7 +19,7 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
                 newXTile = newX/TILE_SIZE_SCALED;
                 if(y+numberTilesDownRight < state.levelMap.size() && state.levelMap[y+numberTilesDownRight][newXTile] == -1) {
                     numberTilesDownRight++;
-                    float dt = (-v+sqrt(2*ACCELERATION*TILE_SIZE_SCALED+pow(v,2)))/ACCELERATION;
+                    float dt = (-v+sqrt(2*ACCELERATION*TILE_SIZE_SCALED+ pow(v,2)))/ACCELERATION;
                     if(v <= TERMINAL_VELOCITY) {
                         v += ACCELERATION*dt;
                     }

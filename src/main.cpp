@@ -1118,7 +1118,8 @@ void loadLevelFromCSV(std::string& filePath, std::list<Platform>& platforms, std
                 platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
                 mapRow.push_back(2);
             }else if(std::stoi(data[i][j]) == 4) {
-                teleports.emplace_back(scale(multiplier*TILE_SIZE+(TILE_SIZE-50)/2),scale(i*TILE_SIZE+(TILE_SIZE-17-50)),scale(50),scale(50));
+                SDL_Rect tempRect = {scale(multiplier*TILE_SIZE+(TILE_SIZE-50)/2),scale(i*TILE_SIZE+(TILE_SIZE-17-50)),scale(50),scale(50)};
+                teleports.emplace_back(tempRect);
                 platforms.emplace_back(multiplier*TILE_SIZE,i*TILE_SIZE+(TILE_SIZE-17),gameRenderer);
                 mapRow.push_back(3);
             } else {

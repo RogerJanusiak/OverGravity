@@ -3,58 +3,36 @@
 #include "../includes/MainMenu.h"
 #include "../includes/Input.h"
 
-void handleMenuInput(GlobalGameState& ggs, UI_Menu* currentMenu);
-void initMenus(GlobalGameState& ggs, UI_Menu& main, UI_Menu& levelSelect);
-
-Sound buttonSound;
-Texture logoTexture;
-
-UI_Menu mainMenu(3);
-UI_Menu levelSelect(4);
-
-UI_Menu* currentMenu = &mainMenu;
-
-void runMainMenu(GlobalGameState& ggs) {
-
-    initMenus(ggs,mainMenu,levelSelect);
-
-	while(!ggs.mms.levelSelected && !ggs.quit) {
-
-        if(ggs.mms.currentMenu == head) {
-            currentMenu = &mainMenu;
-        } else {
-            currentMenu = &levelSelect;
-        }
-
-		SDL_RenderClear(ggs.renderer);
-
-	    handleMenuInput(ggs, currentMenu);
-
-	    currentMenu->render();
-
-        SDL_SetRenderDrawColor(ggs.renderer, 26, 26, 26, 255);
-        SDL_RenderPresent(ggs.renderer);
-	}
+MainMenu::MainMenu(GlobalGameState& ggs) : ggs(ggs) {
+    initMenus();
 }
 
-void handleMenuInput(GlobalGameState& ggs, UI_Menu* currentMenu) {
+void MainMenu::render() const {
+	SDL_RenderClear(ggs.renderer);
+
+	currentMenu->render();
+
+    SDL_SetRenderDrawColor(ggs.renderer, 26, 26, 26, 255);
+    SDL_RenderPresent(ggs.renderer);
+}
+
+// TODO: Read input from WASD and Arrow Keys for menu input.
+void MainMenu::readInput() {
 	SDL_Event e;
 
 	while(SDL_PollEvent(&e) != 0) {
         if( e.type == SDL_QUIT ) {
             ggs.quit = true;
         } else if( e.type == SDL_KEYDOWN ) {
-            if(e.key.keysym.sym == SDLK_ESCAPE && ggs.mms.currentMenu == level) {
-                ggs.mms.currentMenu = head;
+            if(e.key.keysym.sym == SDLK_ESCAPE && currentMenu == &levelSelect) {
+                changeMenu(head);
             }
         } else if( e.type == SDL_JOYBUTTONDOWN ) {
             if(SDL_GameControllerGetButton(ggs.controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
                 controllerEvent(*currentMenu,MENU_CONTROL::select);
             } else if(SDL_GameControllerGetButton(ggs.controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
-                if(ggs.mms.currentMenu == level) {
-                    ggs.mms.currentMenu = head;
-                    currentMenu = &mainMenu;
-                    mainMenu.loadMenu();
+                if(currentMenu == &levelSelect) {
+                    changeMenu(head);
                 }
             } else if(SDL_GameControllerGetButton(ggs.controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP) == 1) {
                 controllerEvent(*currentMenu,MENU_CONTROL::up);
@@ -93,28 +71,46 @@ void handleMenuInput(GlobalGameState& ggs, UI_Menu* currentMenu) {
     }
 }
 
+void MainMenu::changeMenu(const Menu menu) {
+    switch(menu) {
+        case head: {
+            currentMenu = &mainMenu;
+        } break;
+        case level: {
+            currentMenu = &levelSelect;
+        } break;
+        default:
+            break;
+    }
+    currentMenu->loadMenu();
+}
+
+MainMenu* currentMainMenu = nullptr;
+
+void setCurrentMainMenu(MainMenu* mainMenu) {
+    currentMainMenu = mainMenu;
+}
+
 void showLevelSelect(GlobalGameState& ggs, int attr1, int attr2) {
-    ggs.mms.currentMenu = level;
-    levelSelect.loadMenu();
+    currentMainMenu->changeMenu(level);
 }
 
 void selectLevel(GlobalGameState& ggs, int attr1, int attr2) {
     ggs.level = attr1;
-    ggs.mms.levelSelected = true;
 }
 
-void initMenus(GlobalGameState& ggs, UI_Menu& main, UI_Menu& levelSelect) {
+void MainMenu::initMenus() {
     const int centeredX = (WINDOW_WIDTH-UI_Button::width)/2;
 
     buttonSound.init("resources/sounds/buttonClick.wav", 0,-1);
 
-    main.setup(ggs.renderer, &buttonSound);
-    const int arcadeModeButton = main.addButton(centeredX,scaleUI(215),"Arcade Mode",&ggs.white, ggs.buttonFont,-1,-1,-1,-1,&showLevelSelect,ggs);
-    const int settingsButton = main.addButton(centeredX,scaleUI(280),"Settings",&ggs.white, ggs.buttonFont,arcadeModeButton,-1,-1,-1, &noAction, ggs);
-    main.addButton(centeredX,scaleUI(345),"Quit To Desktop",&ggs.white, ggs.buttonFont,settingsButton,-1,-1,-1,&quitToDesktop,ggs);
+    mainMenu.setup(ggs.renderer, &buttonSound);
+    const int arcadeModeButton = mainMenu.addButton(centeredX,scaleUI(215),"Arcade Mode",&ggs.white, ggs.buttonFont,-1,-1,-1,-1,&showLevelSelect,ggs);
+    const int settingsButton = mainMenu.addButton(centeredX,scaleUI(280),"Settings",&ggs.white, ggs.buttonFont,arcadeModeButton,-1,-1,-1, &noAction, ggs);
+    mainMenu.addButton(centeredX,scaleUI(345),"Quit To Desktop",&ggs.white, ggs.buttonFont,settingsButton,-1,-1,-1,&quitToDesktop,ggs);
     logoTexture.setup(scaleUI(454),scaleUI(92),ggs.renderer);
     logoTexture.loadFromFile("logo.png");
-    main.addTitle((WINDOW_WIDTH-scaleUI(454))/2,scaleUI(100), logoTexture);
+    mainMenu.addTitle((WINDOW_WIDTH-scaleUI(454))/2,scaleUI(100), logoTexture);
 
     levelSelect.setup(ggs.renderer, &buttonSound);
     const int level1Button = levelSelect.addButton(centeredX,scaleUI(225),"The Ducts",&ggs.white, ggs.buttonFont,-1,-1,-1,-1, &selectLevel, ggs,0,1);

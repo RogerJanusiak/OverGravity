@@ -47,7 +47,7 @@ void loadGlobalResources(GlobalGameState& ggs) {
 	ggs.buttonFont = TTF_OpenFont("resources/sans.ttf",scaleUI(18));
 }
 
-void closeGlobalResources(GlobalGameState ggs) {
+void closeGlobalResources(const GlobalGameState& ggs) {
 	TTF_CloseFont(ggs.buttonFont);
 }
 
@@ -81,9 +81,16 @@ int main( int argc, char* args[] ) {
 
 	loadGlobalResources(ggs);
 
+	MainMenu mainMenu(ggs);
+	setCurrentMainMenu(&mainMenu);
+
 	while(!ggs.quit) {
-		runMainMenu(ggs);
-		SDL_Log("Level: %i", ggs.level);
+
+		if(ggs.inMainMenu) {
+			mainMenu.readInput();
+			mainMenu.render();
+		}
+
 	}
 
 	close(ggs);

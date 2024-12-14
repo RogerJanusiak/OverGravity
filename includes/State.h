@@ -9,8 +9,6 @@
 
 #include "../includes/GlobalConstants.h"
 
-
-
 enum Menu {
     head,
     level,
@@ -22,13 +20,6 @@ enum Menu {
     notInMenu,
 };
 
-struct MainMenuState {
-
-    Menu currentMenu = head;
-    bool levelSelected = false;
-
-};
-
 struct GlobalGameState {
     SDL_Window *window{};
     SDL_Renderer *renderer{};
@@ -36,29 +27,16 @@ struct GlobalGameState {
 
     bool quit = false;
 
+    bool inMainMenu = true;
+
     int level = 0;
     bool controllerStickReset = false;
-
-    MainMenuState mms;
 
     //Global Resources
     SDL_Color white = {255,255,255};
 
     TTF_Font *buttonFont{};
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 struct State {

@@ -43,7 +43,17 @@ bool init(GlobalGameState& ggs) {
 	return true;
 }
 
+void loadGlobalResources(GlobalGameState& ggs) {
+	ggs.buttonFont = TTF_OpenFont("resources/sans.ttf",scaleUI(18));
+}
+
+void closeGlobalResources(GlobalGameState ggs) {
+	TTF_CloseFont(ggs.buttonFont);
+}
+
 void close(GlobalGameState ggs) {
+	closeGlobalResources(ggs);
+
 	SDL_DestroyRenderer(ggs.renderer);
 	ggs.renderer = nullptr;
 
@@ -61,12 +71,6 @@ void close(GlobalGameState ggs) {
 	TTF_Quit();
 }
 
-void loadGlobalResources(GlobalGameState& gss) {
-
-	gss.buttonFont = TTF_OpenFont("resources/sans.ttf",scaleUI(18));
-
-}
-
 int main( int argc, char* args[] ) {
 	GlobalGameState ggs{};
 
@@ -79,6 +83,7 @@ int main( int argc, char* args[] ) {
 
 	while(!ggs.quit) {
 		runMainMenu(ggs);
+		SDL_Log("Level: %i", ggs.level);
 	}
 
 	close(ggs);

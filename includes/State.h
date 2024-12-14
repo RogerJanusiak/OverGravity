@@ -25,12 +25,13 @@ enum Menu {
 struct MainMenuState {
 
     Menu currentMenu = head;
+    bool levelSelected = false;
 
 };
 
 struct GlobalGameState {
-    SDL_Window *window;
-    SDL_Renderer *renderer;
+    SDL_Window *window{};
+    SDL_Renderer *renderer{};
     SDL_GameController *controller{};
 
     bool quit = false;
@@ -43,7 +44,7 @@ struct GlobalGameState {
     //Global Resources
     SDL_Color white = {255,255,255};
 
-    TTF_Font *buttonFont;
+    TTF_Font *buttonFont{};
 };
 
 

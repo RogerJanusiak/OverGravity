@@ -69,3 +69,9 @@ SDL_GameController* loadController() {
     }
     return controller;
 }
+
+void quitToDesktop(GlobalGameState& ggs, int attr1, int attr2) {
+    ggs.quit = true;
+}
+
+void noAction(GlobalGameState& ggs, int attr1, int attr2) {}

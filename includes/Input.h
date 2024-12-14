@@ -12,4 +12,8 @@ void controllerEvent(UI_Menu& currentMenu, MENU_CONTROL control);
 
 SDL_GameController* loadController();
 
+void quitToDesktop(GlobalGameState& ggs, int attr1, int attr2);
+
+void noAction(GlobalGameState& ggs, int attr1, int attr2);
+
 #endif //INPUT_H

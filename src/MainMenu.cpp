@@ -1,12 +1,9 @@
 #include <SDL_events.h>
 
 #include "../includes/MainMenu.h"
-
-#include <map>
-
 #include "../includes/Input.h"
 
-void handleMenuInput(GlobalGameState& ggs, MainMenuState& mms, UI_Menu* currentMenu);
+void handleMenuInput(GlobalGameState& ggs, UI_Menu* currentMenu);
 void initMenus(GlobalGameState& ggs, UI_Menu& main, UI_Menu& levelSelect);
 
 Sound buttonSound;
@@ -21,8 +18,7 @@ void runMainMenu(GlobalGameState& ggs) {
 
     initMenus(ggs,mainMenu,levelSelect);
 
-	bool levelSelected = false;
-	while(!levelSelected && !ggs.quit) {
+	while(!ggs.mms.levelSelected && !ggs.quit) {
 
         if(ggs.mms.currentMenu == head) {
             currentMenu = &mainMenu;
@@ -30,10 +26,9 @@ void runMainMenu(GlobalGameState& ggs) {
             currentMenu = &levelSelect;
         }
 
-
 		SDL_RenderClear(ggs.renderer);
 
-	    handleMenuInput(ggs,ggs.mms, currentMenu);
+	    handleMenuInput(ggs, currentMenu);
 
 	    currentMenu->render();
 
@@ -42,15 +37,15 @@ void runMainMenu(GlobalGameState& ggs) {
 	}
 }
 
-void handleMenuInput(GlobalGameState& ggs, MainMenuState& mms, UI_Menu* currentMenu) {
+void handleMenuInput(GlobalGameState& ggs, UI_Menu* currentMenu) {
 	SDL_Event e;
 
 	while(SDL_PollEvent(&e) != 0) {
         if( e.type == SDL_QUIT ) {
             ggs.quit = true;
         } else if( e.type == SDL_KEYDOWN ) {
-            if(e.key.keysym.sym == SDLK_ESCAPE && mms.currentMenu == level) {
-                mms.currentMenu = head;
+            if(e.key.keysym.sym == SDLK_ESCAPE && ggs.mms.currentMenu == level) {
+                ggs.mms.currentMenu = head;
             }
         } else if( e.type == SDL_JOYBUTTONDOWN ) {
             if(SDL_GameControllerGetButton(ggs.controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
@@ -98,16 +93,15 @@ void handleMenuInput(GlobalGameState& ggs, MainMenuState& mms, UI_Menu* currentM
     }
 }
 
-void showLevelSelect(GlobalGameState& gss, int attr1, int attr2) {
-    gss.mms.currentMenu = level;
+void showLevelSelect(GlobalGameState& ggs, int attr1, int attr2) {
+    ggs.mms.currentMenu = level;
     levelSelect.loadMenu();
 }
 
-void quitToDesktop(GlobalGameState& ggs, int attr1, int attr2) {
-    ggs.quit = true;
+void selectLevel(GlobalGameState& ggs, int attr1, int attr2) {
+    ggs.level = attr1;
+    ggs.mms.levelSelected = true;
 }
-
-void noAction(GlobalGameState& ggs, int attr1, int attr2) {}
 
 void initMenus(GlobalGameState& ggs, UI_Menu& main, UI_Menu& levelSelect) {
     const int centeredX = (WINDOW_WIDTH-UI_Button::width)/2;
@@ -123,9 +117,9 @@ void initMenus(GlobalGameState& ggs, UI_Menu& main, UI_Menu& levelSelect) {
     main.addTitle((WINDOW_WIDTH-scaleUI(454))/2,scaleUI(100), logoTexture);
 
     levelSelect.setup(ggs.renderer, &buttonSound);
-    const int level1Button = levelSelect.addButton(centeredX,scaleUI(225),"The Ducts",&ggs.white, ggs.buttonFont,-1,-1,-1,-1, &noAction, ggs);
-    const int level2Button = levelSelect.addButton(centeredX,scaleUI(290),"Air Port",&ggs.white, ggs.buttonFont,level1Button,-1,-1,-1, &noAction, ggs);
-    const int level3Button = levelSelect.addButton(centeredX,scaleUI(355),"Labratory",&ggs.white, ggs.buttonFont,level2Button,-1,-1,-1, &noAction, ggs);
-    levelSelect.addButton(centeredX,scaleUI(420),"Lobby",&ggs.white, ggs.buttonFont,level3Button,-1,-1,-1, &noAction, ggs);
+    const int level1Button = levelSelect.addButton(centeredX,scaleUI(225),"The Ducts",&ggs.white, ggs.buttonFont,-1,-1,-1,-1, &selectLevel, ggs,0,1);
+    const int level2Button = levelSelect.addButton(centeredX,scaleUI(290),"Air Port",&ggs.white, ggs.buttonFont,level1Button,-1,-1,-1, &selectLevel, ggs,0,2);
+    const int level3Button = levelSelect.addButton(centeredX,scaleUI(355),"Labratory",&ggs.white, ggs.buttonFont,level2Button,-1,-1,-1, &selectLevel, ggs,0,3);
+    levelSelect.addButton(centeredX,scaleUI(420),"Lobby",&ggs.white, ggs.buttonFont,level3Button,-1,-1,-1, &selectLevel, ggs,0,4);
     levelSelect.addTitle((WINDOW_WIDTH-scaleUI(454))/2,scaleUI(100), logoTexture);
 }

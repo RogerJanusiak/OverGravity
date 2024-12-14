@@ -1,7 +1,15 @@
 #ifndef STATE_H
 #define STATE_H
 
+#include <SDL_gamecontroller.h>
+#include <SDL_render.h>
+#include <SDL_video.h>
+#include <SDL_ttf.h>
 #include <vector>
+
+#include "../includes/GlobalConstants.h"
+
+
 
 enum Menu {
     head,
@@ -13,6 +21,44 @@ enum Menu {
     playerUpgrade,
     notInMenu,
 };
+
+struct MainMenuState {
+
+    Menu currentMenu = head;
+
+};
+
+struct GlobalGameState {
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    SDL_GameController *controller{};
+
+    bool quit = false;
+
+    int level = 0;
+    bool controllerStickReset = false;
+
+    MainMenuState mms;
+
+    //Global Resources
+    SDL_Color white = {255,255,255};
+
+    TTF_Font *buttonFont;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 struct State {
     //Game State

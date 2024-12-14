@@ -51,8 +51,8 @@ class UI_Button {
 public:
 
   UI_Button(int x, int y, const std::string& text, SDL_Renderer* renderer, Sound* sound,
-            const SDL_Color * color, TTF_Font* font, void (*action)(State& state, int attr1, int attr2),State& state, int type = 0, int attribute = 0,int attribute2 = 0);
-  UI_Button(int x, int y, const std::string& path, SDL_Renderer* renderer, Sound* sound, void (*action)(State& state, int attr1, int attr2),State& state, int type = 0, int attribute = 0,int attribute2 = 0, const std::string& secondaryPath = "no");
+            const SDL_Color * color, TTF_Font* font, void (*action)(GlobalGameState& state, int attr1, int attr2),GlobalGameState& state, int type = 0, int attribute = 0,int attribute2 = 0);
+  UI_Button(int x, int y, const std::string& path, SDL_Renderer* renderer, Sound* sound, void (*action)(GlobalGameState& state, int attr1, int attr2),GlobalGameState& state, int type = 0, int attribute = 0,int attribute2 = 0, const std::string& secondaryPath = "no");
 
 
   void render() const;
@@ -112,9 +112,9 @@ private:
   UI_HoverText ht;
   bool hover = false;
 
-  State& state;
+  GlobalGameState& state;
   SDL_Renderer* renderer;
-  void (*action)(State& state, int attr1, int attr2);
+  void (*action)(GlobalGameState& state, int attr1, int attr2);
 
   UI_Button* buttonAbove = nullptr;
   UI_Button* buttonBelow = nullptr;
@@ -144,19 +144,22 @@ public:
   explicit UI_Menu(const int numberOfButtons) { buttons.reserve(numberOfButtons); };
 
   int addButton(int x, int y, const std::string& text, SDL_Color* color, TTF_Font* font,
-    int above, int below, int left, int right, void (*action)(State& state, int attr1, int attr2),State& state, int type = 0, int attribute = 0,int attribute2 = 0);
-  int addButton(int x, int y, const std::string& path, int above, int below, int left, int right, void (*action)(State& state, int attr1, int attr2),State& state, int type = 0, int attribute = 0,int attribute2 = 0, const std::string& secondaryPath = "no");
+    int above, int below, int left, int right, void (*action)(GlobalGameState& state, int attr1, int attr2),GlobalGameState& state, int type = 0, int attribute = 0,int attribute2 = 0);
+  int addButton(int x, int y, const std::string& path, int above, int below, int left, int right, void (*action)(GlobalGameState& state, int attr1, int attr2),GlobalGameState& state, int type = 0, int attribute = 0,int attribute2 = 0, const std::string& secondaryPath = "no");
   std::vector<UI_Button>* getButtons() {return &buttons;}
 
   void reset() { buttons.clear(); };
 
-  [[nodiscard]] UI_Button* loadMenu();
+  void loadMenu();
 
   void setup(SDL_Renderer* _renderer, Sound* _buttonSound) { renderer = _renderer;buttonSound = _buttonSound; }
 
   void addTitle(const int x, const int y, const Texture & texture) { titleX = x, titleY = y, titleTexture = texture; }
 
   void render() const;
+
+  //TODO: Make functions surrounding this!
+  UI_Button* currentButton = nullptr;
 
 private:
 

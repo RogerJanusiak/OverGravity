@@ -170,7 +170,7 @@ void purchaseUpgrade(State& state) {
 //Button Action Functions
 void showLevelSelect(State& state, int attr1, int attr2) {
     state.menu = level;
-    currentButton = levelSelect.loadMenu();
+    levelSelect.loadMenu();
 }
 
 void quitToDesktop(State& state, int attr1, int attr2) {
@@ -209,7 +209,7 @@ void unpause(State& state, int attr1, int attr2) {
 void quitToMenu(State& state, int attr1, int attr2) {
     state.started = false;
     state.menu = head;
-    currentButton = mainMenu.loadMenu();
+    mainMenu.loadMenu();
 }
 
 void noAction(State& state, int attr1, int attr2) {}
@@ -473,22 +473,6 @@ void initMenus(State& state) {
     const int centeredX = (WINDOW_WIDTH-UI_Button::width)/2;
 
     buttonSound.init("resources/sounds/buttonClick.wav", 0,-1);
-
-    mainMenu.setup(renderer, &buttonSound);
-    const int arcadeModeButton = mainMenu.addButton(centeredX,scaleUI(215),"Arcade Mode",&white, counter,-1,-1,-1,-1,&showLevelSelect,state);
-    const int storyModeButton = mainMenu.addButton(centeredX,scaleUI(280),"Campaign Mode",&white, counter,arcadeModeButton,-1,-1,-1,&noAction, state);
-    const int settingsButton = mainMenu.addButton(centeredX,scaleUI(345),"Settings",&white, counter,storyModeButton,-1,-1,-1, &noAction, state);
-    mainMenu.addButton(centeredX,scaleUI(410),"Quit To Desktop",&white, counter,settingsButton,-1,-1,-1,&quitToDesktop,state);
-    logoTexture.setup(scaleUI(454),scaleUI(92),renderer);
-    logoTexture.loadFromFile("logo.png");
-    mainMenu.addTitle((WINDOW_WIDTH-scaleUI(454))/2,scaleUI(100), logoTexture);
-
-    levelSelect.setup(renderer, &buttonSound);
-    const int level1Button = levelSelect.addButton(centeredX,scaleUI(225),"The Ducts",&white, counter,-1,-1,-1,-1, &selectLevel1, state);
-    const int level2Button = levelSelect.addButton(centeredX,scaleUI(290),"Air Port",&white, counter,level1Button,-1,-1,-1, &selectLevel2, state);
-    const int level3Button = levelSelect.addButton(centeredX,scaleUI(355),"Labratory",&white, counter,level2Button,-1,-1,-1, &selectLevel3, state);
-    levelSelect.addButton(centeredX,scaleUI(420),"Lobby",&white, counter,level3Button,-1,-1,-1, &selectLevel4, state);
-    levelSelect.addTitle((WINDOW_WIDTH-scaleUI(454))/2,scaleUI(100), logoTexture);
 
     pauseMenu.setup(renderer, &buttonSound);
     const int resumeButton = pauseMenu.addButton(centeredX,scaleUI(215),"Resume Game", &white, counter, -1,-1,-1,-1, &unpause, state);
@@ -943,72 +927,6 @@ void renderMenu(State& state) {
   }
     if(state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) {
         renderUpgradeMenu(state);
-    }
-}
-
-
-void mouseMove(State& state) {
-    int x, y;
-    SDL_GetMouseState( &x, &y );
-
-    if(!state.controller) {
-        if(currentButton != nullptr) {
-            currentButton->deselect();
-            currentButton = nullptr;
-        }
-    }
-
-    if (UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr) {
-        std::vector<UI_Button>* menuButtons = currentMenu->getButtons();
-        for(auto it = menuButtons->begin(); it != menuButtons->end(); ++it) {
-            if(it->mouseEvent(x,y) && !it->isDisabled()) {
-                if(currentButton != nullptr) {
-                    currentButton->deselect();
-                }
-                currentButton = &*it;
-                currentButton->select();
-            }
-        }
-    }
-}
-
-void menuSelect(State& state) {
-    if(UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr) {
-        std::vector<UI_Button>* menuButtons = currentMenu->getButtons();
-        for(auto & menuButton : *menuButtons) {
-            if(menuButton.isSelected()) {
-                menuButton.click();
-            }
-        }
-    }
-}
-
-void controllerEvent(State& state, MENU_CONTROL control) {
-    if(UI_Menu *currentMenu = getCurrentMenu(state); currentMenu != nullptr) {
-        switch(control) {
-            case MENU_CONTROL::connect:
-                currentButton = currentMenu->loadMenu();
-                break;
-            case MENU_CONTROL::disconnect: {
-                currentButton->deselect();
-                currentButton = nullptr;
-            } break;
-            case MENU_CONTROL::select:
-                menuSelect(state);
-                break;
-            default: {
-                if(currentButton != nullptr) {
-                    UI_Button* tempButton = currentButton->move(control);
-                    if(tempButton != nullptr) {
-                        currentButton->deselect();
-                        currentButton = tempButton;
-                        currentButton->select();
-                    }
-                } else {
-                    SDL_Log("No button selection!");
-                }
-            } break;
-        }
     }
 }
 

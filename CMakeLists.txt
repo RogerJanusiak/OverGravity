@@ -97,8 +97,6 @@ if(APPLE)
             includes/Spawn.h
             includes/Bullet.h
             src/main.cpp
-            src/UI.cpp
-            includes/UI.h
             src/main.cpp
             includes/State.h
             src/Sound.cpp
@@ -116,7 +114,11 @@ if(APPLE)
             includes/Enemy.h
             includes/Robro.h
             includes/Romo.h
-            includes/Roo.h)
+            includes/Roo.h
+            src/MainMenu.cpp
+            includes/MainMenu.h
+            src/Input.cpp
+            includes/Input.h)
 
     Message("")
     Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )

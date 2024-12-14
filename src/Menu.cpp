@@ -52,7 +52,7 @@ void UI_Button::setType(int type, SDL_Renderer* _renderer) {
 
 
 
-UI_Button::UI_Button(const int x, const int y, const std::string& text, SDL_Renderer* renderer, Sound* sound, const SDL_Color * color, TTF_Font* font, void (*action)(State& state, int attr1, int attr2),State& state, const int type, int attribute, int attribute2) :
+UI_Button::UI_Button(const int x, const int y, const std::string& text, SDL_Renderer* renderer, Sound* sound, const SDL_Color * color, TTF_Font* font, void (*action)(GlobalGameState& state, int attr1, int attr2),GlobalGameState& state, const int type, int attribute, int attribute2) :
 x(x), y(y), type(type), buttonClick(sound), action(action), state(state), attribute(attribute), attribute2(attribute2) {
     setType(type, renderer);
     usingText = true;
@@ -61,7 +61,7 @@ x(x), y(y), type(type), buttonClick(sound), action(action), state(state), attrib
     textTexture.loadFromRenderedText(text, *color, font);
 }
 
-UI_Button::UI_Button(const int x, const int y, const std::string& path, SDL_Renderer* renderer, Sound* sound, void (*action)(State& state, int attr1, int attr2),State& state, const int type, int attribute, int attribute2, const std::string& secondaryPath) : x
+UI_Button::UI_Button(const int x, const int y, const std::string& path, SDL_Renderer* renderer, Sound* sound, void (*action)(GlobalGameState& state, int attr1, int attr2),GlobalGameState& state, const int type, int attribute, int attribute2, const std::string& secondaryPath) : x
 (x), y(y), type(type), buttonClick(sound), action(action), state(state), attribute(attribute), attribute2(attribute2) {
     setType(type, renderer);
 
@@ -162,7 +162,7 @@ void UI_Button::link(const RELATIVE_DIRECTION direction, UI_Button* button) {
 }
 
 int UI_Menu::addButton(int x, int y, const std::string &text, SDL_Color* color, TTF_Font* font,
-    const int above, const int below, const int left, const int right, void (*action)(State& state, int attr1, int attr2),State& state, int type, int attribute, int attribute2) {
+    const int above, const int below, const int left, const int right, void (*action)(GlobalGameState& state, int attr1, int attr2),GlobalGameState& state, int type, int attribute, int attribute2) {
         buttons.emplace_back(x, y, text, renderer, buttonSound, color, font, action,state, type, attribute, attribute2);
         if(above != -1) {
             buttons.back().link(RELATIVE_DIRECTION::above, &buttons[above]);
@@ -183,7 +183,7 @@ int UI_Menu::addButton(int x, int y, const std::string &text, SDL_Color* color, 
         return static_cast<int>(buttons.size())-1;
     }
 
-int UI_Menu::addButton(int x, int y, const std::string &path, const int above, const int below, const int left, const int right, void (*action)(State& state, int attr1, int attr2),State& state, int type, int attribute, int attribute2, const std::string& secondaryPath) {
+int UI_Menu::addButton(int x, int y, const std::string &path, const int above, const int below, const int left, const int right, void (*action)(GlobalGameState& state, int attr1, int attr2),GlobalGameState& state, int type, int attribute, int attribute2, const std::string& secondaryPath) {
     buttons.emplace_back(x, y, path, renderer,buttonSound,action,state, type, attribute, attribute2, secondaryPath);
     if(above != -1) {
         buttons.back().link(RELATIVE_DIRECTION::above, &buttons[above]);
@@ -216,12 +216,12 @@ void UI_Menu::render() const {
     }
 }
 
-UI_Button *UI_Menu::loadMenu() {
+void UI_Menu::loadMenu() {
     for(auto& button : buttons) {
         button.deselect();
     }
     buttons[0].select();
-    return &buttons[0];
+    currentButton = &buttons[0];
 }
 
 void UI_Button::click() {

@@ -29,7 +29,7 @@ enum PlayerUpgrades {
 
 class Player {
 public:
-    Player(Entity* entity, Weapon* primaryWeapon);
+    Player(Entity* entity, GlobalGameState& ggs);
 
     int move(float dt,const std::list<Platform*> &platforms, State& state);
     void render() const;
@@ -37,9 +37,9 @@ public:
     const SDL_Rect &getWeaponRect() const { return weaponRect; }
 
     void setDirection (bool direction);
-    bool getDirection() const { return playerDirection; }
+    [[nodiscard]] bool getDirection() const { return playerDirection; }
 
-    Entity* getEntity() const { return playerEntity; }
+    [[nodiscard]] Entity* getEntity() const { return playerEntity; }
 
     Weapon* getWeapon() { return currentWeapon; }
     void setPrimaryWeapon(Weapon* priWeapon) { primaryWeapon = priWeapon; }
@@ -90,6 +90,12 @@ public:
 private:
     const int playerWidth = scale(50);
     const int playerHeight = scale(60);
+
+    Weapon revolver;
+    Weapon rifle;
+    Weapon shotgun;
+    Weapon knife;
+    Weapon laserPistol;
 
     bool playerDirection = false;
 

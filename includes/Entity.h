@@ -13,10 +13,12 @@ class Entity {
 public:
 
     Entity() = default;
-    Entity(std::vector<Spawn>* spawn, SDL_Renderer* renderer, const int hp) : hp(hp), spawns(spawn), gameRender(renderer) {}
+    Entity(SDL_Renderer* renderer, const int hp) : hp(hp), gameRender(renderer) {}
     Entity(int x, int y, int Vx, int Vy,SDL_Renderer *tempGameRenderer);
 
     void render(int spriteX, int spriteY, bool faceVelocity = false, bool direction = false) const;
+
+    void setSpawns(std::vector<Spawn>* spawn) { spawns = spawn; }
 
     void setPosition (int x,int y) { entityRect.x = x; entityRect.y = y; }
     void setXVelocity (const float Vx) { xVelocity = Vx; }
@@ -66,7 +68,7 @@ private:
     Platform* lastPlatform = nullptr;
     bool offPlatform = false;
 
-    std::vector<Spawn>* spawns;
+    std::vector<Spawn>* spawns = nullptr;
     bool spawned = false;
 
     bool isOnPlatform = true;

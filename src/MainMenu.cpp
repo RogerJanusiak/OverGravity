@@ -8,12 +8,7 @@ MainMenu::MainMenu(GlobalGameState& ggs) : ggs(ggs) {
 }
 
 void MainMenu::render() const {
-	SDL_RenderClear(ggs.renderer);
-
 	currentMenu->render();
-
-    SDL_SetRenderDrawColor(ggs.renderer, 26, 26, 26, 255);
-    SDL_RenderPresent(ggs.renderer);
 }
 
 // TODO: Read input from WASD and Arrow Keys for menu input.
@@ -97,6 +92,8 @@ void showLevelSelect(GlobalGameState& ggs, int attr1, int attr2) {
 
 void selectLevel(GlobalGameState& ggs, int attr1, int attr2) {
     ggs.level = attr1;
+    ggs.inMainMenu = false;
+    ggs.inRun = true;
 }
 
 void MainMenu::initMenus() {

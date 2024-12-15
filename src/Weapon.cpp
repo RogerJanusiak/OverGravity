@@ -2,10 +2,9 @@
 #include "../includes/GlobalConstants.h"
 #include "../includes/State.h"
 
-Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer, State &state) {
+Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer) {
   type = _type;
   renderer = _renderer;
-  upgrade(state);
   switch (type) {
       default: {
         texture.setup(scale(42),scale(21),renderer);

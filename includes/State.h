@@ -28,6 +28,7 @@ struct GlobalGameState {
     bool quit = false;
 
     bool inMainMenu = true;
+    bool inRun = false;
 
     int level = 0;
     bool controllerStickReset = false;

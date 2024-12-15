@@ -1,11 +1,6 @@
 #include "../includes/Platform.h"
 
-Platform::Platform(int x, int y, SDL_Renderer* renderer) : renderer(renderer) {
-    box.x = scale(x);
-    box.y = scale(y);
-    box.h = height;
-    box.w = width;
-
+Platform::Platform(const int x, const int y, SDL_Renderer* renderer) : platformRectangle(scale(x),scale(y),height,width), renderer(renderer) {
     texture.setup(width,height,renderer);
 
     if(!texture.loadFromFile("platform.png")) {
@@ -14,14 +9,7 @@ Platform::Platform(int x, int y, SDL_Renderer* renderer) : renderer(renderer) {
 
 }
 
-void Platform::render(){
-    texture.render(box.x,box.y);
-    SDL_SetRenderDrawColor( renderer, 20, 20, 20, 80 );
-    SDL_RenderFillRect( renderer, &box );
-}
-
-void Platform::setPosition(int x, int y) {
-    box.x = x;
-    box.y = y;
+void Platform::render() const {
+    texture.render(platformRectangle.x,platformRectangle.y);
 }
 

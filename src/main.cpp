@@ -6,6 +6,8 @@
 #include "../includes/GlobalConstants.h"
 #include "../includes/MainMenu.h"
 #include "../includes/State.h"
+#include "../includes/Run.h"
+#include "../includes/Level.h"
 
 bool init(GlobalGameState& ggs) {
 	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO ) < 0 ) {
@@ -84,12 +86,24 @@ int main( int argc, char* args[] ) {
 	MainMenu mainMenu(ggs);
 	setCurrentMainMenu(&mainMenu);
 
+	Run run(ggs);
+
+	Level ducts(ggs, 3);
+
 	while(!ggs.quit) {
+
+		SDL_RenderClear(ggs.renderer);
 
 		if(ggs.inMainMenu) {
 			mainMenu.readInput();
 			mainMenu.render();
+		} else if(ggs.inRun) {
+			mainMenu.readInput();
+			ducts.render();
 		}
+
+		SDL_SetRenderDrawColor(ggs.renderer, 26, 26, 26, 255);
+		SDL_RenderPresent(ggs.renderer);
 
 	}
 

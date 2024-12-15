@@ -19,7 +19,7 @@ class Weapon {
 
 public:
 
-  explicit Weapon(Weapon_Type _type, SDL_Renderer* _renderer, State &state);
+  explicit Weapon(Weapon_Type _type, SDL_Renderer* _renderer);
 
   void render(int playerX, int playerY, bool playerDirection) const;
 

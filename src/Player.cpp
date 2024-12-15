@@ -1,16 +1,15 @@
 #include "../includes/Player.h"
 #include "../includes/Entity.h"
-#include "../includes/Bullet.h"
 
-#include <iostream>
 #include <list>
 
 #include "../includes/GlobalConstants.h"
 #include "../includes/Platform.h"
 
-Player::Player(Entity* entity, Weapon* primaryWeapon) : playerEntity(entity), primaryWeapon(primaryWeapon) {
+Player::Player(Entity* entity, GlobalGameState& ggs) : revolver(Weapon_Type::revolver,ggs.renderer), rifle(Weapon_Type::rifle,ggs.renderer), shotgun(Weapon_Type::shotgun,ggs.renderer), knife(Weapon_Type::knife,ggs.renderer), laserPistol(Weapon_Type::laserPistol,ggs.renderer), playerEntity(entity) {
 
-    currentWeapon = primaryWeapon;
+    currentWeapon = &revolver;
+    // TODO: Ability to chang weapon and stuff
 
     damageSound.init("resources/sounds/playerDamage.wav",0,-1);
 

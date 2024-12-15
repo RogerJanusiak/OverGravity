@@ -9,6 +9,8 @@ inline int scale(const double toScale) { return static_cast<int>(toScale*SCALE_F
 inline int scaleUI(const double toScale) {  return static_cast<int>(toScale*UI_SCALE_FACTOR);  }
 inline int scalePlayerUI(const double toScale) {  return static_cast<int>(toScale*PLAYER_UI_SCALE_FACTOR);  }
 
+constexpr int numberOfEnemies = 5;
+
 const int WINDOW_WIDTH = scale(1280);
 const int WINDOW_HEIGHT = scale(720);
 

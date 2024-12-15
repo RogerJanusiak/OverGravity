@@ -118,7 +118,13 @@ if(APPLE)
             src/MainMenu.cpp
             includes/MainMenu.h
             src/Input.cpp
-            includes/Input.h)
+            includes/Input.h
+            src/Run.cpp
+            includes/Run.h
+            src/Wave.cpp
+            includes/Wave.h
+			src/Level.cpp
+			includes/Level.h)
 
     Message("")
     Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )

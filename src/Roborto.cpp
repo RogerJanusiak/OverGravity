@@ -2,10 +2,10 @@
 
 #include <cmath>
 
-void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State state, bool firstCall = false) {
-    if(y < state.playerTileY) {
+void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, GlobalGameState& ggs, Level& level, bool firstCall = false) {
+    if(y < ggs.playerTileY) {
         // Find right weight
-        int rightEdge = findEdgeRight(x,y,state);
+        int rightEdge = findEdgeRight(x,y,level);
         int openTileRight = x + rightEdge;
         if(rightEdge < 0){
             rightWeight = 1000;
@@ -17,7 +17,7 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
             float v = 0;
             while(fallingRight) {
                 newXTile = newX/TILE_SIZE_SCALED;
-                if(y+numberTilesDownRight < state.levelMap.size() && state.levelMap[y+numberTilesDownRight][newXTile] == -1) {
+                if(y+numberTilesDownRight < level.getMap().size() && level.getMap()[y+numberTilesDownRight][newXTile] == -1) {
                     numberTilesDownRight++;
                     float dt = (-v+sqrt(2*ACCELERATION*TILE_SIZE_SCALED+ pow(v,2)))/ACCELERATION;
                     if(v <= TERMINAL_VELOCITY) {
@@ -32,8 +32,7 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
             int tempRRightWeight;
             int tempRLeftWeight;
 
-            SDL_Log("Next Location Right: %i,%i",newXTile,y+numberTilesDownRight);
-            pathFind(newXTile,y+numberTilesDownRight, tempRRightWeight, tempRLeftWeight, state);
+            pathFind(newXTile,y+numberTilesDownRight, tempRRightWeight, tempRLeftWeight, ggs, level);
 
             if(tempRLeftWeight >= tempRRightWeight) {
                 rightWeight = tempRRightWeight + rightEdge;
@@ -44,7 +43,7 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
 
 
         // Find left weight
-        int leftEdge = findEdgeLeft(x,y,state);
+        int leftEdge = findEdgeLeft(x,y,level);
         if(leftEdge < 0){
             leftWeight = 1000;
         } else {
@@ -56,7 +55,7 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
             float v = 0;
             while(fallingLeft) {
                 newXTile = newX/TILE_SIZE_SCALED;
-                if(y+numberTilesDownLeft < state.levelMap.size() && state.levelMap[y+numberTilesDownLeft][newXTile] == -1) {
+                if(y+numberTilesDownLeft < level.getMap().size() && level.getMap()[y+numberTilesDownLeft][newXTile] == -1) {
                     numberTilesDownLeft++;
                     float dt = (-v+sqrt(2*ACCELERATION*TILE_SIZE_SCALED+pow(v,2)))/ACCELERATION;
                     if(v <= TERMINAL_VELOCITY) {
@@ -71,8 +70,7 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
             int tempLRightWeight;
             int tempLLeftWeight;
 
-            SDL_Log("Next Location Left: %i,%i",newXTile,y+numberTilesDownLeft);
-            pathFind(newXTile,y+numberTilesDownLeft, tempLLeftWeight, tempLRightWeight, state);
+            pathFind(newXTile,y+numberTilesDownLeft, tempLLeftWeight, tempLRightWeight, ggs, level);
 
             if(tempLLeftWeight >= tempLRightWeight) {
                 leftWeight = tempLRightWeight + leftEdge;
@@ -80,18 +78,18 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
                 leftWeight = tempLLeftWeight + leftEdge;
             }
         }
-    } else if(y == state.playerTileY) {
-        int xTileDifference = state.playerTileX-x;
-        int xDifference = firstCall ? state.playerX - entity->getRect().x : xTileDifference;
+    } else if(y == ggs.playerTileY) {
+        int xTileDifference = ggs.playerTileX-x;
+        int xDifference = firstCall ? ggs.playerX - entity->getRect().x : xTileDifference;
         int direction = 1;
         if(xDifference != 0) {
             direction = xDifference/abs(xDifference);
         }
 
         bool allPlatforms = true;
-        if(state.playerTileX != x-1 || state.playerTileX != x+1) {
-            for(int i = 1; i < abs(state.playerTileX - x); i++) {
-                if(y < state.levelMap.size() && state.levelMap[y][x+(i*direction)] == -1) {
+        if(ggs.playerTileX != x-1 || ggs.playerTileX != x+1) {
+            for(int i = 1; i < abs(ggs.playerTileX - x); i++) {
+                if(y < level.getMap().size() && level.getMap()[y][x+(i*direction)] == -1) {
                     allPlatforms = false;
                 }
             }
@@ -115,21 +113,18 @@ void Roborto::pathFind(int x, int y, int& leftWeight, int& rightWeight, State st
     }
 }
 
-void Roborto::move(float dt,const std::list<Platform*> &platforms, State& state) {
-    if(!entity->move(dt,platforms)) {
+void Roborto::move(GlobalGameState& ggs, const std::list<Platform>& platforms, Level& level) {
+    if(!entity->move(ggs.dt,platforms)) {
         if(!justHitPlatform) {
-            //Path Finding
             int tileX = entity->getRect().x/TILE_SIZE_SCALED;
             int tileY = entity->getRect().y/TILE_SIZE_SCALED;
-            SDL_Log("Robor Location: %i,%i",tileX,tileY);
-            if(tileY < state.levelMap.size() && state.levelMap[tileY][tileX] != -1) {
+            if(tileY < level.getMap().size() && level.getMap()[tileY][tileX] != -1) {
                 int leftWeight;
                 int rightWeight;
-                pathFind(tileX,tileY,leftWeight,rightWeight,state, true);
-                SDL_Log("Weights: %i,%i",leftWeight,rightWeight);
+                pathFind(tileX,tileY,leftWeight,rightWeight,ggs, level, true);
                 if(leftWeight >= 1000 && rightWeight >= 1000) {
-                    int numberTilesRight = findEdgeRight(tileX,tileY,state);
-                    int numberTilesLeft = findEdgeLeft(tileX,tileY,state);
+                    int numberTilesRight = findEdgeRight(tileX,tileY,level);
+                    int numberTilesLeft = findEdgeLeft(tileX,tileY,level);
 
                     numberTilesRight = numberTilesRight > 0 ? numberTilesRight : 1000;
                     numberTilesLeft = numberTilesLeft > 0 ? numberTilesLeft : 1000;
@@ -158,7 +153,7 @@ void Roborto::move(float dt,const std::list<Platform*> &platforms, State& state)
         justHitPlatform = false;
     }
 
-    if(entity->getRect().y >= scale(state.levelHeight)+state.camY) {
+    if(entity->getRect().y >= level.getMap().size()*TILE_SIZE_SCALED) {
         entity->despawn();
     }
 

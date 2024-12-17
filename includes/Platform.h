@@ -11,7 +11,7 @@ public:
     Platform(int x, int y, SDL_Renderer* renderer);
     void render() const;
 
-    SDL_Rect &getPlatformRect() { return platformRectangle; }
+    [[nodiscard]] SDL_Rect getPlatformRect() const { return platformRectangle; }
 
 private:
     const int width = scale(TILE_SIZE);

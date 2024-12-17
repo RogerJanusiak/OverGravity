@@ -1,7 +1,9 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 #include <list>
+#include <map>
 #include <vector>
+#include <__format/range_default_formatter.h>
 
 #include "Entity.h"
 #include "Platform.h"
@@ -18,6 +20,12 @@ public:
 	void updateSpawns(const std::list<Entity*>& allCharacterEntities) const;
 	void render() const;
 
+	[[nodiscard]] int (* getSpawnWeights() const)[5] { return spawnWeights; }
+	[[nodiscard]] std::vector<Spawn>* getEnemySpawns() { return &enemySpawns; }
+	[[nodiscard]] std::list<Platform>& getPlatforms() { return platforms; }
+	[[nodiscard]] std::vector<std::vector<int>>& getMap() {	return levelMap; }
+	[[nodiscard]] std::vector<SDL_Rect>& getTeleports() { return teleports; }
+
 private:
 
 	GlobalGameState& ggs;
@@ -32,6 +40,7 @@ private:
 	std::vector<Spawn> enemySpawns;
 	std::vector<Spawn*> allSpawns;
 
+	//TODO: See if I can use vector, must wait to change until version is working
 	std::list<Platform> platforms;
 
 	std::vector<SDL_Rect> teleports;

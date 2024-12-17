@@ -38,21 +38,7 @@ void Entity::render(int spriteX, int spriteY, bool faceVelocity, bool direction)
 
 }
 
-Platform* Entity::onPlatform(const std::list<Platform*> &platforms, SDL_Rect& movementBox, SDL_Rect& hitBox) const {
-    for (auto platform : platforms) {
-        SDL_Rect p = platform->getPlatformRect();
-        if(hitBox.y+hitBox.h <= platform->getPlatformRect().y) {
-            if(isColliding(p,movementBox)) {
-                return platform;
-            }
-        }
-
-    }
-
-    return nullptr;
-}
-
-bool Entity::move(float dt,const std::list<Platform*> &platforms, int* amountFallen, SDL_Rect* movementHitBox) {
+bool Entity::move(float dt,const std::list<Platform> &platforms, int* amountFallen, SDL_Rect* movementHitBox) {
     int startY = entityRect.y;
     getRect().x += getXVelocity()*dt;
     float nextYPosition = entityRect.y + yVelocity*dt;
@@ -70,24 +56,35 @@ bool Entity::move(float dt,const std::list<Platform*> &platforms, int* amountFal
 
     movementBox.y = entityRect.y;
     movementBox.h = entityRect.h + (nextYPosition-entityRect.y);
-    Platform* potentialPlatform = onPlatform(platforms,movementBox, entityRect);
 
-    if(potentialPlatform == nullptr) {
+    bool foundPlatform = false;
+    for(auto& platform : platforms) {
+        SDL_Rect platformRect = platform.getPlatformRect();
+        if(entityRect.y+entityRect.h <= platformRect.y) {
+            if(isColliding(platformRect,movementBox)) {
+                offPlatform = false;
+                entityRect.y = platformRect.y-entityRect.h;
+                yVelocity = 0;
+                foundPlatform = true;
+            }
+        }
+    }
+
+    if(!foundPlatform) {
         entityRect.y = nextYPosition;
         if(yVelocity <= TERMINAL_VELOCITY) {
             yVelocity += ACCELERATION*dt;
         }
-    } else {
-        offPlatform = false;
-        entityRect.y = potentialPlatform->getPlatformRect().y-entityRect.h;
-        yVelocity = 0;
     }
+
     if(amountFallen != nullptr) {
         *amountFallen = startY - entityRect.y;
     }
     return offPlatform;
 }
 
+// TODO: When something spawns make it choose a random direction, maybe except for edge of screen tiles
+// TODO: Clean up this code
 void Entity::spawn(bool spawnOnScreen) {
     int test2 =  rand() % spawns->size();
     auto currentSpawnIt = spawns->begin() + test2;

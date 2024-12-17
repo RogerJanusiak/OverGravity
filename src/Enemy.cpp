@@ -4,7 +4,7 @@ Enemy::Enemy(Entity *_entity) {
 	entity = _entity;
 }
 
-void Enemy::move(float dt,const std::list<Platform*> &platforms, State& state) {
+void Enemy::move(GlobalGameState& ggs, const std::list<Platform> &platforms, Level& level) {
 	if(entity->justSpawned) {
 		entity->justSpawned = false;
 		if(entity->getRect().x <=scale(400)) {
@@ -13,8 +13,8 @@ void Enemy::move(float dt,const std::list<Platform*> &platforms, State& state) {
 			entity->setXVelocity(-getXVelocity());
 		}
 	}
-	entity->move(dt,platforms);
-	if(entity->getRect().y >= scale(state.levelHeight)+state.camY) {
+	entity->move(ggs.dt,platforms);
+	if(entity->getRect().y >= level.getMap().size()*TILE_SIZE_SCALED) {
 		entity->despawn();
 	}
 
@@ -25,7 +25,7 @@ void Enemy::move(float dt,const std::list<Platform*> &platforms, State& state) {
 	}
 }
 
-int Enemy::findEdgeRight(int startX, int startY, State& state) {
+int Enemy::findEdgeRight(int startX, int startY, Level& level) {
 	bool lookingRight = true;
 	int numberTilesRight = 1;
 	while(lookingRight) {
@@ -34,7 +34,7 @@ int Enemy::findEdgeRight(int startX, int startY, State& state) {
 			numberTilesRight = -1;
 			lookingRight = false;
 		} else {
-			if(state.levelMap[startY][rightProbe] != -1) {
+			if(level.getMap()[startY][rightProbe] != -1) {
 				numberTilesRight++;
 			} else {
 				lookingRight = false;
@@ -44,7 +44,7 @@ int Enemy::findEdgeRight(int startX, int startY, State& state) {
 	return numberTilesRight;
 }
 
-int Enemy::findEdgeLeft(int startX, int startY, State& state) {
+int Enemy::findEdgeLeft(int startX, int startY, Level& level) {
 	bool lookingLeft = true;
 	int numberTilesLeft = 1;
 	while(lookingLeft) {
@@ -53,7 +53,7 @@ int Enemy::findEdgeLeft(int startX, int startY, State& state) {
 			numberTilesLeft = -1;
 			lookingLeft = false;
 		} else {
-			if(state.levelMap[startY][leftProbe] != -1) {
+			if(level.getMap()[startY][leftProbe] != -1) {
 				numberTilesLeft++;
 			} else {
 				lookingLeft = false;

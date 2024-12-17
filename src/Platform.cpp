@@ -1,6 +1,10 @@
 #include "../includes/Platform.h"
 
-Platform::Platform(const int x, const int y, SDL_Renderer* renderer) : platformRectangle(scale(x),scale(y),height,width), renderer(renderer) {
+Platform::Platform(const int x, const int y, SDL_Renderer* renderer) : renderer(renderer) {
+    platformRectangle.x = scale(x);
+    platformRectangle.y = scale(y);
+    platformRectangle.w = width;
+    platformRectangle.h = height;
     texture.setup(width,height,renderer);
 
     if(!texture.loadFromFile("platform.png")) {

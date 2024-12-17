@@ -33,6 +33,16 @@ struct GlobalGameState {
     int level = 0;
     bool controllerStickReset = false;
 
+    float dt = 0;
+
+    int playerTileX = 0;
+    int playerTileY = 0;
+    int playerX = 0;
+
+    //Developer Options
+    bool developerMode = false;
+    bool pauseEnemies = false;
+
     //Global Resources
     SDL_Color white = {255,255,255};
 

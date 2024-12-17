@@ -90,7 +90,13 @@ int main( int argc, char* args[] ) {
 	Run run(ggs);
 	Controller controller(ggs,run);
 
+	float lastUpdate = 0;
+
 	while(!ggs.quit) {
+
+		Uint32 current = SDL_GetTicks();
+		ggs.dt = (current - lastUpdate) / 1000.0f;
+		lastUpdate = current;
 
 		SDL_RenderClear(ggs.renderer);
 

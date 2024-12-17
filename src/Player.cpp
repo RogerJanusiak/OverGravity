@@ -64,7 +64,7 @@ void Player::render() const {
     }
 }
 
-int Player::move(float dt,const std::list<Platform*> &platforms, State& state) {
+int Player::move(float dt,const std::list<Platform> &platforms, State& state) {
     double speedIncrease = state.playerLevels[speed] == 0 ? 0 : defaultXSpeed*state.playerProperties[speed][state.playerLevels[speed]-1][1]/100;
     getEntity()->setXVelocity(xNormalVelocity*(defaultXSpeed+speedIncrease));
 
@@ -110,24 +110,24 @@ void Player::setDirection(bool direction) {
     playerDirection = direction;
 }
 
-void Player::killEnemy(State& state) {
+void Player::killEnemy() {
     combo++;
-    double mutiplier = state.playerLevels[PlayerUpgrades::shield] == 0 ? 1 : state.playerProperties[PlayerUpgrades::shield][state.playerLevels[PlayerUpgrades::shield]-1][1];
+    double mutiplier = playerLevels[PlayerUpgrades::shield] == 0 ? 1 : playerProperties[PlayerUpgrades::shield][playerLevels[PlayerUpgrades::shield]-1][1];
     shield += combo*mutiplier;
     shield = shield >= maxShield ? maxShield : shield;
 }
 
-int Player::charge(State& state) {
-    int abilityLevel = state.abilityLevels[currentAbility] == 0 ? 0 : state.abilityLevels[currentAbility] - 1;
-    int abilityReloadSpeed = state.abilityProperties[currentAbility][abilityLevel][1];
-    if (state.abilitiesKills >= abilityReloadSpeed) {
-        state.abilitiesKills = 0;
+int Player::charge() {
+    int abilityLevel = abilityLevels[currentAbility] == 0 ? 0 : abilityLevels[currentAbility] - 1;
+    int abilityReloadSpeed = abilityProperties[currentAbility][abilityLevel][1];
+    if (abilitiesKills >= abilityReloadSpeed) {
+        abilitiesKills = 0;
         charged = true;
         justCharged = true;
         return 75;
     }
     if(!charged) {
-        return 75*state.abilitiesKills/abilityReloadSpeed;
+        return 75*abilitiesKills/abilityReloadSpeed;
     }
     return 75;
 }
@@ -169,16 +169,15 @@ void Player::tickInvicibilty(float dt) {
     }
 }
 
-
-bool Player::damage(State& state) {
+bool Player::damage() {
 
     zeroCombo();
-    charge(state);
+    charge();
     setInvincible(true);
     invicibleFromDeath = true;
     postDamageInvincibleTime = 0;
 
-    shield -= state.playerLevels[armor] == 0 ? 50 : 50 - 50*state.playerProperties[armor][state.playerLevels[armor]-1][1]/100;
+    shield -= playerLevels[armor] == 0 ? 50 : 50 - 50*playerProperties[armor][playerLevels[armor]-1][1]/100;
     if(shield <= 0) {
         health += shield;
         if (health <= 0) {
@@ -211,5 +210,5 @@ void Player::reset(State& state) {
     state.weapon1 = 0;
     state.weapon2 = -1;
     state.abilitiesKills = 0;
-    charge(state);
+    charge();
 }

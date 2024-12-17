@@ -14,6 +14,7 @@ public:
 
     Entity() = default;
     Entity(SDL_Renderer* renderer, const int hp) : hp(hp), gameRender(renderer) {}
+    Entity(std::vector<Spawn>* spawn, SDL_Renderer* renderer, const int hp) : hp(hp), spawns(spawn), gameRender(renderer) {}
     Entity(int x, int y, int Vx, int Vy,SDL_Renderer *tempGameRenderer);
 
     void render(int spriteX, int spriteY, bool faceVelocity = false, bool direction = false) const;
@@ -40,7 +41,7 @@ public:
     void forceSpawn();
     void despawn() { spawned = false;justSpawned = true;entityRect.x = -1000,entityRect.y = -1000; }
 
-    bool move(float dt,const std::list<Platform*> &platforms, int* amountFallen = nullptr, SDL_Rect* movementHitBox = nullptr);
+    bool move(float dt,const std::list<Platform> &platforms, int* amountFallen = nullptr, SDL_Rect* movementHitBox = nullptr);
 
     static bool isColliding(SDL_Rect& rectA, const SDL_Rect& rectB);
 
@@ -62,8 +63,6 @@ private:
 
     //TODO: Render the texture once in main.cpp and then pass it to the entity.
     Texture entityTexture;
-
-    Platform* onPlatform(const std::list<Platform*> &platforms, SDL_Rect& movementBox, SDL_Rect& hitBox) const;
 
     Platform* lastPlatform = nullptr;
     bool offPlatform = false;

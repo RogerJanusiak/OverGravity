@@ -1,6 +1,7 @@
 #ifndef ENEMY_H
 #define ENEMY_H
 #include "Entity.h"
+#include "Level.h"
 #include "State.h"
 
 enum ENEMY_TYPE {
@@ -17,7 +18,7 @@ public:
 	virtual ~Enemy() = default;
 	explicit Enemy(Entity* _entity);
 
-	virtual void move(float dt,const std::list<Platform*> &platforms, State& state);
+	virtual void move(GlobalGameState& ggs, const std::list<Platform> &platforms, Level& level);
 	virtual int getDifficulty() { return 1; }
 	virtual ENEMY_TYPE getType() { return robor; }
 
@@ -27,8 +28,8 @@ public:
 	void knifeNotColliding() { knifeCollision = false; }
 	[[nodiscard]] bool didAlreadyCollide() const { return knifeCollision; }
 
-	static int findEdgeRight(int startX, int startY,  State& state);
-	static int findEdgeLeft(int startX, int startY, State& state);
+	static int findEdgeRight(int startX, int startY,  Level& level);
+	static int findEdgeLeft(int startX, int startY, Level& level);
 
 	[[nodiscard]] virtual float getXVelocity() const { return scale(250); }
 

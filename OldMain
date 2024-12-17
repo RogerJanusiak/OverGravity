@@ -1,7 +1,5 @@
 void resetState();
 
-void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::vector<std::unique_ptr<Entity>>& entities, std::vector<std::unique_ptr<Enemy>>& enemies);
-
 bool pauseEnemy = false;
 
 Player* timpyPointer = nullptr;
@@ -111,11 +109,6 @@ int main( int argc, char* args[] ) {
 
             timpy.getEntity()->forceSpawn();
 
-            std::vector<std::vector<std::unique_ptr<Entity>>> waveSetEEnemies;
-            waveSetEEnemies.reserve(5);
-            std::vector<std::vector<std::unique_ptr<Enemy>>> waveSetEnemies;
-            waveSetEnemies.reserve(5);
-
             while(state.started && !state.quit) {
 
                 bool leftMovement = false;
@@ -129,29 +122,6 @@ int main( int argc, char* args[] ) {
 
                 inWave = true;
                 waveNumber++;
-
-                int waveSetLocation = (waveNumber-1) % 5;
-                if(waveSetLocation == 0) {
-                    waveSetEEnemies.clear();
-                    waveSetEnemies.clear();
-                    for(auto& enemy : state.setEnemies) {
-                        enemy = 0;
-                    }
-                    for(int i = 0; i < 5; i++) {
-                        std::vector<std::unique_ptr<Entity>> eEnemies;
-                        std::vector<std::unique_ptr<Enemy>> enemies;
-
-                        getWaveEnemyEntities(waveNumber + i,&enemySpawns, eEnemies, enemies);
-
-                        waveSetEEnemies.push_back(std::move(eEnemies));
-                        waveSetEnemies.push_back(std::move(enemies));
-                    }
-                    for(auto& set : waveSetEnemies) {
-                        for(auto& enemies : set) {
-                            state.setEnemies[enemies->getType()]++;
-                        }
-                    }
-                }
 
                 std::list<Entity*> allCharacterEntities;
                 for (auto& eEnemy: waveSetEEnemies[waveSetLocation]) {
@@ -233,10 +203,6 @@ int main( int argc, char* args[] ) {
 
                     for (auto it = bullets.begin(); it != bullets.end();++it) {
                         it->render();
-                    }
-
-                    for (auto it =  waveSetEnemies[waveSetLocation].begin(); it !=  waveSetEnemies[waveSetLocation].end();++it) {
-                        (*it)->render();
                     }
 
                     SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 200);
@@ -526,121 +492,6 @@ int main( int argc, char* args[] ) {
                         }
                     }
 
-                    //Render/Move/Collision Enemies
-                    bool playerDamaged = false;
-                    SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
-                    int enemiesAlive = 0;
-                    for (auto it =  waveSetEnemies[waveSetLocation].begin(); it !=  waveSetEnemies[waveSetLocation].end();++it) {
-                        bool firstLoop = false;
-                        bool abilityDamgage = false;
-                        if(!(*it)->getEntity()->isSpawned()) {
-                            (*it)->getEntity()->spawn(state.enemiesAlive <= 5);
-                            firstLoop = true;
-                        }
-                        if((*it)->getEntity()->isAlive() && (*it)->getEntity()->isSpawned()) {
-                            if(!firstLoop && waveStarted && !pauseEnemy && state.menu != weaponUpgrade) {
-                                (*it)->move(dt, platforms,state);
-                            }
-                            (*it)->render();
-                            if(!(*it)->didAlreadyCollide() && timpy.getWeapon()->getType() == Weapon_Type::knife && Entity::isColliding((*it)->getEntity()->getRect(),timpy.getWeaponRect())) {
-                                (*it)->getEntity()->damage(timpy.getWeapon()->getDamage());
-                                (*it)->knifeColliding();
-                            } else {
-                                if(timpy.getWeapon()->getType() == Weapon_Type::knife && !Entity::isColliding((*it)->getEntity()->getRect(),timpy.getWeaponRect())) {
-                                    (*it)->knifeNotColliding();
-                                }
-                                if( Entity::isColliding((*it)->getEntity()->getRect(),timpy.getHitRect())) {
-                                    if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-(*it)->getEntity()->getRect().h) < (*it)->getEntity()->getRect().y
-                                        && timpy.getAbility() == Ability::bounce && timpy.isCharged()) {
-                                            timpy.getEntity()->setYVelocity(-1800);
-                                            (*it)->getEntity()->damage(5);
-                                            timpy.setInvincible(true);
-                                            abilityDamgage = true;
-                                        } else if(!timpy.isInvincible()) {
-                                            int randomNumber = rand() % 100;
-                                            int dodgeChance = state.playerLevels[dodge] == 0 ? 0 : state.playerProperties[dodge][state.playerLevels[dodge]-1][1];
-                                            if(randomNumber >= dodgeChance) {
-                                                if(timpy.damage(state)) {
-                                                    playerAlive = false;
-                                                    waveNumber = 0;
-                                                }
-                                                SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
-                                                updateInGameText(timpy.getCombo(),waveNumber,timpy.getXP(),timpy.getHealth(), timpy.getShield());
-                                                playerDamaged = true;
-                                            }
-                                            (*it)->getEntity()->damage(5);
-                                        }
-
-                                }
-                            }
-                            for(auto bit = bullets.begin(); bit != bullets.end();) {
-                                if(state.developerMode) {
-                                    SDL_SetRenderDrawColor(gameRenderer,0,0,255,255);
-                                    SDL_Rect temp = bit->getTrailingRect();
-                                    SDL_RenderFillRect(gameRenderer, &temp);
-                                }
-                                if(Entity::isColliding((*it)->getEntity()->getRect(),bit->getTrailingRect())) {
-                                    explosion.play();
-                                    if(bit->decreaseStrength()) {
-                                        eBullets.erase(bit->getIterator());
-                                        bit = bullets.erase(bit);
-                                    } else {
-                                        ++bit;
-                                    }
-                                    (*it)->getEntity()->damage(timpy.getWeapon()->getDamage());
-                                    break;
-                                }
-                                ++bit;
-                            }
-                            if(state.developerMode) {
-                                SDL_RenderDrawRect(gameRenderer,&(*it)->getEntity()->getRect());
-                            }
-                            if(state.c4Exploded) {
-                                int c4x = timpy.getC4Entity()->getRect().x;
-                                int c4y = timpy.getC4Entity()->getRect().y;
-                                if(pow(pow(c4x - (*it)->getEntity()->getRect().x,2)+pow(c4y - (*it)->getEntity()->getRect().y,2),0.5) < scale(200)) {
-                                    (*it)->getEntity()->damage(state.abilityProperties[c4][state.abilityLevels[c4]-1][2]);
-                                    abilityDamgage = true;
-                                }
-                            }
-                            if(!(*it)->getEntity()->isAlive()) {
-                                explosions.emplace_back((*it)->getEntity()->getRect().x+(*it)->getEntity()->getRect().w/2,(*it)->getEntity()->getRect().y+(*it)->getEntity()->getRect().h/2,gameRenderer);
-                                if(!playerDamaged) {
-                                    timpy.changeXP((*it)->getDifficulty());
-                                    timpy.killEnemy(state);
-                                    if(!abilityDamgage) {
-                                        if(state.abilitiesKills < state.abilityProperties[timpy.getAbility()][state.abilityLevels[timpy.getAbility()]][1] && timpy.getAbility() != none && !timpy.isCharged())
-                                            state.abilitiesKills++;
-                                    }
-                                }
-                                updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP(),timpy.getHealth(), timpy.getShield());
-                            } else {
-                                for(auto& teleport : teleports) {
-                                    if(Entity::isColliding((*it)->getEntity()->getRect(),teleport)) {
-                                        (*it)->getEntity()->despawn();
-                                    }
-                                }
-
-                            }
-                        }
-                        if((*it)->getEntity()->isAlive()) {
-                            robotAlive = true;
-                            enemiesAlive++;
-                        }
-                    }
-
-                    state.enemiesAlive = enemiesAlive;
-
-                    for(auto it = explosions.begin();it != explosions.end();) {
-                        if(it->finished()) {
-                            it = explosions.erase(it);
-                        } else {
-                            it->render();
-                            it->advance();
-                            ++it;
-                        }
-                    }
-
                     state.c4Exploded = false;
 
                     if(!playerAlive || waveOverride) {
@@ -746,32 +597,4 @@ void resetState() {
     }
     timpyPointer->reset(state);
     loadUpgradeMenu(state);
-}
-
-void getWaveEnemyEntities(int waveNumber, std::vector<Spawn>* spawns, std::vector<std::unique_ptr<Entity>>& entities, std::vector<std::unique_ptr<Enemy>>& enemies) {
-    int totalDifficulty = 0;
-    while(totalDifficulty < waveNumber) {
-        int enemyType = rand() % 100 + 1;
-        if(enemyType <= (*state.currentWeight)[0] && totalDifficulty+Robor::difficulty <= waveNumber) {
-            totalDifficulty += Robor::difficulty;
-            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Robor::health));
-            enemies.emplace_back(std::unique_ptr<Enemy>(new Robor(entities.back().get())));
-        } else if(enemyType > (*state.currentWeight)[0] && enemyType <= (*state.currentWeight)[1] && totalDifficulty+Roborto::difficulty <= waveNumber) {
-            totalDifficulty += Roborto::difficulty;
-            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Roborto::health));
-            enemies.emplace_back(std::unique_ptr<Enemy>(new Roborto(entities.back().get())));
-        } else if(enemyType > (*state.currentWeight)[1] && enemyType <= (*state.currentWeight)[2] && totalDifficulty+Robro::difficulty <= waveNumber) {
-            totalDifficulty += Robro::difficulty;
-            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Robro::health));
-            enemies.emplace_back(std::unique_ptr<Enemy>(new Robro(entities.back().get())));
-        } else if(enemyType > (*state.currentWeight)[2] && enemyType <= (*state.currentWeight)[3] && totalDifficulty+Romo::difficulty <= waveNumber) {
-            totalDifficulty += Romo::difficulty;
-            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Romo::health));
-            enemies.emplace_back(std::unique_ptr<Enemy>(new Romo(entities.back().get())));
-        } else if(enemyType > (*state.currentWeight)[3] && enemyType <= (*state.currentWeight)[4] && totalDifficulty+Roo::difficulty <= waveNumber) {
-            totalDifficulty += Roo::difficulty;
-            entities.emplace_back(std::make_unique<Entity>(spawns, gameRenderer, Roo::health));
-            enemies.emplace_back(std::unique_ptr<Enemy>(new Roo(entities.back().get())));
-        }
-    }
 }

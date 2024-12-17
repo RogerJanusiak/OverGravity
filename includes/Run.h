@@ -11,6 +11,8 @@ public:
 	[[nodiscard]] Player& getPlayer() { return player; }
 	[[nodiscard]] Level& getLevel() { return currentLevel; }
 
+	[[nodiscard]] int getWaveNumber() const { return waveNumber; }
+
 private:
 
 	GlobalGameState& ggs;
@@ -18,7 +20,8 @@ private:
 	Entity playerEntity;
 	Player player;
 
-	Level currentLevel = Level(ggs,2);
+	int waveNumber = 10;
+	Level currentLevel = Level(ggs,4);
 
 };
 

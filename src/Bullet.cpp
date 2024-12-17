@@ -23,7 +23,7 @@ Bullet::Bullet(Entity* tempEntity, BULLET_TYPE type, int durability, int strengt
 
 }
 
-bool Bullet::move(float dt, const std::list<Platform*> &platforms, bool developerMode) {
+bool Bullet::move(float dt, const std::list<Platform> &platforms, bool developerMode) {
     trailingRect.x = getEntity()->getRect().x;
     trailingRect.y = getEntity()->getRect().y;
     if(type == BULLET_TYPE::normal) {

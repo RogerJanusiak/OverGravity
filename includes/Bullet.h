@@ -16,7 +16,7 @@ public:
     Bullet(Entity* tempEntity, BULLET_TYPE type, int durability, int strength, int damage);
 
     void render();
-    bool move(float dt, const std::list<Platform*> &platforms, bool developerMode);
+    bool move(float dt, const std::list<Platform> &platforms, bool developerMode);
 
     Entity* getEntity() const { return entity; }
     [[nodiscard]] SDL_Rect getTrailingRect() const { return trailingRect; }

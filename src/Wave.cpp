@@ -19,7 +19,6 @@ void Wave::render() const {
 	level.render();
     for (auto & bullet : bullets) {
         bullet.render();
-        SDL_Log("render");
     }
 }
 

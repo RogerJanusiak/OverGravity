@@ -70,7 +70,17 @@ void Player::render() const {
     }
 }
 
-int Player::move(GlobalGameState& ggs, const std::list<Platform> &platforms) {
+int Player::move(GlobalGameState& ggs, const std::list<Platform> &platforms, std::vector<SDL_Rect>& teleports) {
+
+    for(auto& teleport : teleports) {
+        if(Entity::isColliding(playerEntity->getRect(),teleport)) {
+            playerEntity->forceSpawn();
+            return 0;
+        }
+    }
+
+
+
     double speedIncrease = playerLevels[speed] == 0 ? 0 : defaultXSpeed*playerProperties[speed][playerLevels[speed]-1][1]/100;
     getEntity()->setXVelocity(xNormalVelocity*(defaultXSpeed+speedIncrease));
 

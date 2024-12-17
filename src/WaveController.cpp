@@ -11,7 +11,7 @@ void WaveController::operate() const {
 }
 
 void WaveController::operatePlayer() const {
-    player.move(ggs, run.getLevel().getPlatforms());
+    player.move(ggs, run.getLevel().getPlatforms(), run.getLevel().getTeleports());
     player.tickInvicibilty(ggs.dt);
     player.render();
 }

@@ -317,20 +317,6 @@ int main( int argc, char* args[] ) {
                     }
 
                     if(timpy.getEntity()->isSpawned()) {
-                        if(waveStarted) {
-                            timpy.move(dt, platforms,state);
-                        }
-                        if(timpy.isInvincible()) {
-                            SDL_SetTextureColorMod(timpy.getEntity()->getTexture()->getTexture(),0,150,255);
-                            timpy.tickInvicibilty(dt);
-                        } else {
-                            SDL_SetTextureColorMod(timpy.getEntity()->getTexture()->getTexture(),255,255,255);
-                        }
-                        timpy.render();
-                        state.playerX = timpy.getEntity()->getRect().x;
-                        state.playerTileX = state.playerX/TILE_SIZE_SCALED;
-                        state.playerTileY = (timpy.getEntity()->getRect().y-state.camY)/TILE_SIZE_SCALED;
-
                         if(state.developerMode) {
                             SDL_Rect playerTile = {(state.playerTileX)*TILE_SIZE_SCALED, state.playerTileY*TILE_SIZE_SCALED+state.camY,TILE_SIZE_SCALED,TILE_SIZE_SCALED};
                             SDL_SetRenderDrawColor(gameRenderer, 225, 225, 0, 255);

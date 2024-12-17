@@ -51,6 +51,12 @@ void Player::render() const {
         c4Entity.render(0,0);
     }
 
+    if(isInvincible()) {
+        SDL_SetTextureColorMod(getEntity()->getTexture()->getTexture(),0,150,255);
+    } else {
+        SDL_SetTextureColorMod(getEntity()->getTexture()->getTexture(),255,255,255);
+    }
+
     playerEntity->render(0,0, false, playerDirection);
 
     if(!c4Placed) {
@@ -64,16 +70,16 @@ void Player::render() const {
     }
 }
 
-int Player::move(float dt,const std::list<Platform> &platforms) {
+int Player::move(GlobalGameState& ggs, const std::list<Platform> &platforms) {
     double speedIncrease = playerLevels[speed] == 0 ? 0 : defaultXSpeed*playerProperties[speed][playerLevels[speed]-1][1]/100;
     getEntity()->setXVelocity(xNormalVelocity*(defaultXSpeed+speedIncrease));
 
     if(c4Placed) {
-        c4Entity.move(dt,platforms);
+        c4Entity.move(ggs.dt,platforms);
     }
 
     int amountFallen = 0;
-    if(!playerEntity->move(dt,platforms,&amountFallen,&wheelRect) && invincible && !invicibleFromDeath) {
+    if(!playerEntity->move(ggs.dt,platforms,&amountFallen,&wheelRect) && invincible && !invicibleFromDeath) {
         invincible = false;
         charged = false;
     }
@@ -102,6 +108,10 @@ int Player::move(float dt,const std::list<Platform> &platforms) {
     playerHitRect.y = getEntity()->getRect().y;
     playerHitRect.w = getEntity()->getRect().w-scale(25);
     playerHitRect.h = getEntity()->getRect().h;
+
+    ggs.playerX = playerEntity->getRect().x;
+    ggs.playerTileX = ggs.playerX/TILE_SIZE_SCALED;
+    ggs.playerTileY = playerEntity->getRect().y/TILE_SIZE_SCALED;
 
     return amountFallen;
 }

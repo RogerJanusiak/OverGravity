@@ -7,8 +7,13 @@ void WaveController::operate() const {
 		currentWave->render();
 		currentWave->runWave();
 	}
-    player.move(ggs.dt, run.getLevel().getPlatforms());
-	player.render();
+    operatePlayer();
+}
+
+void WaveController::operatePlayer() const {
+    player.move(ggs, run.getLevel().getPlatforms());
+    player.tickInvicibilty(ggs.dt);
+    player.render();
 }
 
 void WaveController::startWave() {

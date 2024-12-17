@@ -17,6 +17,7 @@ public:
 private:
 
 	void startWave();
+	void operatePlayer() const;
 
 	GlobalGameState& ggs;
 

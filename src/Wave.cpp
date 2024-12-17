@@ -20,13 +20,11 @@ void Wave::render() const {
 }
 
 bool Wave::runWave() {
-    //Render/Move/Collision Enemies
+    bool playerDamaged = false;
+    enemiesAlive = 0;
 
     level.updateSpawns(allCharacterEntities);
 
-    bool playerDamaged = false;
-    //SDL_SetRenderDrawColor(gameRenderer, 255, 0, 0, 255);
-    enemiesAlive = 0;
     for (const auto & enemy : enemies) {
         bool firstLoop = false;
         if(!enemy->getEntity()->isSpawned()) {
@@ -57,17 +55,13 @@ bool Wave::runWave() {
                             abilityDamgage = true;
                         } else if(!timpy.isInvincible()) {
                             int randomNumber = rand() % 100;
-                            // TODO: Add back in dodge
-                            //int dodgeChance = state.playerLevels[dodge] == 0 ? 0 : state.playerProperties[dodge][state.playerLevels[dodge]-1][1];
-                            //if(randomNumber >= dodgeChance) {
-                                if(timpy.damage()) {
-                                    //playerAlive = false;
-                                    waveNumber = 0;
-                                }
-                                SDL_GameControllerRumble( ggs.controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
-                                //updateInGameText(timpy.getCombo(),waveNumber,timpy.getXP(),timpy.getHealth(), timpy.getShield());
-                                playerDamaged = true;
-                            //}
+                            if(timpy.damage()) {
+                                //playerAlive = false;
+                                waveNumber = 0;
+                            }
+                            SDL_GameControllerRumble( ggs.controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
+                            //updateInGameText(timpy.getCombo(),waveNumber,timpy.getXP(),timpy.getHealth(), timpy.getShield());
+                            playerDamaged = true;
                             enemy->getEntity()->damage(5);
                         }
 

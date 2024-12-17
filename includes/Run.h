@@ -1,5 +1,6 @@
 #ifndef RUN_H
 #define RUN_H
+#include "Level.h"
 #include "Player.h"
 
 class Run {
@@ -7,12 +8,17 @@ public:
 
 	explicit Run(GlobalGameState& ggs);
 
+	[[nodiscard]] Player& getPlayer() { return player; }
+	[[nodiscard]] Level& getLevel() { return currentLevel; }
+
 private:
 
 	GlobalGameState& ggs;
 
-	Entity m_playerEntity;
-	Player m_player;
+	Entity playerEntity;
+	Player player;
+
+	Level currentLevel = Level(ggs,2);
 
 };
 

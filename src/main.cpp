@@ -3,6 +3,7 @@
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
+#include "../includes/Controller.h"
 #include "../includes/GlobalConstants.h"
 #include "../includes/MainMenu.h"
 #include "../includes/State.h"
@@ -87,8 +88,7 @@ int main( int argc, char* args[] ) {
 	setCurrentMainMenu(&mainMenu);
 
 	Run run(ggs);
-
-	Level ducts(ggs, 3);
+	Controller controller(ggs,run);
 
 	while(!ggs.quit) {
 
@@ -98,8 +98,10 @@ int main( int argc, char* args[] ) {
 			mainMenu.readInput();
 			mainMenu.render();
 		} else if(ggs.inRun) {
-			mainMenu.readInput();
-			ducts.render();
+
+			controller.readInput();
+			controller.runController();
+
 		}
 
 		SDL_SetRenderDrawColor(ggs.renderer, 26, 26, 26, 255);

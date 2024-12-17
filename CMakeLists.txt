@@ -124,7 +124,9 @@ if(APPLE)
             src/Wave.cpp
             includes/Wave.h
 			src/Level.cpp
-			includes/Level.h)
+			includes/Level.h
+            includes/Controller.h
+            src/Controller.cpp)
 
     Message("")
     Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )

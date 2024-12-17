@@ -17,11 +17,19 @@ Wave::Wave(GlobalGameState& ggs, Player& timpy, Level& level, const int waveNumb
 
 void Wave::render() const {
 	level.render();
+    for (auto & bullet : bullets) {
+        bullet.render();
+        SDL_Log("render");
+    }
 }
 
 bool Wave::runWave() {
     bool playerDamaged = false;
     enemiesAlive = 0;
+
+    for(auto& bullet : bullets) {
+        bullet.move(ggs.dt, level.getPlatforms(), ggs.developerMode);
+    }
 
     level.updateSpawns(allCharacterEntities);
 
@@ -67,15 +75,16 @@ bool Wave::runWave() {
 
                 }
             }
-            // TODO: Add bullets in
-            /*for(auto bit = bullets.begin(); bit != bullets.end();) {
-                if(state.developerMode) {
-                    SDL_SetRenderDrawColor(gameRenderer,0,0,255,255);
+            for(auto bit = bullets.begin(); bit != bullets.end();) {
+                if(ggs.developerMode) {
+                    // TODO: Add back in developer mode features
+                    // TODO: See if I can seperate the rendering of developer mode stuff and the controller
+                    SDL_SetRenderDrawColor(ggs.renderer,0,0,255,255);
                     SDL_Rect temp = bit->getTrailingRect();
-                    SDL_RenderFillRect(gameRenderer, &temp);
+                    SDL_RenderFillRect(ggs.renderer, &temp);
                 }
                 if(Entity::isColliding(enemy->getEntity()->getRect(),bit->getTrailingRect())) {
-                    explosion.play();
+                    //explosion.play();
                     if(bit->decreaseStrength()) {
                         eBullets.erase(bit->getIterator());
                         bit = bullets.erase(bit);
@@ -86,7 +95,7 @@ bool Wave::runWave() {
                     break;
                 }
                 ++bit;
-            }*/
+            }
             // TODO: Add back in C4
             /*if(state.c4Exploded) {
                 int c4x = timpy.getC4Entity()->getRect().x;

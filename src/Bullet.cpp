@@ -51,7 +51,7 @@ bool Bullet::move(float dt, const std::list<Platform> &platforms, bool developer
     return false;
 }
 
-void Bullet::render() {
+void Bullet::render() const {
     entity->render(0,0);
 }
 

@@ -52,16 +52,16 @@ void WaveController::readInput() {
             } else if(e.key.keysym.sym == SDLK_r) {
                 player.getWeapon()->forceReload();
             }
-            /*
-            if(e.key.keysym.sym == SDLK_SPACE && waveStarted && !state.c4Placed) {
-                if((shootingReset || state.resetShooting) && !state.teleportSelection) {
-                    timpy.getWeapon()->shoot(&eBullets,&bullets,state,timpy.getDirection(),timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y);
+            // From Refactor: Had a state variable for resetShooting, not sure how it was used, removed it.
+            if(e.key.keysym.sym == SDLK_SPACE) {
+                if(shootingReset && currentWave != nullptr) {
+                    player.getWeapon()->shoot(currentWave->getBulletEntities(),currentWave->getBullets(),player.getDirection(),player.getEntity()->getRect().x,player.getEntity()->getRect().y);
                     shootingReset = false;
-                    state.resetShooting = false;
+                    SDL_Log("Test");
                 }
             } else if(e.key.keysym.sym == SDLK_e) {
-                timpy.useAbility(state);
-            }*/
+                //timpy.useAbility(state);
+            }
         } else if(e.type == SDL_KEYUP) {
             if(e.key.keysym.sym == SDLK_d)
                 rightMovement = false;
@@ -75,9 +75,9 @@ void WaveController::readInput() {
                 player.setXNormalV(1);
             }
 
-            /*if(e.key.keysym.sym == SDLK_SPACE) {
+            if (e.key.keysym.sym == SDLK_SPACE) {
                 shootingReset = true;
-            }*/
+            }
         } else if( e.type == SDL_JOYAXISMOTION) {
             /*if(SDL_GameControllerGetAxis(ggs.controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
                 if(shootingReset && !state.teleportSelection && !state.c4Placed) {

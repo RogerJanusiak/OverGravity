@@ -28,6 +28,8 @@ private:
 	bool rightMovement = false;
 	bool leftMovement = false;
 
+	bool shootingReset = true;
+
 	bool inWave = false;
 
 };

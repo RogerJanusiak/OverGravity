@@ -31,7 +31,7 @@ public:
   [[nodiscard]] bool isReloadable() const { return reloadable; }
   bool wasJustReloaded();
 
-  bool shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, const State &state, bool direction, int playerX, int playerY);
+  bool shoot(std::list<Entity>& eBullets, std::list<Bullet>& bullets, bool direction, int playerX, int playerY);
   [[nodiscard]] int getBulletsInClip() const { return bulletsInClip; }
   [[nodiscard]] int getClipSize() const { return clipSize; }
   [[nodiscard]] int getDamage() const { return bulletDamage; }

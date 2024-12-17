@@ -84,20 +84,6 @@ int main( int argc, char* args[] ) {
         while(!state.quit) {
             resetState();
 
-            std::list<Entity> eBullets;
-            std::list<Bullet> bullets;
-
-            if(controller != nullptr) {
-                controllerEvent(state,MENU_CONTROL::connect);
-            }
-
-            while(!state.started && !state.quit) {
-                startScreen();
-            }
-
-            state.camY = 0;
-            state.camV = 0;
-
             bool waveOverride = false;
 
             bool shootingReset = true;
@@ -201,17 +187,7 @@ int main( int argc, char* args[] ) {
 
                     SDL_RenderClear(gameRenderer);
 
-                    for (auto it = bullets.begin(); it != bullets.end();++it) {
-                        it->render();
-                    }
-
-                    SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 200);
-                    SDL_RenderFillRect(gameRenderer, &fullScreenRect);
-
                     renderMenu(state);
-
-                    SDL_SetRenderDrawColor(gameRenderer, 26, 26, 26, 255);
-                    SDL_RenderPresent(gameRenderer);
 
                 }
                 timpy.setXNormalV(0);

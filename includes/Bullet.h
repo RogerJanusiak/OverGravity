@@ -15,7 +15,7 @@ public:
 
     Bullet(Entity* tempEntity, BULLET_TYPE type, int durability, int strength, int damage);
 
-    void render();
+    void render() const;
     bool move(float dt, const std::list<Platform> &platforms, bool developerMode);
 
     Entity* getEntity() const { return entity; }

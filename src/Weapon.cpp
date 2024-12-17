@@ -144,18 +144,18 @@ bool Weapon::wasJustReloaded() {
   return false;
 }
 
-bool Weapon::shoot(std::list<Entity>* eBullets, std::list<Bullet>* bullets, const State &state, bool direction, int playerX, int playerY) {
-  if(reloaded && !state.c4Placed && type != knife) {
+bool Weapon::shoot(std::list<Entity>& eBullets, std::list<Bullet>& bullets, bool direction, int playerX, int playerY) {
+  if(reloaded) {
     fireSound.play();
 
     for(int i = 0; i < bulletsPerShot; i++) {
       if(direction) {
-        eBullets->emplace_back(playerX+bulletRelXRight,playerY+bulletRelY,bulletSpeed+(i)*75,-150*i,renderer);
+        eBullets.emplace_back(playerX+bulletRelXRight,playerY+bulletRelY,bulletSpeed+(i)*75,-150*i,renderer);
       } else {
-        eBullets->emplace_back(playerX+bulletRelXLeft,playerY+bulletRelY,-bulletSpeed+(i)*75,-150*i,renderer);
+        eBullets.emplace_back(playerX+bulletRelXLeft,playerY+bulletRelY,-bulletSpeed+(i)*75,-150*i,renderer);
       }
-      bullets->emplace_back(&eBullets->back(), bulletType, bulletDurability, bulletStrength, bulletDamage);
-      bullets->back().setIterator(--eBullets->end());
+      bullets.emplace_back(&eBullets.back(), bulletType, bulletDurability, bulletStrength, bulletDamage);
+      bullets.back().setIterator(--eBullets.end());
     }
 
     if(type == laserPistol) {

@@ -4,14 +4,14 @@
 #include "Wave.h"
 
 
-class Controller {
+class WaveController {
 
 public:
-	explicit Controller(GlobalGameState& ggs, Run& run) : ggs(ggs), run(run) {
+	explicit WaveController(GlobalGameState& ggs, Run& run) : ggs(ggs), run(run), player(run.getPlayer()) {
 		startWave();
 	}
 
-	void runController() const;
+	void operate() const;
 	void readInput();
 
 private:
@@ -21,7 +21,11 @@ private:
 	GlobalGameState& ggs;
 
 	Run& run;
+	Player& player;
 	std::unique_ptr<Wave> currentWave = nullptr;
+
+	bool rightMovement = false;
+	bool leftMovement = false;
 
 	bool inWave = false;
 

@@ -21,7 +21,10 @@ public:
 	void render() const;
 
 	[[nodiscard]] int (* getSpawnWeights() const)[5] { return spawnWeights; }
+
 	[[nodiscard]] std::vector<Spawn>* getEnemySpawns() { return &enemySpawns; }
+	[[nodiscard]] std::vector<Spawn>* getPlayerSpawns() { return &playerSpawns; }
+
 	[[nodiscard]] std::list<Platform>& getPlatforms() { return platforms; }
 	[[nodiscard]] std::vector<std::vector<int>>& getMap() {	return levelMap; }
 	[[nodiscard]] std::vector<SDL_Rect>& getTeleports() { return teleports; }

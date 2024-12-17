@@ -98,13 +98,17 @@ void Entity::spawn(bool spawnOnScreen) {
 }
 
 void Entity::forceSpawn() {
-    for(auto it = spawns->begin(); it != spawns->end(); it++) {
-        offPlatform = false;
-        spawned = true;
-        setPosition(it->getX(),it->getY()+it->getRect().h-entityRect.h);
-        setYVelocity(0);
-        it->setOccupied(true);
-        break;
+    if(spawns != nullptr) {
+        for(auto it = spawns->begin(); it != spawns->end(); it++) {
+            offPlatform = false;
+            spawned = true;
+            setPosition(it->getX(),it->getY()+it->getRect().h-entityRect.h);
+            setYVelocity(0);
+            it->setOccupied(true);
+            break;
+        }
+    } else {
+        SDL_Log("Spawns not set for entity. forceSpawn()");
     }
 }
 

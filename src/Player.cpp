@@ -64,8 +64,8 @@ void Player::render() const {
     }
 }
 
-int Player::move(float dt,const std::list<Platform> &platforms, State& state) {
-    double speedIncrease = state.playerLevels[speed] == 0 ? 0 : defaultXSpeed*state.playerProperties[speed][state.playerLevels[speed]-1][1]/100;
+int Player::move(float dt,const std::list<Platform> &platforms) {
+    double speedIncrease = playerLevels[speed] == 0 ? 0 : defaultXSpeed*playerProperties[speed][playerLevels[speed]-1][1]/100;
     getEntity()->setXVelocity(xNormalVelocity*(defaultXSpeed+speedIncrease));
 
     if(c4Placed) {

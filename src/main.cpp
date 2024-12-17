@@ -3,7 +3,7 @@
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
-#include "../includes/Controller.h"
+#include "../includes/WaveController.h"
 #include "../includes/GlobalConstants.h"
 #include "../includes/MainMenu.h"
 #include "../includes/State.h"
@@ -88,7 +88,7 @@ int main( int argc, char* args[] ) {
 	setCurrentMainMenu(&mainMenu);
 
 	Run run(ggs);
-	Controller controller(ggs,run);
+	WaveController controller(ggs,run);
 
 	float lastUpdate = 0;
 
@@ -106,7 +106,7 @@ int main( int argc, char* args[] ) {
 		} else if(ggs.inRun) {
 
 			controller.readInput();
-			controller.runController();
+			controller.operate();
 
 		}
 

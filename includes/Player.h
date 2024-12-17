@@ -31,7 +31,7 @@ class Player {
 public:
     Player(Entity* entity, GlobalGameState& ggs);
 
-    int move(float dt,const std::list<Platform> &platforms, State& state);
+    int move(float dt,const std::list<Platform> &platforms);
     void render() const;
 
     const SDL_Rect &getWeaponRect() const { return weaponRect; }

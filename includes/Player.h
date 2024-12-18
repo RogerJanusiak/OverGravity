@@ -124,7 +124,6 @@ private:
     Weapon revolver;
     Weapon rifle;
     Weapon shotgun;
-    Weapon knife;
     Weapon laserPistol;
 
     bool playerDirection = false;

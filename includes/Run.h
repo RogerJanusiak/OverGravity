@@ -12,6 +12,7 @@ public:
 	[[nodiscard]] Level& getLevel() { return currentLevel; }
 
 	[[nodiscard]] int getWaveNumber() const { return waveNumber; }
+	void nextWave() { waveNumber++; }
 
 private:
 
@@ -20,7 +21,8 @@ private:
 	Entity playerEntity;
 	Player player;
 
-	int waveNumber = 10;
+	int waveNumber = 1;
+	// TODO: Can spawn in either spawn
 	Level currentLevel = Level(ggs,4);
 
 };

@@ -40,6 +40,8 @@ struct GlobalGameState {
     int playerTileY = 0;
     int playerX = 0;
 
+    bool updateText = false;
+
     //Developer Options
     bool developerMode = false;
     bool pauseEnemies = false;

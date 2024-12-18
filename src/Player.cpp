@@ -6,7 +6,7 @@
 #include "../includes/GlobalConstants.h"
 #include "../includes/Platform.h"
 
-Player::Player(Entity* entity, GlobalGameState& ggs) : revolver(Weapon_Type::revolver,ggs.renderer), rifle(Weapon_Type::rifle,ggs.renderer), shotgun(Weapon_Type::shotgun,ggs.renderer), knife(Weapon_Type::knife,ggs.renderer), laserPistol(Weapon_Type::laserPistol,ggs.renderer), playerEntity(entity) {
+Player::Player(Entity* entity, GlobalGameState& ggs) : revolver(Weapon_Type::revolver,ggs.renderer), rifle(Weapon_Type::rifle,ggs.renderer), shotgun(Weapon_Type::shotgun,ggs.renderer), laserPistol(Weapon_Type::laserPistol,ggs.renderer), playerEntity(entity) {
 
     currentWeapon = &revolver;
     // TODO: Ability to chang weapon and stuff

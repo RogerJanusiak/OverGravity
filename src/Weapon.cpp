@@ -62,18 +62,6 @@ Weapon::Weapon(const Weapon_Type _type, SDL_Renderer* _renderer) {
         reloadSound.init("resources/sounds/revolver-reload.wav", 0,-1);
         emptySound.init("resources/sounds/revolver-empty.wav", 0,-1);
       }break;
-      case knife: {
-        texture.setup(scale(42),scale(21),renderer);
-        if(!texture.loadFromFile("knife.png")) {
-          SDL_Log("Could not load knife texture!");
-        }
-
-        relXRight = scale(40);
-        relXLeft = -scale(27);
-        relY = scale(15);
-
-        reloadable = false;
-      } break;
       case laserPistol: {
         texture.setup(scale(42),scale(21),renderer);
         if(!texture.loadFromFile("laserPistol.png")) {
@@ -202,9 +190,6 @@ void Weapon::upgrade(const State& state) {
       bulletDurability = state.weaponProperties[shotgun][level][3];
       bulletDamage = state.weaponProperties[shotgun][level][4];
       bulletsPerShot = state.weaponProperties[shotgun][level][5];
-    } else if(type == knife) {
-      int level = state.weaponLevels[knife] == 0 ? 0 : state.weaponLevels[knife] - 1;
-      bulletDamage = state.weaponProperties[knife][level][1];
     } else if(type == laserPistol) {
       int level = state.weaponLevels[laserPistol] == 0 ? 0 : state.weaponLevels[laserPistol] - 1;
       clipSize = state.weaponProperties[laserPistol][level][2];

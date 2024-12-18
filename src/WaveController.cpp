@@ -2,11 +2,78 @@
 #include "../includes/WaveController.h"
 #include "../includes/Input.h"
 
-void WaveController::operate() const {
+WaveController::WaveController(GlobalGameState& ggs, Run& run) : ggs(ggs), run(run), player(run.getPlayer()) {
+    timeToShootBack.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToShootBack.y = WINDOW_HEIGHT-scalePlayerUI(50);
+    timeToShootBack.w = scalePlayerUI(75);
+    timeToShootBack.h = scalePlayerUI(15);
+
+    timeToShoot.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToShoot.y = WINDOW_HEIGHT-scalePlayerUI(50);
+    timeToShoot.w = scalePlayerUI(75);
+    timeToShoot.h = scalePlayerUI(15);
+
+    timeToAbilityBack.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToAbilityBack.y = WINDOW_HEIGHT-scalePlayerUI(75);
+    timeToAbilityBack.w = scalePlayerUI(75);
+    timeToAbilityBack.h = scalePlayerUI(15);
+
+    timeToAbility.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToAbility.y = WINDOW_HEIGHT-scalePlayerUI(75);
+    timeToAbility.w = scalePlayerUI(75);
+    timeToAbility.h = scalePlayerUI(15);
+
+    shieldBackRect.x = scalePlayerUI(10);
+    shieldBackRect.y = WINDOW_HEIGHT-scalePlayerUI(40);
+    shieldBackRect.w = scalePlayerUI(75);
+    shieldBackRect.h = scalePlayerUI(15);
+
+    shieldRect.x = scalePlayerUI(10);
+    shieldRect.y = WINDOW_HEIGHT-scalePlayerUI(40);
+    shieldRect.w = scalePlayerUI(75);
+    shieldRect.h = scalePlayerUI(15);
+
+    healthBackRect.x = scalePlayerUI(10);
+    healthBackRect.y = WINDOW_HEIGHT-scalePlayerUI(20);
+    healthBackRect.w = scalePlayerUI(75);
+    healthBackRect.h = scalePlayerUI(15);
+
+    healthRect.x = scalePlayerUI(10);
+    healthRect.y = WINDOW_HEIGHT-scalePlayerUI(20);
+    healthRect.w = scalePlayerUI(75);
+    healthRect.h = scalePlayerUI(15);
+
+    healthText.setup(ggs.renderer);
+    healthText.loadFromRenderedText("200", ggs.black,ggs.verySmall);
+
+    shieldText.setup(ggs.renderer);
+    shieldText.loadFromRenderedText("0", ggs.black,ggs.verySmall);
+
+    waveNumberText.setup(ggs.renderer);
+    waveNumberTitle.setup(ggs.renderer);
+    comboNumberText.setup(ggs.renderer);
+    playerXPText.setup(ggs.renderer);
+    fpsText.setup(ggs.renderer);
+
+    startWave();
+    startLevel();
+    updateWaveText();
+}
+
+void WaveController::operate() {
 	if(currentWave != nullptr) {
 		currentWave->render();
-		currentWave->runWave();
+	    renderPlayerUI();
+	    renderWaveText();
+		if(!currentWave->runWave()) {
+		    run.nextWave();
+		    startWave();
+		}
 	}
+    if(ggs.updateText) {
+        updatePlayerUIText();
+        ggs.updateText = false;
+    }
     operatePlayer();
 }
 
@@ -16,11 +83,14 @@ void WaveController::operatePlayer() const {
     player.render();
 }
 
+void WaveController::startLevel() const {
+    player.getEntity()->forceSpawn();
+}
+
 void WaveController::startWave() {
 	inWave = true;
 	currentWave = std::make_unique<Wave>(ggs,run.getPlayer(), run.getLevel(), run.getWaveNumber());
 	player.getEntity()->setSpawns(run.getLevel().getPlayerSpawns());
-	player.getEntity()->forceSpawn();
 }
 
 void WaveController::readInput() {
@@ -57,7 +127,6 @@ void WaveController::readInput() {
                 if(shootingReset && currentWave != nullptr) {
                     player.getWeapon()->shoot(currentWave->getBulletEntities(),currentWave->getBullets(),player.getDirection(),player.getEntity()->getRect().x,player.getEntity()->getRect().y);
                     shootingReset = false;
-                    SDL_Log("Test");
                 }
             } else if(e.key.keysym.sym == SDLK_e) {
                 //player.useAbility(state);
@@ -113,6 +182,80 @@ void WaveController::readInput() {
                 player.getWeapon()->forceReload();
             }*/
         }
+    }
+}
+
+void WaveController::updatePlayerUIText() {
+    updateWaveText();
+    healthText.loadFromRenderedText(std::to_string(player.getHealth()), ggs.black, ggs.verySmall);
+    shieldText.loadFromRenderedText(std::to_string(player.getShield()), ggs.black, ggs.verySmall);
+}
+
+void WaveController::renderPlayerUI() {
+    int bulletsInClip = player.getWeapon()->getBulletsInClip();
+    SDL_SetRenderDrawColor(ggs.renderer, 150, 150, 150, 255);
+    SDL_RenderFillRect(ggs.renderer,&timeToShootBack);
+
+    SDL_SetRenderDrawColor(ggs.renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(ggs.renderer,&timeToShoot);
+
+    if(player.getAbility() != none) {
+        SDL_SetRenderDrawColor(ggs.renderer, 150, 150, 150, 255);
+        SDL_RenderFillRect(ggs.renderer,&timeToAbilityBack);
+        SDL_SetRenderDrawColor(ggs.renderer, 0, 0, 255, 255);
+        SDL_RenderFillRect(ggs.renderer,&timeToAbility);
+    }
+
+    healthRect.w = scalePlayerUI(player.getHealthPercentage()*75);
+
+    shieldRect.w = scalePlayerUI(player.getShieldPercentage()*75);
+
+    SDL_SetRenderDrawColor(ggs.renderer, 150, 150, 150, 255);
+    SDL_RenderFillRect(ggs.renderer,&healthBackRect);
+    SDL_RenderFillRect(ggs.renderer,&shieldBackRect);
+
+    SDL_SetRenderDrawColor(ggs.renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(ggs.renderer,&healthRect);
+
+    SDL_SetRenderDrawColor(ggs.renderer, 0, 0, 255, 255);
+    SDL_RenderFillRect(ggs.renderer,&shieldRect);
+
+    healthText.render(scalePlayerUI(12),WINDOW_HEIGHT-scalePlayerUI(19));
+    shieldText.render(scalePlayerUI(12),WINDOW_HEIGHT-scalePlayerUI(39));
+
+    for(int i = 0; i < player.getWeapon()->getClipSize(); i++) {
+        if(bulletsInClip>i) {
+            SDL_SetRenderDrawColor(ggs.renderer, 255, 0, 0, 255);
+        } else {
+            SDL_SetRenderDrawColor(ggs.renderer, 150, 150, 150, 255);
+        }
+        SDL_Rect tempRect;
+        tempRect.x = WINDOW_WIDTH-scalePlayerUI(30)-scalePlayerUI(20*i);
+        tempRect.y = WINDOW_HEIGHT-scalePlayerUI(25);
+        tempRect.w = scalePlayerUI(15);
+        tempRect.h = scalePlayerUI(15);
+        SDL_RenderFillRect(ggs.renderer,&tempRect);
+    }
+
+}
+
+void WaveController::updateWaveText() {
+    comboNumberText.loadFromRenderedText("Combo: " + std::to_string(player.getCombo()), ggs.white, ggs.buttonFont);
+    waveNumberText.loadFromRenderedText("Wave: " + std::to_string(run.getWaveNumber()), ggs.white, ggs.buttonFont);
+    waveNumberTitle.loadFromRenderedText("Wave " + std::to_string(run.getWaveNumber()) + " Start!", ggs.white, ggs.title);
+    playerXPText.loadFromRenderedText("XP: " + std::to_string(player.getXP()), ggs.white, ggs.buttonFont);
+}
+
+void WaveController::renderWaveText() {
+    waveNumberText.render(scaleUI(10),scaleUI(5));
+    comboNumberText.render(scaleUI(10),scaleUI(30));
+    playerXPText.render(scaleUI(10),scaleUI(55));
+    if(ggs.developerMode) {
+        fpsText.loadFromRenderedText("FPS: " + std::to_string(ggs.fps), ggs.white, ggs.buttonFont);
+        fpsText.render(scaleUI(10),scaleUI(80));
+    }
+    if(!currentWave->hasWaveStarted()) {
+        waveNumberTitle.render((WINDOW_WIDTH-waveNumberTitle.getWidth())/2,scaleUI(200));
     }
 }
 

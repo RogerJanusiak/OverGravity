@@ -24,9 +24,6 @@ public:
 
 	void render() const { entity->render(entity->getHP()-1,0,true); }
 	[[nodiscard]] Entity* getEntity() const { return entity; }
-	void knifeColliding() { knifeCollision = true; }
-	void knifeNotColliding() { knifeCollision = false; }
-	[[nodiscard]] bool didAlreadyCollide() const { return knifeCollision; }
 
 	static int findEdgeRight(int startX, int startY,  Level& level);
 	static int findEdgeLeft(int startX, int startY, Level& level);
@@ -37,10 +34,8 @@ public:
 	[[nodiscard]] virtual int getHeight() const { return scale(50); }
 
 protected:
-
-	bool knifeCollision = false;
-
 	Entity* entity;
+
 };
 
 

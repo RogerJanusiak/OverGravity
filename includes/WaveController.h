@@ -7,17 +7,21 @@
 class WaveController {
 
 public:
-	explicit WaveController(GlobalGameState& ggs, Run& run) : ggs(ggs), run(run), player(run.getPlayer()) {
-		startWave();
-	}
+	explicit WaveController(GlobalGameState& ggs, Run& run);
 
-	void operate() const;
+	void operate();
 	void readInput();
 
 private:
 
 	void startWave();
 	void operatePlayer() const;
+	void startLevel() const;
+
+	void renderPlayerUI();
+	void updatePlayerUIText();
+	void renderWaveText();
+	void updateWaveText();
 
 	GlobalGameState& ggs;
 
@@ -31,6 +35,27 @@ private:
 	bool shootingReset = true;
 
 	bool inWave = false;
+
+	//UI Elements
+	SDL_Rect timeToShootBack;
+	SDL_Rect timeToShoot;
+
+	SDL_Rect timeToAbilityBack;
+	SDL_Rect timeToAbility;
+
+	SDL_Rect healthBackRect;
+	SDL_Rect healthRect;
+	SDL_Rect shieldBackRect;
+	SDL_Rect shieldRect;
+
+	Texture healthText;
+	Texture shieldText;
+
+	Texture waveNumberText;
+	Texture waveNumberTitle;
+	Texture comboNumberText;
+	Texture playerXPText;
+	Texture fpsText;
 
 };
 

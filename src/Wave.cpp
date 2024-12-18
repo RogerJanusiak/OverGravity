@@ -59,9 +59,18 @@ Wave::Wave(GlobalGameState& ggs, Player& timpy, Level& level, const int waveNumb
     shieldText.setup(ggs.renderer);
     shieldText.loadFromRenderedText("0", ggs.black,ggs.verySmall);
 
+    waveNumberText.setup(ggs.renderer);
+    waveNumberTitle.setup(ggs.renderer);
+    comboNumberText.setup(ggs.renderer);
+    playerXPText.setup(ggs.renderer);
+    fpsText.setup(ggs.renderer);
+
+    updateWaveText();
+
 }
 
 void Wave::updatePlayerUIText() {
+    updateWaveText();
     healthText.loadFromRenderedText(std::to_string(player.getHealth()), ggs.black, ggs.verySmall);
     shieldText.loadFromRenderedText(std::to_string(player.getShield()), ggs.black, ggs.verySmall);
 }
@@ -114,17 +123,43 @@ void Wave::renderPlayerUI() {
 
 }
 
+void Wave::updateWaveText() {
+    comboNumberText.loadFromRenderedText("Combo: " + std::to_string(player.getCombo()), ggs.white, ggs.buttonFont);
+    waveNumberText.loadFromRenderedText("Wave: " + std::to_string(waveNumber), ggs.white, ggs.buttonFont);
+    waveNumberTitle.loadFromRenderedText("Wave " + std::to_string(waveNumber) + " Start!", ggs.white, ggs.title);
+    playerXPText.loadFromRenderedText("XP: " + std::to_string(player.getXP()), ggs.white, ggs.buttonFont);
+}
+
+void Wave::renderWaveText() {
+    waveNumberText.render(scaleUI(10),scaleUI(5));
+    comboNumberText.render(scaleUI(10),scaleUI(30));
+    playerXPText.render(scaleUI(10),scaleUI(55));
+    if(ggs.developerMode) {
+        fpsText.loadFromRenderedText("FPS: " + std::to_string(ggs.fps), ggs.white, ggs.buttonFont);
+        fpsText.render(scaleUI(10),scaleUI(80));
+    }
+    if(!waveStarted) {
+        waveNumberTitle.render((WINDOW_WIDTH-waveNumberTitle.getWidth())/2,scaleUI(200));
+    }
+}
+
 void Wave::render() {
 	level.render();
     for (auto & bullet : bullets) {
         bullet.render();
     }
     renderPlayerUI();
+    renderWaveText();
 }
 
 bool Wave::runWave() {
     bool playerDamaged = false;
     enemiesAlive = 0;
+
+    timeSinceLoad += ggs.dt;
+    if(timeSinceLoad > 1) {
+        waveStarted = true;
+    }
 
     for(auto& bullet : bullets) {
         bullet.move(ggs.dt, level.getPlatforms(), ggs.developerMode);

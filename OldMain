@@ -241,7 +241,7 @@ int main( int argc, char* args[] ) {
                 state.menu = notInMenu;
 
                 bool waveStarted = false;
-                Uint32 startWaveLoad = SDL_GetTicks();
+
 
                 updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP(),timpy.getHealth(), timpy.getShield());
 
@@ -253,9 +253,7 @@ int main( int argc, char* args[] ) {
                     float dt = (current - lastUpdate) / 1000.0f;
                     lastUpdate = current;
 
-                    if((current-startWaveLoad)/1000.0f > 1) {
-                        waveStarted = true;
-                    }
+
 
                     if(timpy.getWeapon()->isReloadable()) {
                         updateTimeToShoot(scalePlayerUI(timpy.getWeapon()->reload(dt)));
@@ -326,10 +324,7 @@ int main( int argc, char* args[] ) {
                     SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
                     SDL_RenderPresent(gameRenderer);
 
-                    Uint64 end = SDL_GetPerformanceCounter();
 
-                    float elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
-                    lastFPS = (1.0f / elapsed);
 
                     if(controller != nullptr && state.menu == pause) {
                         controllerEvent(state,MENU_CONTROL::connect);

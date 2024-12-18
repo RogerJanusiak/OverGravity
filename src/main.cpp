@@ -49,11 +49,13 @@ bool init(GlobalGameState& ggs) {
 void loadGlobalResources(GlobalGameState& ggs) {
 	ggs.buttonFont = TTF_OpenFont("resources/sans.ttf",scaleUI(18));
 	ggs.verySmall = TTF_OpenFont("resources/sans.ttf",scaleUI(10));
+	ggs.title = TTF_OpenFont("resources/sans.ttf",scaleUI(34));
 }
 
 void closeGlobalResources(const GlobalGameState& ggs) {
 	TTF_CloseFont(ggs.buttonFont);
 	TTF_CloseFont(ggs.verySmall);
+	TTF_CloseFont(ggs.title);
 }
 
 void close(GlobalGameState ggs) {
@@ -96,6 +98,7 @@ int main( int argc, char* args[] ) {
 
 	while(!ggs.quit) {
 
+		Uint64 start = SDL_GetPerformanceCounter();
 		Uint32 current = SDL_GetTicks();
 		ggs.dt = (current - lastUpdate) / 1000.0f;
 		lastUpdate = current;
@@ -111,6 +114,11 @@ int main( int argc, char* args[] ) {
 			controller.operate();
 
 		}
+
+		Uint64 end = SDL_GetPerformanceCounter();
+
+		float elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
+		ggs.fps = (1.0f / elapsed);
 
 		SDL_SetRenderDrawColor(ggs.renderer, 26, 26, 26, 255);
 		SDL_RenderPresent(ggs.renderer);

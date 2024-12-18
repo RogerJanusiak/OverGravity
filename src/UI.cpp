@@ -13,12 +13,6 @@ TTF_Font *counter;
 TTF_Font *title;
 TTF_Font *small;
 
-Texture waveNumberText;
-Texture waveNumberTitle;
-Texture comboNumberText;
-Texture playerXPText;
-Texture fpsText;
-
 UI_Button* currentButton = nullptr;
 
 Texture logoTexture;
@@ -115,19 +109,6 @@ void UI_close() {
 }
 
 
-
-void renderInGameText(bool developerMode, float lastFPS,bool waveStarted) {
-    waveNumberText.render(scaleUI(10),scaleUI(5));
-    comboNumberText.render(scaleUI(10),scaleUI(30));
-    playerXPText.render(scaleUI(10),scaleUI(55));
-    if(developerMode) {
-        fpsText.loadFromRenderedText("FPS: " + std::to_string(lastFPS), white, counter);
-        fpsText.render(scaleUI(10),scaleUI(80));
-    }
-    if(!waveStarted) {
-        waveNumberTitle.render((WINDOW_WIDTH-waveNumberTitle.getWidth())/2,scaleUI(200));
-    }
-}
 
 void resetMenus(State& state) {
     weaponUpgradeMenu.reset();

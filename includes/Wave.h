@@ -23,6 +23,8 @@ private:
 	void createEnemies();
 	void renderPlayerUI();
 	void updatePlayerUIText();
+	void renderWaveText();
+	void updateWaveText();
 
 	GlobalGameState& ggs;
 	Player& player;
@@ -30,6 +32,9 @@ private:
 	int waveNumber = 0;
 
 	int enemiesAlive = 0;
+
+	bool waveStarted = false;
+	float timeSinceLoad = 0;
 
 	std::vector<std::unique_ptr<Entity>> entities;
 	std::vector<std::unique_ptr<Enemy>> enemies;
@@ -53,6 +58,12 @@ private:
 
 	Texture healthText;
 	Texture shieldText;
+
+	Texture waveNumberText;
+	Texture waveNumberTitle;
+	Texture comboNumberText;
+	Texture playerXPText;
+	Texture fpsText;
 
 	// TODO: See if any lists can be vectors and vectors arrays
 

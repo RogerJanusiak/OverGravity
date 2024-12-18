@@ -34,6 +34,7 @@ struct GlobalGameState {
     bool controllerStickReset = false;
 
     float dt = 0;
+    float fps = 0;
 
     int playerTileX = 0;
     int playerTileY = 0;
@@ -48,8 +49,9 @@ struct GlobalGameState {
     SDL_Color white = {255,255,255};
     SDL_Color black = { 0, 0, 0 };
 
-    TTF_Font *buttonFont{};
+    TTF_Font *buttonFont;
     TTF_Font *verySmall;
+    TTF_Font *title;
 };
 
 

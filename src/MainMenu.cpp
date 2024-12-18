@@ -93,7 +93,6 @@ void showLevelSelect(GlobalGameState& ggs, int attr1, int attr2) {
 void selectLevel(GlobalGameState& ggs, int attr1, int attr2) {
     ggs.level = attr1;
     ggs.inMainMenu = false;
-    ggs.inRun = true;
 }
 
 void MainMenu::initMenus() {

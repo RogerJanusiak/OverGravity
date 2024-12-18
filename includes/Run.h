@@ -6,7 +6,7 @@
 class Run {
 public:
 
-	explicit Run(GlobalGameState& ggs);
+	explicit Run(GlobalGameState& ggs, int level);
 
 	[[nodiscard]] Player& getPlayer() { return player; }
 	[[nodiscard]] Level& getLevel() { return currentLevel; }
@@ -23,7 +23,7 @@ private:
 
 	int waveNumber = 1;
 	// TODO: Can spawn in either spawn
-	Level currentLevel = Level(ggs,4);
+	Level currentLevel;
 
 };
 

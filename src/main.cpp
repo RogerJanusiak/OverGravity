@@ -8,7 +8,6 @@
 #include "../includes/MainMenu.h"
 #include "../includes/State.h"
 #include "../includes/Run.h"
-#include "../includes/Level.h"
 
 bool init(GlobalGameState& ggs) {
 	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO ) < 0 ) {
@@ -91,8 +90,8 @@ int main( int argc, char* args[] ) {
 	MainMenu mainMenu(ggs);
 	setCurrentMainMenu(&mainMenu);
 
-	Run run(ggs);
-	WaveController controller(ggs,run);
+	std::unique_ptr<Run> run;
+	std::unique_ptr<WaveController> waveController;
 
 	float lastUpdate = 0;
 
@@ -108,11 +107,15 @@ int main( int argc, char* args[] ) {
 		if(ggs.inMainMenu) {
 			mainMenu.readInput();
 			mainMenu.render();
-		} else if(ggs.inRun) {
+		} else if(!ggs.inRun) {
+			run = std::make_unique<Run>(ggs,ggs.level);
+			waveController = std::make_unique<WaveController>(ggs, *run);
+			ggs.inRun = true;
+		}
 
-			controller.readInput();
-			controller.operate();
-
+		if(ggs.inRun) {
+			waveController->readInput();
+			waveController->operate();
 		}
 
 		Uint64 end = SDL_GetPerformanceCounter();

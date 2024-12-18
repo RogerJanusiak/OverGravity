@@ -60,7 +60,7 @@ void WaveController::readInput() {
                     SDL_Log("Test");
                 }
             } else if(e.key.keysym.sym == SDLK_e) {
-                //timpy.useAbility(state);
+                //player.useAbility(state);
             }
         } else if(e.type == SDL_KEYUP) {
             if(e.key.keysym.sym == SDLK_d)
@@ -81,7 +81,7 @@ void WaveController::readInput() {
         } else if( e.type == SDL_JOYAXISMOTION) {
             /*if(SDL_GameControllerGetAxis(ggs.controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > JOYSTICK_DEAD_ZONE) {
                 if(shootingReset && !state.teleportSelection && !state.c4Placed) {
-                    if(timpy.getWeapon()->shoot(&eBullets,&bullets,state,timpy.getDirection(),timpy.getEntity()->getRect().x,timpy.getEntity()->getRect().y)) {
+                    if(player.getWeapon()->shoot(&eBullets,&bullets,state,player.getDirection(),player.getEntity()->getRect().x,player.getEntity()->getRect().y)) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 150 );
                     } else {
                         SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 75 );
@@ -104,13 +104,13 @@ void WaveController::readInput() {
             ggs.controller = nullptr;
         } else if( e.type == SDL_JOYBUTTONDOWN ) {
             /*if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y) == 1) {
-                timpy.changeWeapon();
+                player.changeWeapon();
             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
-                timpy.useAbility(state);
+                player.useAbility(state);
             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START) == 1) {
                 state.menu = pause;
             } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X) == 1) {
-                timpy.getWeapon()->forceReload();
+                player.getWeapon()->forceReload();
             }*/
         }
     }

@@ -5,7 +5,7 @@
 #include "../includes/Romo.h"
 #include "../includes/Roo.h"
 
-Wave::Wave(GlobalGameState& ggs, Player& timpy, Level& level, const int waveNumber) : ggs(ggs), timpy(timpy), level(level), waveNumber(waveNumber) {
+Wave::Wave(GlobalGameState& ggs, Player& timpy, Level& level, const int waveNumber) : ggs(ggs), player(timpy), level(level), waveNumber(waveNumber) {
     createEnemies();
 
     allCharacterEntities.push_back(timpy.getEntity());
@@ -13,13 +13,113 @@ Wave::Wave(GlobalGameState& ggs, Player& timpy, Level& level, const int waveNumb
         allCharacterEntities.push_back(entity.get());
     }
 
+    timeToShootBack.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToShootBack.y = WINDOW_HEIGHT-scalePlayerUI(50);
+    timeToShootBack.w = scalePlayerUI(75);
+    timeToShootBack.h = scalePlayerUI(15);
+
+    timeToShoot.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToShoot.y = WINDOW_HEIGHT-scalePlayerUI(50);
+    timeToShoot.w = scalePlayerUI(75);
+    timeToShoot.h = scalePlayerUI(15);
+
+    timeToAbilityBack.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToAbilityBack.y = WINDOW_HEIGHT-scalePlayerUI(75);
+    timeToAbilityBack.w = scalePlayerUI(75);
+    timeToAbilityBack.h = scalePlayerUI(15);
+
+    timeToAbility.x = WINDOW_WIDTH-scalePlayerUI(90);
+    timeToAbility.y = WINDOW_HEIGHT-scalePlayerUI(75);
+    timeToAbility.w = scalePlayerUI(75);
+    timeToAbility.h = scalePlayerUI(15);
+
+    shieldBackRect.x = scalePlayerUI(10);
+    shieldBackRect.y = WINDOW_HEIGHT-scalePlayerUI(40);
+    shieldBackRect.w = scalePlayerUI(75);
+    shieldBackRect.h = scalePlayerUI(15);
+
+    shieldRect.x = scalePlayerUI(10);
+    shieldRect.y = WINDOW_HEIGHT-scalePlayerUI(40);
+    shieldRect.w = scalePlayerUI(75);
+    shieldRect.h = scalePlayerUI(15);
+
+    healthBackRect.x = scalePlayerUI(10);
+    healthBackRect.y = WINDOW_HEIGHT-scalePlayerUI(20);
+    healthBackRect.w = scalePlayerUI(75);
+    healthBackRect.h = scalePlayerUI(15);
+
+    healthRect.x = scalePlayerUI(10);
+    healthRect.y = WINDOW_HEIGHT-scalePlayerUI(20);
+    healthRect.w = scalePlayerUI(75);
+    healthRect.h = scalePlayerUI(15);
+
+    healthText.setup(ggs.renderer);
+    healthText.loadFromRenderedText("200", ggs.black,ggs.verySmall);
+
+    shieldText.setup(ggs.renderer);
+    shieldText.loadFromRenderedText("0", ggs.black,ggs.verySmall);
+
 }
 
-void Wave::render() const {
+void Wave::updatePlayerUIText() {
+    healthText.loadFromRenderedText(std::to_string(player.getHealth()), ggs.black, ggs.verySmall);
+    shieldText.loadFromRenderedText(std::to_string(player.getShield()), ggs.black, ggs.verySmall);
+}
+
+void Wave::renderPlayerUI() {
+    int bulletsInClip = player.getWeapon()->getBulletsInClip();
+    SDL_SetRenderDrawColor(ggs.renderer, 150, 150, 150, 255);
+    SDL_RenderFillRect(ggs.renderer,&timeToShootBack);
+
+    SDL_SetRenderDrawColor(ggs.renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(ggs.renderer,&timeToShoot);
+
+    if(player.getAbility() != none) {
+        SDL_SetRenderDrawColor(ggs.renderer, 150, 150, 150, 255);
+        SDL_RenderFillRect(ggs.renderer,&timeToAbilityBack);
+        SDL_SetRenderDrawColor(ggs.renderer, 0, 0, 255, 255);
+        SDL_RenderFillRect(ggs.renderer,&timeToAbility);
+    }
+
+    healthRect.w = scalePlayerUI(player.getHealthPercentage()*75);
+
+    shieldRect.w = scalePlayerUI(player.getShieldPercentage()*75);
+
+    SDL_SetRenderDrawColor(ggs.renderer, 150, 150, 150, 255);
+    SDL_RenderFillRect(ggs.renderer,&healthBackRect);
+    SDL_RenderFillRect(ggs.renderer,&shieldBackRect);
+
+    SDL_SetRenderDrawColor(ggs.renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(ggs.renderer,&healthRect);
+
+    SDL_SetRenderDrawColor(ggs.renderer, 0, 0, 255, 255);
+    SDL_RenderFillRect(ggs.renderer,&shieldRect);
+
+    healthText.render(scalePlayerUI(12),WINDOW_HEIGHT-scalePlayerUI(19));
+    shieldText.render(scalePlayerUI(12),WINDOW_HEIGHT-scalePlayerUI(39));
+
+    for(int i = 0; i < player.getWeapon()->getClipSize(); i++) {
+        if(bulletsInClip>i) {
+            SDL_SetRenderDrawColor(ggs.renderer, 255, 0, 0, 255);
+        } else {
+            SDL_SetRenderDrawColor(ggs.renderer, 150, 150, 150, 255);
+        }
+        SDL_Rect tempRect;
+        tempRect.x = WINDOW_WIDTH-scalePlayerUI(30)-scalePlayerUI(20*i);
+        tempRect.y = WINDOW_HEIGHT-scalePlayerUI(25);
+        tempRect.w = scalePlayerUI(15);
+        tempRect.h = scalePlayerUI(15);
+        SDL_RenderFillRect(ggs.renderer,&tempRect);
+    }
+
+}
+
+void Wave::render() {
 	level.render();
     for (auto & bullet : bullets) {
         bullet.render();
     }
+    renderPlayerUI();
 }
 
 bool Wave::runWave() {
@@ -45,29 +145,29 @@ bool Wave::runWave() {
                 enemy->move(ggs, level.getPlatforms(),level);
             }
             enemy->render();
-            if(!enemy->didAlreadyCollide() && timpy.getWeapon()->getType() == Weapon_Type::knife && Entity::isColliding(enemy->getEntity()->getRect(),timpy.getWeaponRect())) {
-                enemy->getEntity()->damage(timpy.getWeapon()->getDamage());
+            if(!enemy->didAlreadyCollide() && player.getWeapon()->getType() == Weapon_Type::knife && Entity::isColliding(enemy->getEntity()->getRect(),player.getWeaponRect())) {
+                enemy->getEntity()->damage(player.getWeapon()->getDamage());
                 enemy->knifeColliding();
             } else {
                 //TODO: Remove knife
-                if(timpy.getWeapon()->getType() == Weapon_Type::knife && !Entity::isColliding(enemy->getEntity()->getRect(),timpy.getWeaponRect())) {
+                if(player.getWeapon()->getType() == Weapon_Type::knife && !Entity::isColliding(enemy->getEntity()->getRect(),player.getWeaponRect())) {
                     enemy->knifeNotColliding();
                 }
-                if( Entity::isColliding(enemy->getEntity()->getRect(),timpy.getHitRect())) {
-                    if(timpy.getEntity()->getRect().y + (timpy.getEntity()->getRect().h-enemy->getEntity()->getRect().h) < enemy->getEntity()->getRect().y
-                        && timpy.getAbility() == Ability::bounce && timpy.isCharged()) {
-                            timpy.getEntity()->setYVelocity(-1800);
+                if( Entity::isColliding(enemy->getEntity()->getRect(),player.getHitRect())) {
+                    if(player.getEntity()->getRect().y + (player.getEntity()->getRect().h-enemy->getEntity()->getRect().h) < enemy->getEntity()->getRect().y
+                        && player.getAbility() == Ability::bounce && player.isCharged()) {
+                            player.getEntity()->setYVelocity(-1800);
                             enemy->getEntity()->damage(5);
-                            timpy.setInvincible(true);
+                            player.setInvincible(true);
                             abilityDamgage = true;
-                        } else if(!timpy.isInvincible()) {
+                        } else if(!player.isInvincible()) {
                             int randomNumber = rand() % 100;
-                            if(timpy.damage()) {
+                            if(player.damage()) {
                                 //playerAlive = false;
                                 waveNumber = 0;
                             }
                             SDL_GameControllerRumble( ggs.controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
-                            //updateInGameText(timpy.getCombo(),waveNumber,timpy.getXP(),timpy.getHealth(), timpy.getShield());
+                            updatePlayerUIText();
                             playerDamaged = true;
                             enemy->getEntity()->damage(5);
                         }
@@ -90,31 +190,22 @@ bool Wave::runWave() {
                     } else {
                         ++bit;
                     }
-                    enemy->getEntity()->damage(timpy.getWeapon()->getDamage());
+                    enemy->getEntity()->damage(player.getWeapon()->getDamage());
                     break;
                 }
                 ++bit;
             }
-            // TODO: Add back in C4
-            /*if(state.c4Exploded) {
-                int c4x = timpy.getC4Entity()->getRect().x;
-                int c4y = timpy.getC4Entity()->getRect().y;
-                if(pow(pow(c4x - enemy->getEntity()->getRect().x,2)+pow(c4y - enemy->getEntity()->getRect().y,2),0.5) < scale(200)) {
-                    (*it)->getEntity()->damage(state.abilityProperties[c4][state.abilityLevels[c4]-1][2]);
-                    abilityDamgage = true;
-                }
-            }*/
             if(!enemy->getEntity()->isAlive()) {
-                //explosions.emplace_back((*it)->getEntity()->getRect().x+(*it)->getEntity()->getRect().w/2,(*it)->getEntity()->getRect().y+(*it)->getEntity()->getRect().h/2,gameRenderer);
+                explosions.emplace_back(enemy->getEntity()->getRect().x+enemy->getEntity()->getRect().w/2,enemy->getEntity()->getRect().y+enemy->getEntity()->getRect().h/2,ggs.renderer);
                 if(!playerDamaged) {
-                    timpy.changeXP(enemy->getDifficulty());
-                    timpy.killEnemy();
+                    player.changeXP(enemy->getDifficulty());
+                    player.killEnemy();
                     if(!abilityDamgage) {
-                        if(timpy.getAbilityKills() < timpy.abilityProperties[timpy.getAbility()][timpy.abilityLevels[timpy.getAbility()]][1] && timpy.getAbility() != none && !timpy.isCharged())
-                            timpy.abilitiesKills++;
+                        if(player.getAbilityKills() < player.abilityProperties[player.getAbility()][player.abilityLevels[player.getAbility()]][1] && player.getAbility() != none && !player.isCharged())
+                            player.abilitiesKills++;
                     }
                 }
-                //updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP(),timpy.getHealth(), timpy.getShield());
+                updatePlayerUIText();
             } else {
                 for(auto& teleport : level.getTeleports()) {
                     if(Entity::isColliding(enemy->getEntity()->getRect(),teleport)) {
@@ -129,8 +220,6 @@ bool Wave::runWave() {
         }
     }
 
-    // TODO: Add in explosions
-    /*
     for(auto it = explosions.begin();it != explosions.end();) {
         if(it->finished()) {
             it = explosions.erase(it);
@@ -140,7 +229,6 @@ bool Wave::runWave() {
             ++it;
         }
     }
-    */
 
     if(enemiesAlive == 0) {
         return false;

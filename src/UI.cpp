@@ -8,13 +8,10 @@
 #include "../includes/Enemy.h"
 #include "../includes/Texture.h"
 
-SDL_Color white = { 255, 255, 255 };
-SDL_Color black = { 0, 0, 0 };
 SDL_Color gray = { 105, 105, 105 };
 TTF_Font *counter;
 TTF_Font *title;
 TTF_Font *small;
-TTF_Font *verySmall;
 
 Texture waveNumberText;
 Texture waveNumberTitle;
@@ -49,20 +46,6 @@ int selectSpacing = scaleUI(50);
 int selectY = (WINDOW_HEIGHT-selectWidth)/2;
 int select1X = WINDOW_WIDTH/2 - selectWidth - selectSpacing/2;
 int select2X = WINDOW_WIDTH/2 + selectSpacing/2;
-
-SDL_Rect timeToShootBack;
-SDL_Rect timeToShoot;
-
-SDL_Rect timeToAbilityBack;
-SDL_Rect timeToAbility;
-
-SDL_Rect healthBackRect;
-SDL_Rect healthRect;
-SDL_Rect shieldBackRect;
-SDL_Rect shieldRect;
-
-Texture healthText;
-Texture shieldText;
 
 Texture ammoLeftText;
 Texture gamePausedText;
@@ -131,14 +114,7 @@ void UI_close() {
     TTF_CloseFont(title);
 }
 
-void updateInGameText(int playerCombo, int wave, int xp, int health, int shield) {
-    comboNumberText.loadFromRenderedText("Combo: " + std::to_string(playerCombo), white, counter);
-    waveNumberText.loadFromRenderedText("Wave: " + std::to_string(wave), white, counter);
-    waveNumberTitle.loadFromRenderedText("Wave " + std::to_string(wave) + " Start!", white, title);
-    playerXPText.loadFromRenderedText("XP: " + std::to_string(xp), white, counter);
-    healthText.loadFromRenderedText(std::to_string(health), black, verySmall);
-    shieldText.loadFromRenderedText(std::to_string(shield), black, verySmall);
-}
+
 
 void renderInGameText(bool developerMode, float lastFPS,bool waveStarted) {
     waveNumberText.render(scaleUI(10),scaleUI(5));
@@ -930,56 +906,6 @@ void renderMenu(State& state) {
     }
 }
 
-
-void initPlayerUI() {
-    timeToShootBack.x = WINDOW_WIDTH-scalePlayerUI(90);
-    timeToShootBack.y = WINDOW_HEIGHT-scalePlayerUI(50);
-    timeToShootBack.w = scalePlayerUI(75);
-    timeToShootBack.h = scalePlayerUI(15);
-
-    timeToShoot.x = WINDOW_WIDTH-scalePlayerUI(90);
-    timeToShoot.y = WINDOW_HEIGHT-scalePlayerUI(50);
-    timeToShoot.w = scalePlayerUI(75);
-    timeToShoot.h = scalePlayerUI(15);
-
-    timeToAbilityBack.x = WINDOW_WIDTH-scalePlayerUI(90);
-    timeToAbilityBack.y = WINDOW_HEIGHT-scalePlayerUI(75);
-    timeToAbilityBack.w = scalePlayerUI(75);
-    timeToAbilityBack.h = scalePlayerUI(15);
-
-    timeToAbility.x = WINDOW_WIDTH-scalePlayerUI(90);
-    timeToAbility.y = WINDOW_HEIGHT-scalePlayerUI(75);
-    timeToAbility.w = scalePlayerUI(75);
-    timeToAbility.h = scalePlayerUI(15);
-
-    shieldBackRect.x = scalePlayerUI(10);
-    shieldBackRect.y = WINDOW_HEIGHT-scalePlayerUI(40);
-    shieldBackRect.w = scalePlayerUI(75);
-    shieldBackRect.h = scalePlayerUI(15);
-
-    shieldRect.x = scalePlayerUI(10);
-    shieldRect.y = WINDOW_HEIGHT-scalePlayerUI(40);
-    shieldRect.w = scalePlayerUI(75);
-    shieldRect.h = scalePlayerUI(15);
-
-    healthBackRect.x = scalePlayerUI(10);
-    healthBackRect.y = WINDOW_HEIGHT-scalePlayerUI(20);
-    healthBackRect.w = scalePlayerUI(75);
-    healthBackRect.h = scalePlayerUI(15);
-
-    healthRect.x = scalePlayerUI(10);
-    healthRect.y = WINDOW_HEIGHT-scalePlayerUI(20);
-    healthRect.w = scalePlayerUI(75);
-    healthRect.h = scalePlayerUI(15);
-
-    ammoLeftText.setup(renderer);
-
-    healthText.setup(renderer);
-    healthText.loadFromRenderedText("200", black,verySmall);
-
-    shieldText.setup(renderer);
-    shieldText.loadFromRenderedText("0", black,verySmall);
-}
 
 void updateTimeToShoot(const double width) {
     timeToShoot.w = width;

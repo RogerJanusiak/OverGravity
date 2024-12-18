@@ -76,7 +76,7 @@ int main( int argc, char* args[] ) {
         Sound mediumExplosion("resources/sounds/mediumExplosion.wav", 0,-1);
         Sound song("resources/sounds/song.wav", -1,0);
 
-        std::list<Explosion> explosions;
+
 
         UI_init(gameRenderer, state, &timpy);
 

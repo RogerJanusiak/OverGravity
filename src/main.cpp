@@ -48,10 +48,12 @@ bool init(GlobalGameState& ggs) {
 
 void loadGlobalResources(GlobalGameState& ggs) {
 	ggs.buttonFont = TTF_OpenFont("resources/sans.ttf",scaleUI(18));
+	ggs.verySmall = TTF_OpenFont("resources/sans.ttf",scaleUI(10));
 }
 
 void closeGlobalResources(const GlobalGameState& ggs) {
 	TTF_CloseFont(ggs.buttonFont);
+	TTF_CloseFont(ggs.verySmall);
 }
 
 void close(GlobalGameState ggs) {

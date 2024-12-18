@@ -43,10 +43,13 @@ struct GlobalGameState {
     bool developerMode = false;
     bool pauseEnemies = false;
 
+    // TODO: Move global resources to another data scrutcure?
     //Global Resources
     SDL_Color white = {255,255,255};
+    SDL_Color black = { 0, 0, 0 };
 
     TTF_Font *buttonFont{};
+    TTF_Font *verySmall;
 };
 
 

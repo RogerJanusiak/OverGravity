@@ -3,11 +3,11 @@
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
-#include "../includes/WaveController.h"
-#include "../includes/GlobalConstants.h"
-#include "../includes/MainMenu.h"
-#include "../includes/State.h"
-#include "../includes/Run.h"
+#include "../includes/HEng/WaveController.h"
+#include "../includes/Utils/GlobalConstants.h"
+#include "../includes/HEng/MainMenu.h"
+#include "../includes/HEng/State.h"
+#include "../includes/HEng/Run.h"
 
 bool init(GlobalGameState& ggs) {
 	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO ) < 0 ) {

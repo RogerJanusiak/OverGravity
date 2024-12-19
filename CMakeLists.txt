@@ -86,47 +86,45 @@ if(APPLE)
     set(CMAKE_CXX_STANDARD 23)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMAKE")
-    set(SOURCE_FILES    src/Player.cpp
-            src/Texture.cpp
-            src/Platform.cpp
-            includes/Robor.h
-            src/Entity.cpp
-            includes/Entity.h
-            src/Bullet.cpp
-            includes/Bullet.h
-            includes/Spawn.h
-            includes/Bullet.h
+    set(SOURCE_FILES    src/Entities/Player.cpp
+            src/TEng/Texture.cpp
+            src/HEng/Platform.cpp
+            includes/Entities/Robor.h
+            src/Entities/Entity.cpp
+            includes/Entities/Entity.h
+            src/Entities/Bullet.cpp
+            includes/Entities/Bullet.h
+            includes/HEng/Spawn.h
+            includes/Entities/Bullet.h
             src/main.cpp
-            src/main.cpp
-            includes/State.h
-            src/Sound.cpp
-            includes/Sound.h
-            src/Roborto.cpp
-            src/Roborto.cpp
-            includes/Roborto.h
-            src/Animations.cpp
-            includes/Animations.h
-            src/Weapon.cpp
-            includes/Weapon.h
-            src/Menu.cpp
-            includes/Menu.h
-            src/Enemy.cpp
-            includes/Enemy.h
-            includes/Robro.h
-            includes/Romo.h
-            includes/Roo.h
-            src/MainMenu.cpp
-            includes/MainMenu.h
-            src/Input.cpp
-            includes/Input.h
-            src/Run.cpp
-            includes/Run.h
-            src/Wave.cpp
-            includes/Wave.h
-			src/Level.cpp
-			includes/Level.h
-            includes/WaveController.h
-            src/WaveController.cpp)
+            includes/HEng/State.h
+            src/TEng/Sound.cpp
+            includes/TEng/Sound.h
+            src/Entities/Roborto.cpp
+            includes/Entities/Roborto.h
+            src/Utils/Animations.cpp
+            includes/Utils/Animations.h
+            src/HEng/Weapon.cpp
+            includes/HEng/Weapon.h
+            src/TEng/Menu.cpp
+            includes/TEng/Menu.h
+            src/Entities/Enemy.cpp
+            includes/Entities/Enemy.h
+            includes/Entities/Robro.h
+            includes/Entities/Romo.h
+            includes/Entities/Roo.h
+            src/HEng/MainMenu.cpp
+            includes/HEng/MainMenu.h
+            src/Utils/Input.cpp
+            includes/Utils/Input.h
+            src/HEng/Run.cpp
+            includes/HEng/Run.h
+            src/HEng/Wave.cpp
+            includes/HEng/Wave.h
+			src/HEng/Level.cpp
+			includes/HEng/Level.h
+            includes/HEng/WaveController.h
+            src/HEng/WaveController.cpp)
 
     Message("")
     Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )

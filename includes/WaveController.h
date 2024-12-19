@@ -15,13 +15,15 @@ public:
 private:
 
 	void startWave();
-	void operatePlayer() const;
+	void operatePlayer();
 	void startLevel() const;
 
 	void renderPlayerUI();
 	void updatePlayerUIText();
 	void renderWaveText();
 	void updateWaveText();
+
+	void updateTimeToShoot(double width);
 
 	GlobalGameState& ggs;
 

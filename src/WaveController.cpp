@@ -77,10 +77,15 @@ void WaveController::operate() {
     operatePlayer();
 }
 
-void WaveController::operatePlayer() const {
+void WaveController::operatePlayer() {
     player.move(ggs, run.getLevel().getPlatforms(), run.getLevel().getTeleports());
     player.tickInvicibilty(ggs.dt);
+    updateTimeToShoot(scalePlayerUI(player.getWeapon()->reload(ggs.dt)));
     player.render();
+}
+
+void WaveController::updateTimeToShoot(const double width) {
+    timeToShoot.w = width;
 }
 
 void WaveController::startLevel() const {

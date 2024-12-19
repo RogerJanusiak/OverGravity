@@ -888,9 +888,7 @@ void renderMenu(State& state) {
 }
 
 
-void updateTimeToShoot(const double width) {
-    timeToShoot.w = width;
-}
+
 
 void updateTimeToAbility(const double width) {
     timeToAbility.w = width;

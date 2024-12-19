@@ -120,76 +120,6 @@ int main( int argc, char* args[] ) {
 
                 launchUpgradeMenu(state);
                 loadUpgradeMenu(state);
-                while((waveNumber-1) % 5 == 0 && (state.menu == weaponUpgrade || state.menu == abilityUpgrade || state.menu == playerUpgrade) && !state.quit) {
-                    while(SDL_PollEvent(&e) != 0) {
-                        if( e.type == SDL_QUIT ) {
-                            state.quit = true;
-                        } else if(e.type == SDL_KEYDOWN) {
-                            if(e.key.keysym.sym == SDLK_ESCAPE) {
-                                closeUpgradeMenu(state,0,0);
-                            }
-                        } else if(e.type == SDL_MOUSEBUTTONDOWN) {
-                            menuSelect(state);
-                        } else if(e.type == SDL_MOUSEMOTION) {
-                            mouseMove(state);
-                        } else if( e.type == SDL_JOYAXISMOTION) {
-                            if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) > JOYSTICK_DEAD_ZONE) {
-                                if(state.controllerStickReset) {
-                                    controllerEvent(state,MENU_CONTROL::down);
-                                    state.controllerStickReset = false;
-                                }
-                            } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) < -JOYSTICK_DEAD_ZONE) {
-                                if(state.controllerStickReset) {
-                                    controllerEvent(state,MENU_CONTROL::up);
-                                    state.controllerStickReset = false;
-                                }
-                            } else if(SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) > JOYSTICK_DEAD_ZONE) {
-                                if(state.controllerStickReset) {
-                                    controllerEvent(state,MENU_CONTROL::right);
-                                    state.controllerStickReset = false;
-                                }
-                            } else if (SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) < -JOYSTICK_DEAD_ZONE) {
-                                if(state.controllerStickReset) {
-                                    controllerEvent(state,MENU_CONTROL::left);
-                                    state.controllerStickReset = false;
-                                }
-                            } else {
-                                state.controllerStickReset = true;
-                            }
-                        } else if( e.type == SDL_JOYBUTTONDOWN ) {
-                            if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A) == 1) {
-                                controllerEvent(state,MENU_CONTROL::select);
-                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B) == 1) {
-                                closeUpgradeMenu(state,0,0);
-                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) == 1) {
-                                if(state.menu == weaponUpgrade) {
-                                    showAbilityUpgradeMenu(state,0,0);
-                                } else if(state.menu == abilityUpgrade) {
-                                    showPlayerUpgradeMenu(state,0,0);
-                                }
-                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_LEFTSHOULDER) == 1) {
-                                if(state.menu == abilityUpgrade) {
-                                    showWeaponUpgradeMenu(state,0,0);
-                                } else if(state.menu == playerUpgrade) {
-                                    showAbilityUpgradeMenu(state,0,0);
-                                }
-                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP) == 1) {
-                                controllerEvent(state,MENU_CONTROL::up);
-                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN) == 1) {
-                                controllerEvent(state,MENU_CONTROL::down);
-                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT) == 1) {
-                                controllerEvent(state,MENU_CONTROL::left);
-                            } else if(SDL_GameControllerGetButton(controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT) == 1) {
-                                controllerEvent(state,MENU_CONTROL::right);
-                            }
-                        }
-                    }
-
-                    SDL_RenderClear(gameRenderer);
-
-                    renderMenu(state);
-
-                }
                 timpy.setXNormalV(0);
                 switch(state.weapon1) {
                     case 0:
@@ -238,22 +168,7 @@ int main( int argc, char* args[] ) {
                     weapon->reset();
                 }
 
-                state.menu = notInMenu;
-
-                bool waveStarted = false;
-
-
-                updateInGameText(timpy.getCombo(),waveNumber, timpy.getXP(),timpy.getHealth(), timpy.getShield());
-
                 while(state.started && inWave && !state.quit) {
-
-                    Uint64 start = SDL_GetPerformanceCounter();
-
-                    Uint32 current = SDL_GetTicks();
-                    float dt = (current - lastUpdate) / 1000.0f;
-                    lastUpdate = current;
-
-
 
                     if(timpy.getWeapon()->isReloadable()) {
                         updateTimeToShoot(scalePlayerUI(timpy.getWeapon()->reload(dt)));
@@ -266,74 +181,12 @@ int main( int argc, char* args[] ) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 1 / 2, 0xFFFF * 1 / 2, 50 );
                     }
 
-                    bool robotAlive = false;
-                    bool playerAlive = true;
-
-                    //Render/Move Bullets
-                    for (auto it = bullets.begin(); it != bullets.end();) {
-                        if(it->move(dt, platforms, state.developerMode)) {
-                            eBullets.erase(it->getIterator());
-                            it = bullets.erase(it);
-                        } else {
-                            it->render();
-                            ++it;
-                        }
-                    }
-
-                    state.c4Exploded = false;
-
                     if(!playerAlive || waveOverride) {
                         SDL_GameControllerRumble( controller, 0xFFFF * 3 / 4, 0xFFFF * 3 / 4, 750 );
                         inWave = false;
                         waveOverride = false;
                     } else {
                         inWave = robotAlive;
-                    }
-
-                    if(timpy.getEntity()->isSpawned()) {
-                        if(state.developerMode) {
-                            SDL_Rect playerTile = {(state.playerTileX)*TILE_SIZE_SCALED, state.playerTileY*TILE_SIZE_SCALED+state.camY,TILE_SIZE_SCALED,TILE_SIZE_SCALED};
-                            SDL_SetRenderDrawColor(gameRenderer, 225, 225, 0, 255);
-                            SDL_RenderDrawRect(gameRenderer, &playerTile);
-                        }
-
-                        for(auto& teleport : teleports) {
-                            if(Entity::isColliding(timpy.getEntity()->getRect(),teleport)) {
-                                timpy.getEntity()->forceSpawn();
-                            }
-                        }
-                    }
-
-                    SDL_SetRenderDrawColor(gameRenderer, 0, 255, 0, 255);
-                    if(state.developerMode) {
-                        SDL_RenderDrawRect(gameRenderer,&timpy.getEntity()->getRect());
-                        SDL_RenderDrawRect(gameRenderer, timpy.getWheelRect());
-                        SDL_Rect tempHitRect = timpy.getHitRect();
-                        SDL_RenderDrawRect(gameRenderer, &tempHitRect);
-                    }
-
-                    renderInGameText(state.developerMode, lastFPS, waveStarted);
-
-                    renderPlayerUI(&timpy);
-
-                    if(state.teleportSelection) {
-                        SDL_SetTextureColorMod(teleportCursor.getTexture(),0,150,255);
-                        teleportCursor.render(state.teleportCursorX,state.teleportCursorY);
-                    }
-
-                    SDL_SetRenderDrawColor(gameRenderer, 16, 16, 16, 255);
-                    SDL_RenderPresent(gameRenderer);
-
-
-
-                    if(controller != nullptr && state.menu == pause) {
-                        controllerEvent(state,MENU_CONTROL::connect);
-                    }
-
-                    while(state.menu == pause && !state.quit && state.started) {
-                        pauseScreen();
-                        Uint32 current = SDL_GetTicks();
-                        lastUpdate = current;
                     }
 
                 }
@@ -343,29 +196,4 @@ int main( int argc, char* args[] ) {
     }
     close();
     return 0;
-}
-
-void resetState() {
-    state.c4Placed = false;
-
-    state.upgradeIncreaseFactor = 0;
-
-    for(auto& enemy : state.setEnemies) {
-        enemy = 0;
-    }
-
-    for(auto& level : state.weaponLevels) {
-        level = 0;
-    }
-    state.weaponLevels[0] = 1;
-
-    for(auto& level : state.abilityLevels) {
-        level = 0;
-    }
-
-    for(auto& level : state.playerLevels) {
-        level = 0;
-    }
-    timpyPointer->reset(state);
-    loadUpgradeMenu(state);
 }

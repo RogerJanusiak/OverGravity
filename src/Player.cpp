@@ -6,9 +6,11 @@
 #include "../includes/GlobalConstants.h"
 #include "../includes/Platform.h"
 
-Player::Player(Entity* entity, GlobalGameState& ggs) : revolver(Weapon_Type::revolver,ggs.renderer), rifle(Weapon_Type::rifle,ggs.renderer), shotgun(Weapon_Type::shotgun,ggs.renderer), laserPistol(Weapon_Type::laserPistol,ggs.renderer), playerEntity(entity) {
+Player::Player(Entity* entity, GlobalGameState& ggs) : ggs(ggs), revolver(ggs, Weapon_Type::revolver,ggs.renderer), rifle(ggs, Weapon_Type::rifle,ggs.renderer), shotgun(ggs, Weapon_Type::shotgun,ggs.renderer), laserPistol(ggs, Weapon_Type::laserPistol,ggs.renderer), playerEntity(entity) {
 
     currentWeapon = &revolver;
+    primaryWeapon = currentWeapon;
+    secondaryWeapon = &shotgun;
     // TODO: Ability to chang weapon and stuff
 
     damageSound.init("resources/sounds/playerDamage.wav",0,-1);
@@ -79,9 +81,7 @@ int Player::move(GlobalGameState& ggs, const std::list<Platform> &platforms, std
         }
     }
 
-
-
-    double speedIncrease = playerLevels[speed] == 0 ? 0 : defaultXSpeed*playerProperties[speed][playerLevels[speed]-1][1]/100;
+    double speedIncrease = ggs.playerLevels[speed] == 0 ? 0 : defaultXSpeed*ggs.playerProperties[speed][ggs.playerLevels[speed]-1][1]/100;
     getEntity()->setXVelocity(xNormalVelocity*(defaultXSpeed+speedIncrease));
 
     if(c4Placed) {
@@ -132,14 +132,14 @@ void Player::setDirection(bool direction) {
 
 void Player::killEnemy() {
     combo++;
-    double mutiplier = playerLevels[PlayerUpgrades::shield] == 0 ? 1 : playerProperties[PlayerUpgrades::shield][playerLevels[PlayerUpgrades::shield]-1][1];
+    double mutiplier = ggs.playerLevels[PlayerUpgrades::shield] == 0 ? 1 : ggs.playerProperties[PlayerUpgrades::shield][ggs.playerLevels[PlayerUpgrades::shield]-1][1];
     shield += combo*mutiplier;
     shield = shield >= maxShield ? maxShield : shield;
 }
 
 int Player::charge() {
-    int abilityLevel = abilityLevels[currentAbility] == 0 ? 0 : abilityLevels[currentAbility] - 1;
-    int abilityReloadSpeed = abilityProperties[currentAbility][abilityLevel][1];
+    int abilityLevel = ggs.abilityLevels[currentAbility] == 0 ? 0 : ggs.abilityLevels[currentAbility] - 1;
+    int abilityReloadSpeed = ggs.abilityProperties[currentAbility][abilityLevel][1];
     if (abilitiesKills >= abilityReloadSpeed) {
         abilitiesKills = 0;
         charged = true;
@@ -150,35 +150,6 @@ int Player::charge() {
         return 75*abilitiesKills/abilityReloadSpeed;
     }
     return 75;
-}
-
-void Player::useAbility(State& state) {
-
-    if(c4Placed) {
-        state.c4Exploded = true;
-        c4Placed = false;
-        state.c4Placed = false;
-    } else if (charged) {
-        switch(currentAbility) {
-            case teleport: {
-                state.teleportSelection = !state.teleportSelection;
-                state.teleportCursorX = getEntity()->getRect().x;
-                state.teleportCursorY = getEntity()->getRect().y;
-                state.startSelection = SDL_GetTicks();
-            } break;
-            case c4: {
-                if (!c4Placed) {
-                    c4Entity.setPhysics(playerEntity->getRect().x,playerEntity->getRect().y+playerEntity->getRect().h - scale(32),0,0);
-                    c4Placed = true;
-                    state.c4Placed = true;
-                }
-            } break;
-            default:
-                break;
-        }
-        charged = false;
-    }
-
 }
 
 void Player::tickInvicibilty(float dt) {
@@ -197,7 +168,7 @@ bool Player::damage() {
     invicibleFromDeath = true;
     postDamageInvincibleTime = 0;
 
-    shield -= playerLevels[armor] == 0 ? 50 : 50 - 50*playerProperties[armor][playerLevels[armor]-1][1]/100;
+    shield -= ggs.playerLevels[armor] == 0 ? 50 : 50 - 50*ggs.playerProperties[armor][ggs.playerLevels[armor]-1][1]/100;
     if(shield <= 0) {
         health += shield;
         if (health <= 0) {
@@ -220,15 +191,4 @@ void Player::changeWeapon() {
         currentWeapon = primaryWeapon;
     }
 
-}
-
-void Player::reset(State& state) {
-    health = 200;
-    shield = 0;
-    xp = 50;
-    setAbility(none);
-    state.weapon1 = 0;
-    state.weapon2 = -1;
-    state.abilitiesKills = 0;
-    charge();
 }

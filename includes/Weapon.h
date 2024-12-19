@@ -18,7 +18,7 @@ class Weapon {
 
 public:
 
-  explicit Weapon(Weapon_Type _type, SDL_Renderer* _renderer);
+  explicit Weapon(GlobalGameState& ggs, Weapon_Type type, SDL_Renderer* renderer);
 
   void render(int playerX, int playerY, bool playerDirection) const;
 
@@ -35,10 +35,11 @@ public:
   [[nodiscard]] int getClipSize() const { return clipSize; }
   [[nodiscard]] int getDamage() const { return bulletDamage; }
 
-  void upgrade(const State & state);
+  void upgrade();
   void reset();
 
 private:
+  GlobalGameState& ggs;
 
   SDL_Renderer* renderer;
 

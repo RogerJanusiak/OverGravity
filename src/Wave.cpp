@@ -96,7 +96,7 @@ bool Wave::runWave() {
                     player.changeXP(enemy->getDifficulty());
                     player.killEnemy();
                     if(!abilityDamgage) {
-                        if(player.getAbilityKills() < player.abilityProperties[player.getAbility()][player.abilityLevels[player.getAbility()]][1] && player.getAbility() != none && !player.isCharged())
+                        if(player.getAbilityKills() < ggs.abilityProperties[player.getAbility()][ggs.abilityLevels[player.getAbility()]][1] && player.getAbility() != none && !player.isCharged())
                             player.abilitiesKills++;
                     }
                 }

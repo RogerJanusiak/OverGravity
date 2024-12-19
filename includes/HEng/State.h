@@ -25,6 +25,9 @@ struct GlobalGameState {
     bool quit = false;
 
     bool inMainMenu = true;
+    bool toMainMenu = false;
+    bool inPauseMenu = false;
+    bool toPauseMenu = false;
     bool inRun = false;
 
     int level = 0;

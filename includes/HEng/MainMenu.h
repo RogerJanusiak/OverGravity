@@ -25,6 +25,7 @@ private:
 
 	UI_Menu mainMenu = UI_Menu(3);
 	UI_Menu levelSelect = UI_Menu(4);
+	UI_Menu pauseMenu = UI_Menu(3);
 
 	UI_Menu* currentMenu = &mainMenu;
 

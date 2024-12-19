@@ -74,6 +74,9 @@ void MainMenu::changeMenu(const Menu menu) {
         case level: {
             currentMenu = &levelSelect;
         } break;
+        case pause: {
+            currentMenu = &pauseMenu;
+        } break;
         default:
             break;
     }
@@ -95,6 +98,16 @@ void selectLevel(GlobalGameState& ggs, int attr1, int attr2) {
     ggs.inMainMenu = false;
 }
 
+void resumeGame(GlobalGameState& ggs, int attr1, int attr2) {
+    ggs.inPauseMenu = false;
+}
+
+void quitToMenu(GlobalGameState& ggs, int attr1, int attr2) {
+    ggs.inPauseMenu = false;
+    ggs.inRun = false;
+    ggs.toMainMenu = true;
+}
+
 void MainMenu::initMenus() {
     const int centeredX = (WINDOW_WIDTH-UI_Button::width)/2;
 
@@ -114,4 +127,11 @@ void MainMenu::initMenus() {
     const int level3Button = levelSelect.addButton(centeredX,scaleUI(355),"Labratory",&ggs.white, ggs.buttonFont,level2Button,-1,-1,-1, &selectLevel, ggs,0,3);
     levelSelect.addButton(centeredX,scaleUI(420),"Lobby",&ggs.white, ggs.buttonFont,level3Button,-1,-1,-1, &selectLevel, ggs,0,4);
     levelSelect.addTitle((WINDOW_WIDTH-scaleUI(454))/2,scaleUI(100), logoTexture);
+
+    pauseMenu.setup(ggs.renderer, &buttonSound);
+    const int resumeButton = pauseMenu.addButton(centeredX,scaleUI(215),"Resume game",&ggs.white, ggs.buttonFont,-1,-1,-1,-1,&resumeGame,ggs);
+    const int quitToMenuButton = pauseMenu.addButton(centeredX,scaleUI(280),"Quit to Menu",&ggs.white, ggs.buttonFont,resumeButton,-1,-1,-1, &quitToMenu, ggs);
+    pauseMenu.addButton(centeredX,scaleUI(345),"Quit To Desktop",&ggs.white, ggs.buttonFont,quitToMenuButton,-1,-1,-1,&quitToDesktop,ggs);
+    pauseMenu.addTitle((WINDOW_WIDTH-scaleUI(454))/2,scaleUI(100), logoTexture);
+
 }

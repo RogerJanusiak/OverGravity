@@ -111,7 +111,7 @@ void WaveController::readInput() {
             } else if(e.key.keysym.sym == SDLK_2 && ggs.developerMode) {
                 ggs.pauseEnemies = !ggs.pauseEnemies;
             } else if(e.key.keysym.sym == SDLK_ESCAPE) {
-                // TODO: Add pause men bu
+                ggs.toPauseMenu = true;
             } else if(e.key.keysym.sym == SDLK_d) {
                 player.setXNormalV(1);
                 rightMovement = true;

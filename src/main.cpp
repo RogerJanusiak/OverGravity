@@ -104,7 +104,19 @@ int main( int argc, char* args[] ) {
 
 		SDL_RenderClear(ggs.renderer);
 
-		if(ggs.inMainMenu) {
+		if(ggs.toPauseMenu) {
+			mainMenu.changeMenu(pause);
+			ggs.inPauseMenu = true;
+			ggs.toPauseMenu = false;
+		}
+
+		if(ggs.toMainMenu) {
+			mainMenu.changeMenu(head);
+			ggs.inMainMenu = true;
+			ggs.toMainMenu = false;
+		}
+
+		if(ggs.inMainMenu || ggs.inPauseMenu) {
 			mainMenu.readInput();
 			mainMenu.render();
 		} else if(!ggs.inRun) {
@@ -113,7 +125,7 @@ int main( int argc, char* args[] ) {
 			ggs.inRun = true;
 		}
 
-		if(ggs.inRun) {
+		if(ggs.inRun && !ggs.inPauseMenu) {
 			waveController->readInput();
 			waveController->operate();
 		}
